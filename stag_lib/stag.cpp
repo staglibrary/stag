@@ -1,11 +1,11 @@
-#include "sgtl.h"
+#include "stag.h"
 #include <iostream>
 #include <utility>
 
-sgtl::Graph::Graph(Eigen::MatrixXd adjMat) {
+stag::Graph::Graph(Eigen::MatrixXd adjMat) {
    adjacencyMatrix = std::move(adjMat);
 };
 
-void sgtl::Graph::printAdjMat() {
+void stag::Graph::printAdjMat() {
   std::cout << adjacencyMatrix << std::endl;
 }

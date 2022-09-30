@@ -1,9 +1,9 @@
-#ifndef SGTL_LIBRARY_H
-#define SGTL_LIBRARY_H
+#ifndef STAG_LIBRARY_H
+#define STAG_LIBRARY_H
 
 #include <Eigen/Core>
 
-namespace sgtl {
+namespace stag {
   class Graph {
     public:
       Graph(Eigen::MatrixXd);
@@ -13,4 +13,4 @@ namespace sgtl {
       Eigen::MatrixXd adjacencyMatrix;
   };
 }
-#endif //SGTL_LIBRARY_H
+#endif //STAG_LIBRARY_H
