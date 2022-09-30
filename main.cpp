@@ -1,11 +1,21 @@
 #include <stag.h>
 #include <Eigen/Core>
 
+#include <iostream>
+
 int main()
 {
+  // Create a simple wee graph to experiment with
   Eigen::Matrix3d m1;
-  m1 << 1.111111, 2, 3.33333, 4, 5, 6, 7, 8.888888, 9;
+  m1 << 0, 2, 3.33333, 2, 0, 6, 3.33333, 6, 0;
+
+  // Create the stag Graph object
   stag::Graph myGraph(m1);
-  myGraph.printAdjMat();
+
+  // Retrieve and print the Laplacian matrix
+  Eigen::Matrix3d lap = myGraph.laplacian();
+  std::cout << lap << std::endl;
+
+  // Return
   return 0;
 }
