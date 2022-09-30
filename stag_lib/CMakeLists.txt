@@ -12,4 +12,7 @@ set(SOURCE_FILES
 find_package(Eigen3 NO_MODULE REQUIRED)
 
 # Define the STAG library
-add_library(stag STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(stag SHARED ${SOURCE_FILES} ${HEADER_FILES})
+
+# Create an object file named 'stag.so'.
+set_target_properties(stag PROPERTIES PREFIX "")
