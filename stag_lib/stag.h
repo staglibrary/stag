@@ -39,8 +39,8 @@ namespace stag {
        *                     matrix
        * @param values the values of each non-zero element in the matrix
        */
-      Graph(std::vector<int> outerStarts, std::vector<int> innerIndices,
-            std::vector<double> values);
+      Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
+            std::vector<double> &values);
 
       /**
        * Return the sparse adjacency matrix of the graph
