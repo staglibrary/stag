@@ -4,7 +4,9 @@
 #include <Eigen/Sparse>
 #include <vector>
 
-typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SprsMat;
+// The fundamental datatype used in this library is the sparse matrix. For
+// convenience, we define the sparse matrix type here.
+#define SprsMat Eigen::SparseMatrix<double, Eigen::RowMajor>
 
 namespace stag {
 
@@ -25,14 +27,27 @@ namespace stag {
       explicit Graph(const SprsMat& adjacency_matrix);
 
       /**
-       * Create a graph from raw arrays describing a sparse matrix.
+       * Create a graph from raw arrays describing a CSR sparse matrix.
        *
-       * @param vertices the number of vertices in the graph
-       * @param rows the row indices of each non-zero element in the matrix
-       * @param cols the column indices of each non-zero element in the matrix
-       * @param vals the values of each non-zero element in the matrix
+       * To use this constructor, you should understand the CSR sparse matrix
+       * format. Note that this library uses the RowMajor format from the Eigen
+       * library.
+       *
+       * @param outerStarts the indices of the start of each row in the CSR
+       *                    matrix
+       * @param innerIndices the column indices of each non-zero element in the
+       *                     matrix
+       * @param values the values of each non-zero element in the matrix
        */
-       Graph(int vertices, std::vector<int> rows, std::vector<int> cols, std::vector<double> vals);
+      Graph(std::vector<int> outerStarts, std::vector<int> innerIndices,
+            std::vector<double> values);
+
+      /**
+       * Return the sparse adjacency matrix of the graph
+       *
+       * @return a sparse Eigen matrix representing the graph adjacency matrix.
+       */
+      SprsMat adjacency();
 
       /**
        * Construct the Laplacian matrix of the graph.
@@ -42,20 +57,22 @@ namespace stag {
        * where D is the diagonal matrix of vertex degrees and A is the adjacency
        * matrix of the graph.
        *
-       * @return a sparse Eigen matrix represengint the graph Laplacian
+       * @return a sparse Eigen matrix representing the graph Laplacian
        */
       SprsMat laplacian();
 
-      /*
+      /**
        * The volume of the graph.
        *
-       * The volume is defined as the sum of all of the node degrees.
+       * The volume is defined as the sum of the node degrees.
        *
        * @return the graph's volume.
        */
       double volume();
 
     private:
+      // The ground truth definition of the graph object is the adjacency
+      // matrix, stored in a sparse format.
       SprsMat adjacency_matrix_;
   };
 }
