@@ -35,6 +35,11 @@ int main() {
   double vol = myGraph.volume();
   std::cout << "Volume: " << vol << std::endl;
 
+  // Construct a cycle graph
+  myGraph = stag::cycle_graph(10);
+  std::cout << "Cycle Laplacian" << std::endl;
+  std::cout << myGraph.laplacian() << std::endl;
+
   // Return
   return 0;
 }

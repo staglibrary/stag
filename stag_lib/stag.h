@@ -75,5 +75,13 @@ namespace stag {
       // matrix, stored in a sparse format.
       SprsMat adjacency_matrix_;
   };
+
+  /**
+   * Construct a cycle graph on n vertices.
+   *
+   * @param n
+   * @return a graph object representing the n-cycle
+   */
+  Graph cycle_graph(int n);
 }
 #endif //STAG_LIBRARY_H

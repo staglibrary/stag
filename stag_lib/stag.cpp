@@ -35,3 +35,14 @@ double stag::Graph::volume() {
   Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
   return degrees.sum();
 }
+
+stag::Graph stag::cycle_graph(int n) {
+  SprsMat adj_mat(n, n);
+  std::vector<Eigen::Triplet<double>> non_zero_entries;
+  for (int i = 0; i < n; i++) {
+    non_zero_entries.emplace_back(i, (i + n + 1) % n, 1);
+    non_zero_entries.emplace_back(i, (i + n - 1) % n, 1);
+  }
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
+}
