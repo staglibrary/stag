@@ -1,32 +1,32 @@
 #include <iterator>
 #include "utility.h"
 
-std::vector<int> stag::sprsMatInnerIndices(SprsMat &matrix) {
+std::vector<int> stag::sprsMatInnerIndices(const SprsMat *matrix) {
   // Make sure that the given matrix is compressed
-  matrix.makeCompressed();
+  assert(matrix->isCompressed());
 
   // Return the required indices vector
-  int *indexPtr = matrix.innerIndexPtr();
-  long nonZeros = matrix.nonZeros();
+  const int *indexPtr = matrix->innerIndexPtr();
+  long nonZeros = matrix->nonZeros();
   return {indexPtr, indexPtr + nonZeros};
 }
 
-std::vector<int> stag::sprsMatOuterStarts(SprsMat &matrix) {
+std::vector<int> stag::sprsMatOuterStarts(const SprsMat *matrix) {
   // Make sure that the given matrix is compressed
-  matrix.makeCompressed();
+  assert(matrix->isCompressed());
 
   // Return the required indices vector
-  int *indexPtr = matrix.outerIndexPtr();
-  long outerSize = matrix.outerSize();
+  const int *indexPtr = matrix->outerIndexPtr();
+  long outerSize = matrix->outerSize();
   return {indexPtr, indexPtr + outerSize + 1};
 }
 
-std::vector<double> stag::sprsMatValues(SprsMat &matrix) {
+std::vector<double> stag::sprsMatValues(const SprsMat *matrix) {
   // Make sure that the given matrix is compressed
-  matrix.makeCompressed();
+  assert(matrix->isCompressed());
 
   // Return the required indices vector
-  double *valuePtr = matrix.valuePtr();
-  long nonZeros = matrix.nonZeros();
+  const double *valuePtr = matrix->valuePtr();
+  long nonZeros = matrix->nonZeros();
   return {valuePtr, valuePtr + nonZeros};
 }

@@ -47,7 +47,7 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
-      SprsMat adjacency();
+      const SprsMat* adjacency();
 
       /**
        * Construct the Laplacian matrix of the graph.
@@ -59,7 +59,7 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the graph Laplacian
        */
-      SprsMat laplacian();
+      const SprsMat* laplacian();
 
       /**
        * The volume of the graph.
@@ -71,9 +71,24 @@ namespace stag {
       double volume();
 
     private:
+      /**
+       * Initialise the laplacian matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_laplacian_();
+
       // The ground truth definition of the graph object is the adjacency
       // matrix, stored in a sparse format.
       SprsMat adjacency_matrix_;
+
+      // Whether the adjacency matrix has been initialised
+      bool adj_init_;
+
+      // The laplacian matrix of the graph
+      SprsMat laplacian_matrix_;
+
+      // Whether the laplacian matrix has been initialised
+      bool lap_init_;
   };
 
   /**

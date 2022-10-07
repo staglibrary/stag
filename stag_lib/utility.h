@@ -12,7 +12,7 @@ namespace stag {
    * @param matrix
    * @return
    */
-  std::vector<double> sprsMatValues(SprsMat &matrix);
+  std::vector<double> sprsMatValues(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the InnerIndices vector, compatible with the
@@ -21,7 +21,7 @@ namespace stag {
    * @param matrix
    * @return
    */
-  std::vector<int> sprsMatInnerIndices(SprsMat &matrix);
+  std::vector<int> sprsMatInnerIndices(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the OuterStarts vector, compatible with the
@@ -30,7 +30,7 @@ namespace stag {
    * @param matrix
    * @return
    */
-  std::vector<int> sprsMatOuterStarts(SprsMat &matrix);
+  std::vector<int> sprsMatOuterStarts(const SprsMat *matrix);
 }
 
 #endif //STAG_TEST_UTILITY_H

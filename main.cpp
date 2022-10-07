@@ -15,11 +15,11 @@ int main() {
 
   // Print the adjacency matrix
   std::cout << "Adjacency Matrix" << std::endl;
-  std::cout << myGraph.adjacency() << std::endl;
+  std::cout << *myGraph.adjacency() << std::endl;
 
   // View the outer starts of the adjacency matrix
   std::cout << "Outer starts" << std::endl;
-  SprsMat adj = myGraph.adjacency();
+  const SprsMat* adj = myGraph.adjacency();
   std::vector<int> starts = stag::sprsMatOuterStarts(adj);
   for (int i: starts){
     std::cout << i << ' ';
@@ -27,9 +27,9 @@ int main() {
   std::cout << std::endl << std::endl;
 
   // Retrieve and print the Laplacian matrix
-  SprsMat lap = myGraph.laplacian();
+  const SprsMat* lap = myGraph.laplacian();
   std::cout << "Laplacian Matrix" << std::endl;
-  std::cout << lap << std::endl;
+  std::cout << *lap << std::endl;
 
   // Compute the graph's volume
   double vol = myGraph.volume();
@@ -38,7 +38,7 @@ int main() {
   // Construct a cycle graph
   myGraph = stag::cycle_graph(10);
   std::cout << "Cycle Laplacian" << std::endl;
-  std::cout << myGraph.laplacian() << std::endl;
+  std::cout << *myGraph.laplacian() << std::endl;
 
   // Return
   return 0;
