@@ -17,7 +17,6 @@ namespace stag {
    */
   class Graph {
     public:
-
       /**
        * Create a graph from an Eigen matrix.
        *

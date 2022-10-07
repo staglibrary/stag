@@ -1,5 +1,6 @@
 # Build output
 **/cmake-build-debug/
+**/build/
 
 # Intellij-type IDEs
 **/.idea/tasks.xml

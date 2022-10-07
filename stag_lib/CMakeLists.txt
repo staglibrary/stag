@@ -1,11 +1,11 @@
 project(stag)
 
 set(HEADER_FILES
-        stag.h
+        graph.h
         utility.h)
 
 set(SOURCE_FILES
-        stag.cpp
+        graph.cpp
         utility.cpp)
 
 # Add libraries

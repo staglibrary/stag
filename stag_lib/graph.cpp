@@ -1,4 +1,4 @@
-#include "stag.h"
+#include "graph.h"
 
 stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   adjacency_matrix_ = adjacency_matrix;

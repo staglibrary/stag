@@ -1,7 +1,7 @@
 #ifndef STAG_TEST_UTILITY_H
 #define STAG_TEST_UTILITY_H
 
-#include "stag.h"
+#include "graph.h"
 
 namespace stag {
 
