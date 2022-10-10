@@ -55,7 +55,7 @@ stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices
 // Graph Object Public Methods
 //------------------------------------------------------------------------------
 
-const SprsMat* stag::Graph::adjacency() {
+const SprsMat* stag::Graph::adjacency() const {
   return &adjacency_matrix_;
 }
 
@@ -158,9 +158,18 @@ void stag::Graph::initialise_degree_matrix_() {
 }
 
 //------------------------------------------------------------------------------
+// Graph Equality Operator
+//------------------------------------------------------------------------------
+bool stag::operator==(const stag::Graph& lhs, const stag::Graph& rhs) {
+  bool outerIndicesEqual = stag::sprsMatOuterStarts(lhs.adjacency()) == stag::sprsMatOuterStarts(rhs.adjacency());
+  bool innerIndicesEqual = stag::sprsMatInnerIndices(lhs.adjacency()) == stag::sprsMatInnerIndices(rhs.adjacency());
+  bool valuesEqual = stag::sprsMatValues(lhs.adjacency()) == stag::sprsMatValues(rhs.adjacency());
+  return (outerIndicesEqual && innerIndicesEqual) && valuesEqual;
+}
+
+//------------------------------------------------------------------------------
 // Standard Graph Constructors
 //------------------------------------------------------------------------------
-
 stag::Graph stag::cycle_graph(int n) {
   SprsMat adj_mat(n, n);
   std::vector<Eigen::Triplet<double>> non_zero_entries;

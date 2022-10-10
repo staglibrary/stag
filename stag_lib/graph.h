@@ -52,7 +52,7 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
-      const SprsMat* adjacency();
+      const SprsMat* adjacency() const;
 
       /**
        * Construct the Laplacian matrix of the graph.
@@ -162,6 +162,12 @@ namespace stag {
       bool deg_init_;
       SprsMat degree_matrix_;
   };
+
+  /**
+   * Define equality for two graphs. Two graphs are equal iff their adjacency
+   * matrices are equal
+   */
+  bool operator==(const Graph& lhs, const Graph& rhs);
 
   /**
    * Construct a cycle graph on n vertices.

@@ -4,10 +4,12 @@
  *
  * Copyright 2022 Peter Macgregor
 */
+#include <iostream>
 #include <gtest/gtest.h>
-#include <stag.h>
+#include "stag.h"
 #include "graphio.h"
 #include "utility.h"
+#include "graph.h"
 
 TEST(GraphioTest, FromEdgelistSimple) {
   std::string filename = "test/data/test1.edgelist";
@@ -89,4 +91,23 @@ TEST(GraphioTest, EdgelistBadFilename) {
   std::string badFilename = "thisfiledoesntexist.edgelist";
   EXPECT_THROW({stag::Graph testGraph = stag::load_edgelist(badFilename);},
                std::runtime_error);
+}
+
+TEST(GraphioTest, SaveEdgelist) {
+  // Save an edgelist file
+  std::string filename = "output.edgelist";
+  stag::Graph testGraph = stag::cycle_graph(10);
+  stag::save_edgelist(testGraph, filename);
+
+  // Reading the edgelist file back in should result in the same graph
+  stag::Graph newGraph = stag::load_edgelist(filename);
+  EXPECT_EQ(testGraph, newGraph);
+
+  // Save another edgelist file
+  testGraph = stag::complete_graph(10);
+  stag::save_edgelist(testGraph, filename);
+
+  // Reading the edgelist file back in should result in the same graph
+  newGraph = stag::load_edgelist(filename);
+  EXPECT_EQ(testGraph, newGraph);
 }

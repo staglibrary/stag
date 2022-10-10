@@ -23,7 +23,8 @@ namespace stag {
    *       <u> <v> <weight>
    *       <u> <v>
    *     where <u> and <v> can be parsed as integers, and <weight> can be parsed
-   *     as a double. If the weight is ommitted, it is taken to be 1.
+   *     as a double. If the weight is ommitted, it is taken to be 1. The
+   *     data lines of the edgelist file should all have the same format.
    *
    * @return stag::Graph object
    * @throws std::runtime_error if the file cannot be parsed as an edgelist
@@ -36,7 +37,7 @@ namespace stag {
    * @param graph the graph object to be saved
    * @param filename the name of the file to save the edgelist data to
    */
-  void save_edgelist(stag::Graph graph, std::string filename);
+  void save_edgelist(stag::Graph &graph, std::string &filename);
 }
 
 #endif //STAG_TEST_GRAPHIO_H
