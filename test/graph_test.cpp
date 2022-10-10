@@ -1,3 +1,9 @@
+/**
+ * Tests for the methods in the graph.h header file. Includes the main Graph
+ * object.
+ *
+ * Copyright 2022 Peter Macgregor
+ */
 #include <gtest/gtest.h>
 #include <graph.h>
 #include <utility.h>
@@ -26,19 +32,17 @@ stag::Graph createTestGraph() {
 
 TEST(GraphTest, Volume) {
   stag::Graph testGraph = createTestGraph();
-
-  // The volume should be 24.6666
   EXPECT_EQ(testGraph.volume(), 24.6666);
 }
 
 TEST(GraphTest, AdjacencyMatrix) {
-  // Create the data for the graph adjacency matrix.
+  // Create the test grpah object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the graph adjacency matrix.
   std::vector<int> rowStarts = {0, 2, 4, 7, 8};
   std::vector<int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
   std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
-
-  // Create the stag Graph object
-  stag::Graph testGraph(rowStarts, colIndices, values);
 
   // Check that the adjacency matrix has the form that we expect
   std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
