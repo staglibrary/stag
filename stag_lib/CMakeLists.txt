@@ -10,6 +10,7 @@ set(SOURCE_FILES
         utility.cpp)
 
 # Add libraries
+list(APPEND CMAKE_PREFIX_PATH "../eigen-3.3.9/")
 find_package(Eigen3 NO_MODULE REQUIRED)
 
 # Define the STAG library
