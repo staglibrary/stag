@@ -26,9 +26,9 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: test-binary
-          path: cmake-build-debug/stagt
+          path: .
       - uses: actions/download-artifact@master
         with:
           name: shared-library
-          path: cmake-build-debug/stag_lib/stag.so
-      - run: cmake-build-debug/stagt
+          path: stag_lib/
+      - run: ./stagt
