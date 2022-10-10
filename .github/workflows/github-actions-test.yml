@@ -31,4 +31,5 @@ jobs:
         with:
           name: shared-library
           path: stag_lib/
+      - run: chmod +x stagt
       - run: ./stagt
