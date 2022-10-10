@@ -1,0 +1,8 @@
+# Give only some of the weights, add extra spaces
+0    1
+
+# Add blank lines and extra comments
+2 0  0.5
+
+# This graph should be considered to be directed.
+1   2

@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <utility.h>
 
-TEST(StagTest, IsSymmetric) {
+TEST(UtilityTest, IsSymmetric) {
   // Construct a symmetric matrix.
   std::vector<int> rowStarts = {0, 2, 4, 7, 8};
   std::vector<int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};

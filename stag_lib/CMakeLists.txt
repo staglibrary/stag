@@ -3,11 +3,13 @@ project(stag)
 set(HEADER_FILES
         stag.h
         graph.h
-        utility.h graphio.h)
+        utility.h
+        graphio.h)
 
 set(SOURCE_FILES
         graph.cpp
-        utility.cpp)
+        utility.cpp
+        graphio.cpp)
 
 # Add libraries
 include_directories(../eigen-3.3.9) # Eigen - header-only
