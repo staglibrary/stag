@@ -3,7 +3,7 @@ project(stag)
 set(HEADER_FILES
         stag.h
         graph.h
-        utility.h)
+        utility.h graphio.h)
 
 set(SOURCE_FILES
         graph.cpp

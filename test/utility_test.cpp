@@ -1,6 +1,8 @@
 /**
  * Tests for the utility.h header. Includes helper methods for dealing with
  * sparse matrices.
+ *
+ * Copyright 2022 Peter Macgregor
  */
 #include <gtest/gtest.h>
 #include <utility.h>

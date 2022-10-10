@@ -1,3 +1,8 @@
+/**
+ * Definitions of utility methods for dealing with sparse matrices.
+ *
+ * Copyright 2022 Peter Macgregor
+ */
 #ifndef STAG_TEST_UTILITY_H
 #define STAG_TEST_UTILITY_H
 

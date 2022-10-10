@@ -1,3 +1,8 @@
+/**
+ * Definitions relating to the configuration of the STAG library.
+ *
+ * Copyright 2022 Peter Macgregor
+ */
 #ifndef STAG_TEST_STAG_H
 #define STAG_TEST_STAG_H
 

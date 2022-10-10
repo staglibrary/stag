@@ -1,3 +1,6 @@
+/**
+ * Copyright 2022 Peter Macgregor
+ */
 #include <stdexcept>
 #include "graph.h"
 #include "utility.h"

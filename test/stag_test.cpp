@@ -1,6 +1,8 @@
 /**
  * Tests for the stag.h header. Includes configuration information about the
  * library.
+ *
+ * Copyright 2022 Peter Macgregor
  */
 #include <gtest/gtest.h>
 #include <stag.h>
