@@ -96,3 +96,31 @@ TEST(GraphTest, CycleGraphLaplacian) {
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
+
+TEST(GraphTest, CompleteGraphVolume) {
+  // The volume of the complete graph should be n(n-1)
+  std::vector<int> sizes = {3, 3, 5, 10, 20, 100};
+  for (int n: sizes) {
+    stag::Graph testGraph = stag::complete_graph(n);
+    EXPECT_EQ(testGraph.volume(), n * (n - 1));
+  }
+}
+
+TEST(GraphTest, CompleteGraphLaplacian) {
+  // Create a small complete graph
+  stag::Graph testGraph = stag::complete_graph(4);
+
+  // Define the expected laplacian matrix
+  std::vector<int> rowStarts = {0, 4, 8, 12, 16};
+  std::vector<int> colIndices = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  std::vector<double> values = {3, -1, -1, -1, -1, 3, -1, -1, -1, -1, 3, -1, -1, -1, -1, 3};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.laplacian());
+  std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}

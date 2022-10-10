@@ -97,5 +97,13 @@ namespace stag {
    * @return a graph object representing the n-cycle
    */
   Graph cycle_graph(int n);
+
+  /**
+   * Construct a complete graph on n vertices.
+   *
+   * @param m
+   * @return a graph object
+   */
+  Graph complete_graph(int n);
 }
 #endif //STAG_LIBRARY_H

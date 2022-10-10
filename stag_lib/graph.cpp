@@ -65,3 +65,17 @@ stag::Graph stag::cycle_graph(int n) {
   adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
   return stag::Graph(adj_mat);
 }
+
+stag::Graph stag::complete_graph(int n) {
+  SprsMat adj_mat(n, n);
+  std::vector<Eigen::Triplet<double>> non_zero_entries;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      if (i != j) {
+        non_zero_entries.emplace_back(i, j, 1);
+      }
+    }
+  }
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
+}
