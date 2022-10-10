@@ -61,6 +61,16 @@ namespace stag {
       const SprsMat* laplacian();
 
       /**
+       * The degree matrix of the graph.
+       *
+       * The degree matrix is an n x n matrix such that each diagonal entry is
+       * the degree of the corresponding node.
+       *
+       * @return a sparse Eigen matrix
+       */
+      const SprsMat* degree_matrix();
+
+      /**
        * The total volume of the graph.
        *
        * The volume is defined as the sum of the node degrees.
@@ -76,18 +86,27 @@ namespace stag {
        */
       void initialise_laplacian_();
 
+      /**
+       * Initialise the degree matrix of the graph if it has not been
+       * initialised yet.
+       */
+       void initialise_degree_matrix_();
+
       // The ground truth definition of the graph object is the adjacency
-      // matrix, stored in a sparse format.
+      // matrix, stored in a sparse format. The adj_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool adj_init_;
       SprsMat adjacency_matrix_;
 
-      // Whether the adjacency matrix has been initialised
-      bool adj_init_;
-
-      // The laplacian matrix of the graph
+      // The laplacian matrix of the graph. The lap_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool lap_init_;
       SprsMat laplacian_matrix_;
 
-      // Whether the laplacian matrix has been initialised
-      bool lap_init_;
+      // The degree matrix of the graph. The deg_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool deg_init_;
+      SprsMat degree_matrix_;
   };
 
   /**

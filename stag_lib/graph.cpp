@@ -1,10 +1,15 @@
 #include "graph.h"
 
+//------------------------------------------------------------------------------
+// Graph Object Constructors
+//------------------------------------------------------------------------------
+
 stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   adjacency_matrix_ = adjacency_matrix;
   adjacency_matrix_.makeCompressed();
   adj_init_ = true;
   lap_init_ = false;
+  deg_init_ = false;
 }
 
 stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
@@ -19,30 +24,15 @@ stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices
   adjacency_matrix_.makeCompressed();
   adj_init_ = true;
   lap_init_ = false;
+  deg_init_ = false;
 }
+
+//------------------------------------------------------------------------------
+// Graph Object Public Methods
+//------------------------------------------------------------------------------
 
 const SprsMat* stag::Graph::adjacency() {
   return &adjacency_matrix_;
-}
-
-void stag::Graph::initialise_laplacian_() {
-  // If the laplacian matrix has already been initialised, then we do not
-  // initialise it again.
-  if (lap_init_) return;
-
-  // Construct the vertex degrees.
-  Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
-  SprsMat degree_matrix(adjacency_matrix_.cols(), adjacency_matrix_.cols());
-  for (int i = 0; i < adjacency_matrix_.cols(); i++) {
-    degree_matrix.insert(i, i) = degrees[i];
-  }
-
-  // Construct and return the laplacian matrix.
-  laplacian_matrix_ = degree_matrix - adjacency_matrix_;
-  laplacian_matrix_.makeCompressed();
-
-  // We have now initialised the laplacian.
-  lap_init_ = true;
 }
 
 const SprsMat* stag::Graph::laplacian() {
@@ -50,10 +40,56 @@ const SprsMat* stag::Graph::laplacian() {
   return &laplacian_matrix_;
 }
 
+const SprsMat* stag::Graph::degree_matrix() {
+  initialise_degree_matrix_();
+  return &degree_matrix_;
+}
+
 double stag::Graph::total_volume() {
   Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
   return degrees.sum();
 }
+
+//------------------------------------------------------------------------------
+// Graph Object Private Methods
+//------------------------------------------------------------------------------
+
+void stag::Graph::initialise_laplacian_() {
+  // If the laplacian matrix has already been initialised, then we do not
+  // initialise it again.
+  if (lap_init_) return;
+
+  // Ensure that the degree matrix is initialised
+  initialise_degree_matrix_();
+
+  // Construct and return the laplacian matrix.
+  laplacian_matrix_ = degree_matrix_ - adjacency_matrix_;
+  laplacian_matrix_.makeCompressed();
+
+  // We have now initialised the laplacian.
+  lap_init_ = true;
+}
+
+void stag::Graph::initialise_degree_matrix_() {
+  // If the degree matrix has already been initialised, then we do not
+  // initialise it again.
+  if (deg_init_) return;
+
+  // Construct the vertex degrees.
+  Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
+  degree_matrix_ = SprsMat(adjacency_matrix_.cols(), adjacency_matrix_.cols());
+  for (int i = 0; i < adjacency_matrix_.cols(); i++) {
+    degree_matrix_.insert(i, i) = degrees[i];
+  }
+
+  // Compress the degree matrix storage, and set the initialised flag
+  degree_matrix_.makeCompressed();
+  deg_init_ = true;
+}
+
+//------------------------------------------------------------------------------
+// Standard Graph Constructors
+//------------------------------------------------------------------------------
 
 stag::Graph stag::cycle_graph(int n) {
   SprsMat adj_mat(n, n);

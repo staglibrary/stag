@@ -73,6 +73,25 @@ TEST(GraphTest, LaplacianMatrix) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, DegreeMatrix) {
+  // Create the test graph object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the graph degree matrix.
+  std::vector<int> rowStarts = {0, 1, 2, 3, 4};
+  std::vector<int> colIndices = {0, 1, 2, 3};
+  std::vector<double> values = {5.3333, 8, 10.3333, 1};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.degree_matrix());
+  std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.degree_matrix());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.degree_matrix());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, CycleGraphVolume) {
   // The volume of the cycle graph should be twice the number of vertices
   std::vector<int> sizes = {3, 3, 5, 10, 20, 100};
@@ -95,6 +114,25 @@ TEST(GraphTest, CycleGraphLaplacian) {
   std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.laplacian());
   std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.laplacian());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, CycleGraphDegrees) {
+  // Create a small cycle graph
+  stag::Graph testGraph = stag::cycle_graph(4);
+
+  // Define the expected degree matrix
+  std::vector<int> rowStarts = {0, 1, 2, 3, 4};
+  std::vector<int> colIndices = {0, 1, 2, 3};
+  std::vector<double> values = {2, 2, 2, 2};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.degree_matrix());
+  std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.degree_matrix());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.degree_matrix());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
