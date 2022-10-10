@@ -167,6 +167,10 @@ bool stag::operator==(const stag::Graph& lhs, const stag::Graph& rhs) {
   return (outerIndicesEqual && innerIndicesEqual) && valuesEqual;
 }
 
+bool stag::operator!=(const stag::Graph &lhs, const stag::Graph &rhs) {
+  return !(lhs == rhs);
+}
+
 //------------------------------------------------------------------------------
 // Standard Graph Constructors
 //------------------------------------------------------------------------------

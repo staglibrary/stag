@@ -168,6 +168,7 @@ namespace stag {
    * matrices are equal
    */
   bool operator==(const Graph& lhs, const Graph& rhs);
+  bool operator!=(const Graph& lhs, const Graph& rhs);
 
   /**
    * Construct a cycle graph on n vertices.

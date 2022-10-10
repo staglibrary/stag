@@ -235,3 +235,20 @@ TEST(GraphTest, CompleteGraphNormalisedLaplacian) {
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
+
+TEST(GraphTest, Equality) {
+  // Create two identical graphs
+  stag::Graph graph1 = stag::cycle_graph(10);
+  stag::Graph graph2 = stag::cycle_graph(10);
+  EXPECT_EQ(graph1, graph2);
+
+  // Create another two identical graphs
+  graph1 = createTestGraph();
+  graph2 = createTestGraph();
+  EXPECT_EQ(graph1, graph2);
+
+  // Create two different graphs;
+  graph1 = createTestGraph();
+  graph2 = stag::complete_graph(4);
+  EXPECT_NE(graph1, graph2);
+}
