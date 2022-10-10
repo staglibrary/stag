@@ -10,7 +10,7 @@ set(SOURCE_FILES
         utility.cpp)
 
 # Add libraries
-find_package(Eigen3 NO_MODULE REQUIRED)
+include_directories(../eigen-3.3.9) # Eigen - header-only
 
 # Define the STAG library
 add_library(stag SHARED ${SOURCE_FILES} ${HEADER_FILES})
