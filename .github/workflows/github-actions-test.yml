@@ -32,4 +32,4 @@ jobs:
           name: shared-library
           path: cmake-build-debug/stag_lib/stag.so
       - run: cd cmake-build-debug/
-      - run: stagt
+      - run: ./stagt
