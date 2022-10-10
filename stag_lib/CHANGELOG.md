@@ -15,6 +15,7 @@ throws an exception
 - [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::normalised_laplacian()` method
 - [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::number_of_vertices()` method
 - [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::number_of_edges()` method
+- [Issue #4](https://github.com/pmacg/stag/issues/4): Add `load_edgelist()` method to read graphs from edgelist files
 
 ## [0.1.6] - 2022-10-10
 ### Added
