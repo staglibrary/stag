@@ -25,6 +25,8 @@ jobs:
     env:
       LD_LIBRARY_PATH: ${{ github.workspace }}/stag_lib
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
       - uses: actions/download-artifact@master
         with:
           name: test-binary
@@ -33,8 +35,6 @@ jobs:
         with:
           name: shared-library
           path: stag_lib/
-      - run: echo $LD_LIBRARY_PATH
-      - run: ls -ltrh ./stag_lib/
       - run: chmod +x stagt
       - name: Run Tests
         run: ./stagt
