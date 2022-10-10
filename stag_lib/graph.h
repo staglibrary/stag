@@ -127,7 +127,7 @@ namespace stag {
        * Check that the graph conforms to all assumptions that are currently
        * made within the library.
        *
-       * @throws assertion errors if the graph is not formatted correctly
+       * @throws std::domain_error if the graph is not formatted correctly
        */
       void self_test_();
 
