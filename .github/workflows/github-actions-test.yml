@@ -33,7 +33,7 @@ jobs:
           path: stag_lib/
       - run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/stag_lib/
       - run: export LD_LIBRARY_PATH
-      - run: echo LD_LIBRARY_PATH
+      - run: echo $LD_LIBRARY_PATH
       - run: ls -ltrh ./stag_lib/
       - run: chmod +x stagt
       - name: Run Tests
