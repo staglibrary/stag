@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::degree_matrix()` method
+- [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::normalised_laplacian()` method
 
 ## [0.1.6] - 2022-10-10
 ### Added

@@ -73,6 +73,28 @@ TEST(GraphTest, LaplacianMatrix) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, NormalisedLaplacianMatrix) {
+  // Create the test graph object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the normalised graph laplacian matrix.
+  std::vector<int> rowStarts = {0, 3, 6, 10, 12};
+  std::vector<int> colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> values = {1, -2/(sqrt(5.3333) * sqrt(8)), -3.3333/(sqrt(5.3333) * sqrt(10.3333)),
+                                -2/(sqrt(8) * sqrt(5.3333)), 1, -6/(sqrt(8) * sqrt(10.3333)),
+                                -3.3333/(sqrt(10.3333) * sqrt(5.3333)), -6/(sqrt(10.3333) * sqrt(8)), 1, -1/sqrt(10.3333),
+                                -1/sqrt(10.3333), 1};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.normalised_laplacian());
+  std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.normalised_laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.normalised_laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, DegreeMatrix) {
   // Create the test graph object
   stag::Graph testGraph = createTestGraph();
@@ -161,6 +183,28 @@ TEST(GraphTest, CompleteGraphLaplacian) {
   std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.laplacian());
   std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.laplacian());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, CompleteGraphNormalisedLaplacian) {
+  // Create a small complete graph
+  stag::Graph testGraph = stag::complete_graph(4);
+
+  // Define the expected normalised laplacian matrix
+  std::vector<int> rowStarts = {0, 4, 8, 12, 16};
+  std::vector<int> colIndices = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  std::vector<double> values = {1, -1./3, -1./3, -1./3,
+                                -1./3, 1., -1./3, -1./3,
+                                -1./3, -1./3, 1, -1./3,
+                                -1./3, -1./3, -1./3, 1};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<int> newStarts = stag::sprsMatOuterStarts(testGraph.normalised_laplacian());
+  std::vector<int> newIndices = stag::sprsMatInnerIndices(testGraph.normalised_laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.normalised_laplacian());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);

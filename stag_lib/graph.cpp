@@ -5,11 +5,18 @@
 //------------------------------------------------------------------------------
 
 stag::Graph::Graph(const SprsMat& adjacency_matrix) {
+  // Load the adjacency matrix into this object.
   adjacency_matrix_ = adjacency_matrix;
   adjacency_matrix_.makeCompressed();
+
+  // The number of vertices is the dimensions of the adjacency matrix
+  number_of_vertices_ = adjacency_matrix_.outerSize();
+
+  // Set the flags to indicate which matrices have been initialised.
   adj_init_ = true;
   lap_init_ = false;
   deg_init_ = false;
+  norm_lap_init_ = false;
 }
 
 stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
@@ -22,9 +29,15 @@ stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices
                                           innerIndices.data(),
                                           values.data());
   adjacency_matrix_.makeCompressed();
+
+  // The number of vertices is the dimensions of the adjacency matrix
+  number_of_vertices_ = adjacency_matrix_.outerSize();
+
+  // Set the flags to indicate which matrices have been initialised.
   adj_init_ = true;
   lap_init_ = false;
   deg_init_ = false;
+  norm_lap_init_ = false;
 }
 
 //------------------------------------------------------------------------------
@@ -38,6 +51,11 @@ const SprsMat* stag::Graph::adjacency() {
 const SprsMat* stag::Graph::laplacian() {
   initialise_laplacian_();
   return &laplacian_matrix_;
+}
+
+const SprsMat* stag::Graph::normalised_laplacian() {
+  initialise_normalised_laplacian_();
+  return &normalised_laplacian_matrix_;
 }
 
 const SprsMat* stag::Graph::degree_matrix() {
@@ -68,6 +86,32 @@ void stag::Graph::initialise_laplacian_() {
 
   // We have now initialised the laplacian.
   lap_init_ = true;
+}
+
+void stag::Graph::initialise_normalised_laplacian_() {
+  // If the normalised laplacian matrix has already been initialised, then we
+  // do not initialise it again.
+  if (norm_lap_init_) return;
+
+  // Ensure that the degree matrix is initialised
+  initialise_degree_matrix_();
+
+  // Construct the inverse degree matrix
+  SprsMat sqrt_inv_deg_mat(number_of_vertices_, number_of_vertices_);
+  std::vector<Eigen::Triplet<double>> non_zero_entries;
+  for (int i = 0; i < number_of_vertices_; i++) {
+    non_zero_entries.emplace_back(i, i, 1 / sqrt(degree_matrix_.coeff(i, i)));
+  }
+  sqrt_inv_deg_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+
+  // The normalised laplacian is defined by I - D^{-1/2} A D^{-1/2}
+  SprsMat identity_matrix(number_of_vertices_, number_of_vertices_);
+  identity_matrix.setIdentity();
+  normalised_laplacian_matrix_ = identity_matrix - sqrt_inv_deg_mat * adjacency_matrix_ * sqrt_inv_deg_mat;
+  normalised_laplacian_matrix_.makeCompressed();
+
+  // We have now initialised the normalised laplacian matrix.
+  norm_lap_init_ = true;
 }
 
 void stag::Graph::initialise_degree_matrix_() {

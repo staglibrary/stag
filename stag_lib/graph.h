@@ -61,6 +61,18 @@ namespace stag {
       const SprsMat* laplacian();
 
       /**
+       * Construct the normalised Laplacian matrix of the graph.
+       *
+       * The normalised Laplacian matrix is defined by
+       *   Ln = D^{-1/2} L D^{-1/2}
+       * where D is the diagonal matrix of vertex degrees and L is the Laplacian
+       * matrix of the graph.
+       *
+       * @return a sparse Eigen matrix representing the normalised Laplacian
+       */
+       const SprsMat* normalised_laplacian();
+
+      /**
        * The degree matrix of the graph.
        *
        * The degree matrix is an n x n matrix such that each diagonal entry is
@@ -87,10 +99,19 @@ namespace stag {
       void initialise_laplacian_();
 
       /**
+       * Initialise the normalised Laplacian matrix of the grpah is it has not
+       * been initialised yet.
+       */
+      void initialise_normalised_laplacian_();
+
+      /**
        * Initialise the degree matrix of the graph if it has not been
        * initialised yet.
        */
-       void initialise_degree_matrix_();
+      void initialise_degree_matrix_();
+
+      // The number of vertices in the constructed graph.
+      long number_of_vertices_;
 
       // The ground truth definition of the graph object is the adjacency
       // matrix, stored in a sparse format. The adj_init_ variable is used to
@@ -102,6 +123,12 @@ namespace stag {
       // indicate whether the matrix has been initialised yet.
       bool lap_init_;
       SprsMat laplacian_matrix_;
+
+      // The normalised Laplacian matrix of the graph. The norm_lap_init_
+      // variable is used to indicate whether the matrix has been initialised
+      // yet.
+      bool norm_lap_init_;
+      SprsMat normalised_laplacian_matrix_;
 
       // The degree matrix of the graph. The deg_init_ variable is used to
       // indicate whether the matrix has been initialised yet.
