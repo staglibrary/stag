@@ -61,13 +61,48 @@ namespace stag {
       const SprsMat* laplacian();
 
       /**
-       * The volume of the graph.
+       * Construct the normalised Laplacian matrix of the graph.
+       *
+       * The normalised Laplacian matrix is defined by
+       *   Ln = D^{-1/2} L D^{-1/2}
+       * where D is the diagonal matrix of vertex degrees and L is the Laplacian
+       * matrix of the graph.
+       *
+       * @return a sparse Eigen matrix representing the normalised Laplacian
+       */
+       const SprsMat* normalised_laplacian();
+
+      /**
+       * The degree matrix of the graph.
+       *
+       * The degree matrix is an n x n matrix such that each diagonal entry is
+       * the degree of the corresponding node.
+       *
+       * @return a sparse Eigen matrix
+       */
+      const SprsMat* degree_matrix();
+
+      /**
+       * The total volume of the graph.
        *
        * The volume is defined as the sum of the node degrees.
        *
        * @return the graph's volume.
        */
-      double volume();
+      double total_volume();
+
+      /**
+       * The number of vertices in the graph.
+       */
+      long number_of_vertices() const;
+
+      /**
+       * The number of edges in the graph.
+       *
+       * This is defined based on the number of non-zero elements in the
+       * adjacency matrix, and ignores the weights of the edges.
+       */
+       long number_of_edges() const;
 
     private:
       /**
@@ -76,18 +111,50 @@ namespace stag {
        */
       void initialise_laplacian_();
 
+      /**
+       * Initialise the normalised Laplacian matrix of the grpah is it has not
+       * been initialised yet.
+       */
+      void initialise_normalised_laplacian_();
+
+      /**
+       * Initialise the degree matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_degree_matrix_();
+
+      /**
+       * Check that the graph conforms to all assumptions that are currently
+       * made within the library.
+       *
+       * @throws assertion errors if the graph is not formatted correctly
+       */
+      void self_test_();
+
+      // The number of vertices in the constructed graph.
+      long number_of_vertices_;
+
       // The ground truth definition of the graph object is the adjacency
-      // matrix, stored in a sparse format.
+      // matrix, stored in a sparse format. The adj_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool adj_init_;
       SprsMat adjacency_matrix_;
 
-      // Whether the adjacency matrix has been initialised
-      bool adj_init_;
-
-      // The laplacian matrix of the graph
+      // The laplacian matrix of the graph. The lap_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool lap_init_;
       SprsMat laplacian_matrix_;
 
-      // Whether the laplacian matrix has been initialised
-      bool lap_init_;
+      // The normalised Laplacian matrix of the graph. The norm_lap_init_
+      // variable is used to indicate whether the matrix has been initialised
+      // yet.
+      bool norm_lap_init_;
+      SprsMat normalised_laplacian_matrix_;
+
+      // The degree matrix of the graph. The deg_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool deg_init_;
+      SprsMat degree_matrix_;
   };
 
   /**
