@@ -23,7 +23,8 @@ enable_testing()
 add_executable(
         stagt
         test/graph_test.cpp
-        test/stag_test.cpp)
+        test/stag_test.cpp
+        test/utility_test.cpp)
 
 # Add libraries
 include_directories(eigen-3.3.9) # Eigen - header-only

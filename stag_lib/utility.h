@@ -31,6 +31,11 @@ namespace stag {
    * @return
    */
   std::vector<int> sprsMatOuterStarts(const SprsMat *matrix);
+
+  /**
+   * Check whether a sparse matrix is symmetric.
+   */
+  bool isSymmetric(const SprsMat *matrix);
 }
 
 #endif //STAG_TEST_UTILITY_H

@@ -91,6 +91,19 @@ namespace stag {
        */
       double total_volume();
 
+      /**
+       * The number of vertices in the graph.
+       */
+      long number_of_vertices() const;
+
+      /**
+       * The number of edges in the graph.
+       *
+       * This is defined based on the number of non-zero elements in the
+       * adjacency matrix, and ignores the weights of the edges.
+       */
+       long number_of_edges() const;
+
     private:
       /**
        * Initialise the laplacian matrix of the graph if it has not been
@@ -109,6 +122,14 @@ namespace stag {
        * initialised yet.
        */
       void initialise_degree_matrix_();
+
+      /**
+       * Check that the graph conforms to all assumptions that are currently
+       * made within the library.
+       *
+       * @throws assertion errors if the graph is not formatted correctly
+       */
+      void self_test_();
 
       // The number of vertices in the constructed graph.
       long number_of_vertices_;

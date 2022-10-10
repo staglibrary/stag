@@ -1,4 +1,6 @@
+#include <stdexcept>
 #include "graph.h"
+#include "utility.h"
 
 //------------------------------------------------------------------------------
 // Graph Object Constructors
@@ -17,6 +19,9 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   lap_init_ = false;
   deg_init_ = false;
   norm_lap_init_ = false;
+
+  // Check that the graph is configured correctly
+  self_test_();
 }
 
 stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
@@ -38,6 +43,9 @@ stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices
   lap_init_ = false;
   deg_init_ = false;
   norm_lap_init_ = false;
+
+  // Check that the graph is configured correctly
+  self_test_();
 }
 
 //------------------------------------------------------------------------------
@@ -68,9 +76,24 @@ double stag::Graph::total_volume() {
   return degrees.sum();
 }
 
+long stag::Graph::number_of_vertices() const {
+  return number_of_vertices_;
+}
+
+long stag::Graph::number_of_edges() const {
+  return adjacency_matrix_.nonZeros() / 2;
+}
+
 //------------------------------------------------------------------------------
 // Graph Object Private Methods
 //------------------------------------------------------------------------------
+
+void stag::Graph::self_test_() {
+  // Check that the adjacency matrix is symmetric.
+  if (!stag::isSymmetric(&adjacency_matrix_)) {
+    throw std::domain_error("Graph adjacency matrix must be symmetric.");
+  }
+}
 
 void stag::Graph::initialise_laplacian_() {
   // If the laplacian matrix has already been initialised, then we do not

@@ -4,6 +4,7 @@
  *
  * Copyright 2022 Peter Macgregor
  */
+#include <stdexcept>
 #include <gtest/gtest.h>
 #include <graph.h>
 #include <utility.h>
@@ -35,6 +36,16 @@ TEST(GraphTest, Volume) {
   EXPECT_EQ(testGraph.total_volume(), 24.6666);
 }
 
+TEST(GraphTest, NumberOfVertices) {
+  stag::Graph testGraph = createTestGraph();
+  EXPECT_EQ(testGraph.number_of_vertices(), 4);
+}
+
+TEST(GraphTest, NumberOfEdges) {
+  stag::Graph testGraph = createTestGraph();
+  EXPECT_EQ(testGraph.number_of_edges(), 4);
+}
+
 TEST(GraphTest, AdjacencyMatrix) {
   // Create the test grpah object
   stag::Graph testGraph = createTestGraph();
@@ -52,6 +63,20 @@ TEST(GraphTest, AdjacencyMatrix) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, AsymmetricAdjacency) {
+  // Creating a graph with an asymetric adjacency matrix is not currently
+  // supported and should throw an error.
+
+  // Create the data for the graph adjacency matrix.
+  std::vector<int> rowStarts = {0, 2, 4, 7, 8};
+  std::vector<int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> values = {2, 3.3333, 2, 6, 3, 6, 1, 1};
+
+  // Attempt to create the graph object. Should throw an exception.
+  EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
+               std::domain_error);
 }
 
 TEST(GraphTest, LaplacianMatrix) {
