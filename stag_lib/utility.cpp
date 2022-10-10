@@ -1,3 +1,6 @@
+/**
+ * Copyright 2022 Peter Macgregor
+ */
 #include <iterator>
 #include "utility.h"
 

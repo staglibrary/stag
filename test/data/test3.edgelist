@@ -1,0 +1,8 @@
+// Give only some of the weights, add extra spaces
+0    1   1
+
+// Add blank lines and extra comments
+1   2 1
+
+// Notice that I've changed the comment character for this one.
+2 0  0.5

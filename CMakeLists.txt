@@ -24,7 +24,15 @@ add_executable(
         stagt
         test/graph_test.cpp
         test/stag_test.cpp
-        test/utility_test.cpp)
+        test/utility_test.cpp
+        test/graphio_test.cpp)
+
+# Add the test data files - these need to be copied to the binary directory for the testing application to work
+# correctly
+configure_file(test/data/test1.edgelist test/data/test1.edgelist COPYONLY)
+configure_file(test/data/test2.edgelist test/data/test2.edgelist COPYONLY)
+configure_file(test/data/test3.edgelist test/data/test3.edgelist COPYONLY)
+configure_file(test/data/test4.edgelist test/data/test4.edgelist COPYONLY)
 
 # Add libraries
 include_directories(eigen-3.3.9) # Eigen - header-only

@@ -1,3 +1,9 @@
+/**
+ * Definitions related to the core Graph object used to represent graphs within
+ * the library.
+ *
+ * Copyright 2022 Peter Macgregor
+ */
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 
@@ -46,7 +52,7 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
-      const SprsMat* adjacency();
+      const SprsMat* adjacency() const;
 
       /**
        * Construct the Laplacian matrix of the graph.
@@ -127,7 +133,7 @@ namespace stag {
        * Check that the graph conforms to all assumptions that are currently
        * made within the library.
        *
-       * @throws assertion errors if the graph is not formatted correctly
+       * @throws std::domain_error if the graph is not formatted correctly
        */
       void self_test_();
 
@@ -156,6 +162,13 @@ namespace stag {
       bool deg_init_;
       SprsMat degree_matrix_;
   };
+
+  /**
+   * Define equality for two graphs. Two graphs are equal iff their adjacency
+   * matrices are equal
+   */
+  bool operator==(const Graph& lhs, const Graph& rhs);
+  bool operator!=(const Graph& lhs, const Graph& rhs);
 
   /**
    * Construct a cycle graph on n vertices.
