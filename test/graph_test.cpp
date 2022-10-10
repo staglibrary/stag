@@ -32,7 +32,7 @@ stag::Graph createTestGraph() {
 
 TEST(GraphTest, Volume) {
   stag::Graph testGraph = createTestGraph();
-  EXPECT_EQ(testGraph.volume(), 24.6666);
+  EXPECT_EQ(testGraph.total_volume(), 24.6666);
 }
 
 TEST(GraphTest, AdjacencyMatrix) {
@@ -78,7 +78,7 @@ TEST(GraphTest, CycleGraphVolume) {
   std::vector<int> sizes = {3, 3, 5, 10, 20, 100};
   for (int n: sizes) {
     stag::Graph testGraph = stag::cycle_graph(n);
-    EXPECT_EQ(testGraph.volume(), 2 * n);
+    EXPECT_EQ(testGraph.total_volume(), 2 * n);
   }
 }
 
@@ -106,7 +106,7 @@ TEST(GraphTest, CompleteGraphVolume) {
   std::vector<int> sizes = {3, 3, 5, 10, 20, 100};
   for (int n: sizes) {
     stag::Graph testGraph = stag::complete_graph(n);
-    EXPECT_EQ(testGraph.volume(), n * (n - 1));
+    EXPECT_EQ(testGraph.total_volume(), n * (n - 1));
   }
 }
 

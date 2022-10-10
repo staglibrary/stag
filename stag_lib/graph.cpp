@@ -50,7 +50,7 @@ const SprsMat* stag::Graph::laplacian() {
   return &laplacian_matrix_;
 }
 
-double stag::Graph::volume() {
+double stag::Graph::total_volume() {
   Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
   return degrees.sum();
 }

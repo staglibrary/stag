@@ -61,13 +61,13 @@ namespace stag {
       const SprsMat* laplacian();
 
       /**
-       * The volume of the graph.
+       * The total volume of the graph.
        *
        * The volume is defined as the sum of the node degrees.
        *
        * @return the graph's volume.
        */
-      double volume();
+      double total_volume();
 
     private:
       /**
