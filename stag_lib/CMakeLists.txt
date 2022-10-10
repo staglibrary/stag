@@ -1,6 +1,7 @@
 project(stag)
 
 set(HEADER_FILES
+        stag.h
         graph.h
         utility.h)
 
