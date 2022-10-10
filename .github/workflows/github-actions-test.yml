@@ -1,6 +1,6 @@
 
 name: Build
-run-name: Build ${{ GITHUB_SHA }}
+run-name: Build ${{ github.sha }}
 on: [push]
 jobs:
   Explore-GitHub-Actions:
