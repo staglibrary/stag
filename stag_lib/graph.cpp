@@ -87,6 +87,71 @@ long stag::Graph::number_of_edges() const {
   return adjacency_matrix_.nonZeros() / 2;
 }
 
+double stag::Graph::degree(int v) {
+  // For now, we can be a little lazy and use the degree matrix. Once this is
+  // initialised, then checking degree is constant time.
+  initialise_degree_matrix_();
+
+  // If the vertex number is larger than the number of vertices in the graph,
+  // then we say that the degree is 0.
+  if (v < number_of_vertices_) {
+    return degree_matrix_.coeff(v, v);
+  } else {
+    return 0;
+  }
+}
+
+int stag::Graph::degree_unweighted(int v) {
+  // If the requested vertex number is greater than the number of vertices, then
+  // return a degree of 0.
+  if (v >= number_of_vertices_) {
+    return 0;
+  }
+
+  // The combinatorical degree of a vertex is equal to the number of non-zero
+  // entries in its adjacency matrix row.
+  const int *indexPtr = adjacency_matrix_.outerIndexPtr();
+  int rowStart = *(indexPtr + v);
+  int nextRowStart = *(indexPtr + v + 1);
+  return nextRowStart - rowStart;
+}
+
+std::vector<stag::edge> stag::Graph::neighbors(int v) {
+  // If the vertex v does not exist, return the empty vector.
+  if (v >= number_of_vertices_) {
+    return {};
+  }
+
+  std::vector<stag::edge> edges;
+
+  // Iterate through the non-zero entries in the vth row of the adjacency matrix
+  const double *weights = adjacency_matrix_.valuePtr();
+  const int *innerIndices = adjacency_matrix_.innerIndexPtr();
+  const int *rowStarts = adjacency_matrix_.outerIndexPtr();
+  int vRowStart = *(rowStarts + v);
+  int degree_unw = degree_unweighted(v);
+
+  for (int i = 0; i < degree_unw; i++) {
+    edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
+  }
+
+  return edges;
+}
+
+std::vector<int> stag::Graph::neighbors_unweighted(int v) {
+  // If the vertex v does not exist, return the empty vector.
+  if (v >= number_of_vertices_) {
+    return {};
+  }
+
+  // Return the non-zero indices in the vth row of the adjacency matrix
+  const int *innerIndices = adjacency_matrix_.innerIndexPtr();
+  const int *rowStarts = adjacency_matrix_.outerIndexPtr();
+  int vRowStart = *(rowStarts + v);
+  int degree = degree_unweighted(v);
+  return {innerIndices + vRowStart, innerIndices + vRowStart + degree};
+}
+
 //------------------------------------------------------------------------------
 // Graph Object Private Methods
 //------------------------------------------------------------------------------
@@ -158,7 +223,7 @@ void stag::Graph::initialise_degree_matrix_() {
 }
 
 //------------------------------------------------------------------------------
-// Graph Equality Operator
+// Equality Operators
 //------------------------------------------------------------------------------
 bool stag::operator==(const stag::Graph& lhs, const stag::Graph& rhs) {
   bool outerIndicesEqual = stag::sprsMatOuterStarts(lhs.adjacency()) == stag::sprsMatOuterStarts(rhs.adjacency());
@@ -168,6 +233,14 @@ bool stag::operator==(const stag::Graph& lhs, const stag::Graph& rhs) {
 }
 
 bool stag::operator!=(const stag::Graph &lhs, const stag::Graph &rhs) {
+  return !(lhs == rhs);
+}
+
+bool stag::operator==(const stag::edge &lhs, const stag::edge &rhs) {
+  return lhs.u == rhs.u && lhs.v == rhs.v && lhs.weight == rhs.weight;
+}
+
+bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
   return !(lhs == rhs);
 }
 

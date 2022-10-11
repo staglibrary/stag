@@ -19,10 +19,15 @@
 
 /**
  * Create a useful test graph which we will use repeatedly.
+ *
  * @return a stag::Graph object to be tested
  */
 stag::Graph createTestGraph() {
   // Create the data for the graph adjacency matrix.
+  //     0       2  3.3333 0
+  //     2       0   6     0
+  //     3.3333  6   0     1
+  //     0       0   1     0
   std::vector<int> rowStarts = {0, 2, 4, 7, 8};
   std::vector<int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
   std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
@@ -44,6 +49,60 @@ TEST(GraphTest, NumberOfVertices) {
 TEST(GraphTest, NumberOfEdges) {
   stag::Graph testGraph = createTestGraph();
   EXPECT_EQ(testGraph.number_of_edges(), 4);
+}
+
+TEST(GraphTest, UnweightedDegree) {
+  stag::Graph testGraph = createTestGraph();
+  EXPECT_EQ(testGraph.degree_unweighted(0), 2);
+  EXPECT_EQ(testGraph.degree_unweighted(1), 2);
+  EXPECT_EQ(testGraph.degree_unweighted(2), 3);
+  EXPECT_EQ(testGraph.degree_unweighted(3), 1);
+
+  // The unweighted degree of a non-existent vertex is 0.
+  EXPECT_EQ(testGraph.degree_unweighted(100), 0);
+}
+
+TEST(GraphTest, Degree) {
+  stag::Graph testGraph = createTestGraph();
+  EXPECT_NEAR(testGraph.degree(0), 5.3333, 0.000001);
+  EXPECT_NEAR(testGraph.degree(1), 8, 0.000001);
+  EXPECT_NEAR(testGraph.degree(2), 10.3333, 0.000001);
+  EXPECT_NEAR(testGraph.degree(3), 1, 0.000001);
+
+  // The degree of a non-existent vertex is 0.
+  EXPECT_EQ(testGraph.degree(100), 0);
+}
+
+TEST(GraphTest, UnweightedNeighbors) {
+  stag::Graph testGraph = createTestGraph();
+
+  std::vector<int> expectedNeighbors = {1, 2};
+  EXPECT_EQ(testGraph.neighbors_unweighted(0), expectedNeighbors);
+
+  expectedNeighbors = {0, 2};
+  EXPECT_EQ(testGraph.neighbors_unweighted(1), expectedNeighbors);
+
+  expectedNeighbors = {0, 1, 3};
+  EXPECT_EQ(testGraph.neighbors_unweighted(2), expectedNeighbors);
+
+  expectedNeighbors = {2};
+  EXPECT_EQ(testGraph.neighbors_unweighted(3), expectedNeighbors);
+}
+
+TEST(GraphTest, Neighbors) {
+  stag::Graph testGraph = createTestGraph();
+
+  std::vector<stag::edge> expectedNeighbors = {{0, 1, 2}, {0, 2, 3.3333}};
+  EXPECT_EQ(testGraph.neighbors(0), expectedNeighbors);
+
+  expectedNeighbors = {{1, 0, 2}, {1, 2, 6}};
+  EXPECT_EQ(testGraph.neighbors(1), expectedNeighbors);
+
+  expectedNeighbors = {{2, 0, 3.3333}, {2, 1, 6}, {2, 3, 1}};
+  EXPECT_EQ(testGraph.neighbors(2), expectedNeighbors);
+
+  expectedNeighbors = {{3, 2, 1}};
+  EXPECT_EQ(testGraph.neighbors(3), expectedNeighbors);
 }
 
 TEST(GraphTest, AdjacencyMatrix) {
