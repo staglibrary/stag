@@ -18,6 +18,7 @@ throws an exception
 - [Issue #4](https://github.com/pmacg/stag/issues/4): Add `load_edgelist()` method to read graphs from edgelist files
 - [Issue #4](https://github.com/pmacg/stag/issues/4): Add `save_edgelist()` method to save graphs to edgelist files
 - Add graph equality operators `==` and `!=`
+- [Issue #6](https://github.com/pmacg/stag/issues/6): Add `LocalGraph` abstract class for providing local graph access
 
 ## [0.1.6] - 2022-10-10
 ### Added

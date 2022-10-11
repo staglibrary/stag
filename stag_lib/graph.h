@@ -17,11 +17,62 @@
 namespace stag {
 
   /**
+   * A structure representing a weighted edge in a graph.
+   */
+  struct edge {
+    // The first vertex in the edge.
+    int v;
+
+    // The second vertex in the edge
+    int u;
+
+    // The weight of the edge.
+    double weight;
+  };
+
+  /**
+   * LocalGraph is an abstract class which defines methods for exploring the
+   * local neighborhood of a graph.
+   */
+  class LocalGraph {
+    public:
+      /**
+       * Given a vertex v, return its weighted degree.
+       */
+      virtual double degree(int v) = 0;
+
+      /**
+       * Given a vertex v, return its unweighted degree. That is, the number
+       * of neighbors of v, ignoring the edge weights.
+       */
+       virtual int degree_unweighted(int v) = 0;
+
+      /**
+       * Given a vertex v, return a vector of edges representing the
+       * neighborhood of v.
+       *
+       * @param v an int representing some vertex in the graph
+       * @return an edge vector containing the neighborhood information
+       */
+      virtual std::vector<edge> neighbors(int v) = 0;
+
+      /**
+       * Given a vertex v, return a vector containing the neighbors of v.
+       *
+       * The weights of edges to the neighbors are not returned by this method.
+       *
+       * @param v an int representing some vertex in the graph
+       * @return an int vector giving the neighbors of v
+       */
+      virtual std::vector<int> neighbors_unweighted(int v) = 0;
+  };
+
+  /**
    * The core object used to represent a graph for use with the library. Graphs
    * are always constructed from sparse matrices, and this is the internal
    * representation used as well.
    */
-  class Graph {
+  class Graph : LocalGraph {
     public:
       /**
        * Create a graph from an Eigen matrix.
@@ -110,6 +161,12 @@ namespace stag {
        */
        long number_of_edges() const;
 
+       // Override the abstract methods in the LocalGraph base class.
+       double degree(int v) override;
+       int degree_unweighted(int v) override;
+       std::vector<edge> neighbors(int v) override;
+       std::vector<int> neighbors_unweighted(int v) override;
+
     private:
       /**
        * Initialise the laplacian matrix of the graph if it has not been
@@ -169,6 +226,12 @@ namespace stag {
    */
   bool operator==(const Graph& lhs, const Graph& rhs);
   bool operator!=(const Graph& lhs, const Graph& rhs);
+
+  /**
+   * Define equality for edges.
+   */
+  bool operator==(const edge& lhs, const edge& rhs);
+  bool operator!=(const edge& lhs, const edge& rhs);
 
   /**
    * Construct a cycle graph on n vertices.
