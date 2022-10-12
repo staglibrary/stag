@@ -4,12 +4,14 @@ set(HEADER_FILES
         stag.h
         graph.h
         utility.h
-        graphio.h)
+        graphio.h
+        random.h)
 
 set(SOURCE_FILES
         graph.cpp
         utility.cpp
-        graphio.cpp)
+        graphio.cpp
+        random.cpp)
 
 # Add libraries
 include_directories(../eigen-3.3.9) # Eigen - header-only
