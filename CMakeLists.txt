@@ -25,7 +25,8 @@ add_executable(
         test/graph_test.cpp
         test/stag_test.cpp
         test/utility_test.cpp
-        test/graphio_test.cpp)
+        test/graphio_test.cpp
+        test/random_test.cpp)
 
 # Add the test data files - these need to be copied to the binary directory for the testing application to work
 # correctly
