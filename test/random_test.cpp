@@ -9,12 +9,17 @@
 #include <graph.h>
 #include <random.h>
 
-TEST(RandomTest, SBM) {
-  stag::Graph testGraph = stag::sbm(10000000, 10, 0.000001, 0.0000001);
-  std::cerr << testGraph.number_of_edges() << std::endl;
+TEST(RandomTest, SBMApprox) {
+  stag::Graph testGraph = stag::sbm(1000, 2, 0.1, 0.01);
+  EXPECT_EQ(testGraph.number_of_vertices(), 1000);
+}
+
+TEST(RandomTest, SBMExact) {
+  stag::Graph testGraph = stag::sbm(1000, 2, 0.1, 0.01, true);
+  EXPECT_EQ(testGraph.number_of_vertices(), 1000);
 }
 
 TEST(RandomTest, ErdosRenyi) {
-  stag::Graph testGraph = stag::erdos_renyi(20, 0.5);
-  std::cerr << *testGraph.adjacency() << std::endl;
+  stag::Graph testGraph = stag::erdos_renyi(1000, 0.1);
+  EXPECT_EQ(testGraph.number_of_vertices(), 1000);
 }

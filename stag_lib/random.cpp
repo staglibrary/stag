@@ -17,7 +17,10 @@
  * @param p
  * @return a list of the sampled edges
  */
-std::vector<Eigen::Triplet<double>> sample_edges_directly(int cluster_idx, int other_cluster_idx, int verticesInCluster, double p) {
+std::vector<Eigen::Triplet<double>> sample_edges_directly(int cluster_idx,
+                                                          int other_cluster_idx,
+                                                          int verticesInCluster,
+                                                          double p) {
   // Prepare the random number generator
   std::random_device dev;
   std::mt19937 prng(dev());
@@ -52,7 +55,10 @@ std::vector<Eigen::Triplet<double>> sample_edges_directly(int cluster_idx, int o
  * @param p
  * @return a list of the sampled edges
  */
-std::vector<Eigen::Triplet<double>> sample_edges_binomial(int cluster_idx, int other_cluster_idx, int verticesInCluster, double p) {
+std::vector<Eigen::Triplet<double>> sample_edges_binomial(int cluster_idx,
+                                                          int other_cluster_idx,
+                                                          int verticesInCluster,
+                                                          double p) {
   // Validate the function inputs
   assert(cluster_idx >= 0);
   assert(verticesInCluster >= 0);
@@ -97,6 +103,10 @@ std::vector<Eigen::Triplet<double>> sample_edges_binomial(int cluster_idx, int o
 }
 
 stag::Graph stag::sbm(int n, int k, double p, double q) {
+  return stag::sbm(n, k, p, q, false);
+}
+
+stag::Graph stag::sbm(int n, int k, double p, double q, bool exact) {
   // All arguments must be positive
   assert(n > 0);
   assert(k > 0);
@@ -114,7 +124,7 @@ stag::Graph stag::sbm(int n, int k, double p, double q) {
   for (int cluster_idx = 0; cluster_idx < k; cluster_idx++) {
     // First, sample the edges inside each cluster
     std::vector<Eigen::Triplet<double>> sampledEdges;
-    if (verticesPerCluster >= 100 && p < 0.5) {
+    if (verticesPerCluster >= 100 && p < 0.5 && !exact) {
       // For small values of p, use the 'binomial trick' for sampling
       sampledEdges = sample_edges_binomial(cluster_idx, cluster_idx, verticesPerCluster, p);
     } else {
@@ -127,7 +137,7 @@ stag::Graph stag::sbm(int n, int k, double p, double q) {
 
     // Now, sample edges to the other clusters
     for (int other_cluster_idx = cluster_idx + 1; other_cluster_idx < k; other_cluster_idx++) {
-      if (verticesPerCluster >= 100 && q < 0.5) {
+      if (verticesPerCluster >= 100 && q < 0.5 && !exact) {
         // For small values of p, use the 'binomial trick' for sampling
         sampledEdges = sample_edges_binomial(cluster_idx, other_cluster_idx, verticesPerCluster, q);
       } else {
@@ -147,5 +157,9 @@ stag::Graph stag::sbm(int n, int k, double p, double q) {
 }
 
 stag::Graph stag::erdos_renyi(int n, double p) {
-  return stag::sbm(n, 1, p, 0);
+  return stag::erdos_renyi(n, p, false);
+}
+
+stag::Graph stag::erdos_renyi(int n, double p, bool exact) {
+  return stag::sbm(n, 1, p, 0, exact);
 }
