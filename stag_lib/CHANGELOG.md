@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Issue #5](https://github.com/pmacg/stag/issues/5): Rename the `Graph::volume()` method to `Graph::total_volume()`
 - [Issue #5](https://github.com/pmacg/stag/issues/5): Attempting to construct a graph with an assymetric adjacency matrix
 throws an exception
+- Sparse matrices within the library are now stored in Column-Major format
 
 ### Added
 - [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::degree_matrix()` method

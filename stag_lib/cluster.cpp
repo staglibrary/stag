@@ -4,6 +4,7 @@
  * Copyright 2022 Peter Macgregor
 */
 #include <vector>
+#include <Eigen/Sparse>
 #include <graph.h>
 #include <cluster.h>
 
@@ -17,7 +18,9 @@ std::vector<int> stag::local_cluster(stag::LocalGraph *graph, int seed_vertex) {
 std::vector<int> stag::local_cluster_acl(stag::LocalGraph *graph,
                                         int seed_vertex) {
   // Compute the approximate pagerank vector
-  SprsMat apr = stag::approximate_pagerank(seed_vertex, 1, 1);
+  SprsMat seedDist(seed_vertex + 1, 1);
+  seedDist.coeffRef(seed_vertex, 0) = 1;
+  SprsMat apr = stag::approximate_pagerank(graph, seedDist, 1, 1);
 
   return {graph->neighbors_unweighted(seed_vertex)[0]};
 }
@@ -28,3 +31,4 @@ SprsMat stag::approximate_pagerank(stag::LocalGraph *graph,
                                    double epsilon) {
   return seed_vector;
 }
+

@@ -62,6 +62,26 @@ namespace stag {
    */
   SprsMat approximate_pagerank(stag::LocalGraph* graph, SprsMat &seed_vector,
                                double alpha, double epsilon);
+
+
+  /**
+   * Compute the personalised pagerank vector of the given graph for the given
+   * seed vector.
+   *
+   * Recall that the personalised pagerank is defined to be
+   *   pr(s,a) = a s + (1 - a) W pr(s,a)
+   * where W is the lazy random walk transition matrix of the graph.
+   *
+   * The (non-personalised) pagerank is given when a = 0.
+   *
+   * @param seed_vector an n-dimensional vector giving the starting distribution
+   *                    for the pagerank process.
+   * @param alpha (optional) - the 'teleport probability' for the personalised
+   *                           pagerank.
+   * @return an n-dimensional sparse matrix.
+   */
+  SprsMat pagerank(stag::Graph, SprsMat &seed_vector, double alpha);
+  SprsMat pagerank(stag::Graph, SprsMat &seed_vector);
 }
 
 #endif //STAG_TEST_CLUSTER_H

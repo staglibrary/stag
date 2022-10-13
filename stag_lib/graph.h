@@ -12,7 +12,7 @@
 
 // The fundamental datatype used in this library is the sparse matrix. For
 // convenience, we define the sparse matrix type here.
-#define SprsMat Eigen::SparseMatrix<double, Eigen::RowMajor>
+#define SprsMat Eigen::SparseMatrix<double>
 
 namespace stag {
 
