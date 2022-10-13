@@ -1,7 +1,8 @@
 /**
  * Definitions relating to the configuration of the STAG library.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
  */
 #ifndef STAG_TEST_STAG_H
 #define STAG_TEST_STAG_H

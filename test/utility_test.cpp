@@ -2,7 +2,8 @@
  * Tests for the utility.h header. Includes helper methods for dealing with
  * sparse matrices.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
  */
 #include <gtest/gtest.h>
 #include <utility.h>

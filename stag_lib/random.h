@@ -1,7 +1,8 @@
 /**
  * Methods for generating graphs from random models.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
  */
 #ifndef STAG_TEST_RANDOM_H
 #define STAG_TEST_RANDOM_H

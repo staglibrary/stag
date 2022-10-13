@@ -2,7 +2,8 @@
  * Definitions related to the core Graph object used to represent graphs within
  * the library.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
  */
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
