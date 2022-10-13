@@ -2,7 +2,8 @@
  * Tests for the methods in the random.h header file. Includes methods for
  * generating random graphs.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
  */
 #include <iostream>
 #include <gtest/gtest.h>
