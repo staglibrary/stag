@@ -42,6 +42,26 @@ namespace stag {
    *         same cluster as the seed_vertex.
    */
   std::vector<int> local_cluster_acl(stag::LocalGraph* graph, int seed_vertex);
+
+  /**
+   * Compute the approximate pagerank vector as described in ACL:
+   *
+   * [ACL] Andersen, Reid, Fan Chung, and Kevin Lang.
+   * "Local graph partitioning using pagerank vectors." 2006
+   * 47th Annual IEEE Symposium on Foundations of Computer Science (FOCS'06). IEEE, 2006.
+   *
+   * The parameters s, alpha, and epsilon are used as described in the paper.
+   *
+   * @param graph
+   * @param seed_vector
+   * @param alpha
+   * @param epsilon
+   * @return A sparse column vector containing the pagerank result. Note that
+   *         the dimension of the returned vector may not match the true
+   *         number of vertices in the graph provided.
+   */
+  SprsMat approximate_pagerank(stag::LocalGraph* graph, SprsMat &seed_vector,
+                               double alpha, double epsilon);
 }
 
 #endif //STAG_TEST_CLUSTER_H
