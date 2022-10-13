@@ -72,7 +72,7 @@ namespace stag {
    * are always constructed from sparse matrices, and this is the internal
    * representation used as well.
    */
-  class Graph : LocalGraph {
+  class Graph : public LocalGraph {
     public:
       /**
        * Create a graph from an Eigen matrix.

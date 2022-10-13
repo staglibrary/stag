@@ -5,13 +5,15 @@ set(HEADER_FILES
         graph.h
         utility.h
         graphio.h
-        random.h)
+        random.h
+        cluster.h)
 
 set(SOURCE_FILES
         graph.cpp
         utility.cpp
         graphio.cpp
-        random.cpp)
+        random.cpp
+        cluster.cpp)
 
 # Add libraries
 include_directories(../eigen-3.3.9) # Eigen - header-only
