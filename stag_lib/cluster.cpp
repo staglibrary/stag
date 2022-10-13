@@ -1,7 +1,8 @@
 /**
 * Implementations of the clustering algorithms defined in cluster.h.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
 */
 #include <vector>
 #include <Eigen/Sparse>
