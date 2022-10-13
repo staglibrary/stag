@@ -51,6 +51,9 @@ namespace stag {
        * Given a vertex v, return a vector of edges representing the
        * neighborhood of v.
        *
+       * The returned edges will all have the ordering (v, x) such that
+       * edge.v = v.
+       *
        * @param v an int representing some vertex in the graph
        * @return an edge vector containing the neighborhood information
        */
