@@ -18,7 +18,6 @@
 #define EdgeTriplet Eigen::Triplet<double, stag_int>
 
 namespace stag {
-
   /**
    * A structure representing a weighted edge in a graph.
    */

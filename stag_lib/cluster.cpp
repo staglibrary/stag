@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include <stdexcept>
+#include <iostream>
 #include <Eigen/Sparse>
 #include <graph.h>
 #include <cluster.h>
@@ -24,9 +25,8 @@ std::vector<stag_int> stag::local_cluster_acl(stag::LocalGraph *graph,
   // Compute the approximate pagerank vector
   SprsMat seedDist(seed_vertex + 1, 1);
   seedDist.coeffRef(seed_vertex, 0) = 1;
-  std::tuple<SprsMat, SprsMat> apr = stag::approximate_pagerank(graph, seedDist, 1, 1);
+  std::tuple<SprsMat, SprsMat> apr = stag::approximate_pagerank(graph, seedDist, 0.1, 0.01);
   SprsMat p = std::get<0>(apr);
-  p.makeCompressed();
   return stag::sprsMatInnerIndices(&p);
 }
 
@@ -103,9 +103,29 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
 
   // While the queue is not empty, push an entry off the queue and apply the
   // push operation.
-  push(graph, &p, &seed_vector, alpha, 0);
+  while (!vertex_queue.empty()) {
+    // Get the next vertex from the queue
+    u = vertex_queue.front();
+    vertex_queue.pop();
+
+    // Perform the push operation on this vertex
+    push(graph, &p, &r, alpha, u);
+
+    // Check u to see if it should be added back to the queue
+    deg = graph->degree(u);
+    if (r.coeff(u, 0) >= epsilon * deg) vertex_queue.push(u);
+
+    // Check the neighbors of u to see if they should be added back to the queue
+    stag_int v;
+    for (stag::edge e : graph->neighbors(u)) {
+      v = e.u;
+      deg = graph->degree(v);
+      if (r.coeff(e.u, 0) >= epsilon * deg) vertex_queue.push(v);
+    }
+  }
 
   // Finally, return the approximate pagerank vector
   p.makeCompressed();
-  return {p, seed_vector};
+  r.makeCompressed();
+  return {p, r};
 }
