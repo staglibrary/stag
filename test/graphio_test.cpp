@@ -2,7 +2,8 @@
 * Tests for the graphio.h header. Includes methods for reading and writing
  * graphs to disk.
  *
- * Copyright 2022 Peter Macgregor
+ * This file is provided as part of the STAG library and released under the MIT
+ * license.
 */
 #include <iostream>
 #include <gtest/gtest.h>
