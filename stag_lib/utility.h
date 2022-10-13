@@ -27,7 +27,7 @@ namespace stag {
    * @param matrix
    * @return
    */
-  std::vector<int> sprsMatInnerIndices(const SprsMat *matrix);
+  std::vector<stag_int> sprsMatInnerIndices(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the OuterStarts vector, compatible with the
@@ -36,7 +36,7 @@ namespace stag {
    * @param matrix
    * @return
    */
-  std::vector<int> sprsMatOuterStarts(const SprsMat *matrix);
+  std::vector<stag_int> sprsMatOuterStarts(const SprsMat *matrix);
 
   /**
    * Check whether a sparse matrix is symmetric.

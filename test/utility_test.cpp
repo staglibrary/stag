@@ -10,8 +10,8 @@
 
 TEST(UtilityTest, IsSymmetric) {
   // Construct a symmetric matrix.
-  std::vector<int> rowStarts = {0, 2, 4, 7, 8};
-  std::vector<int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 8};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
   std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
   SprsMat matrix = Eigen::Map<SprsMat>(4, 4, 8,
                                        rowStarts.data(),

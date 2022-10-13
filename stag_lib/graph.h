@@ -13,7 +13,9 @@
 
 // The fundamental datatype used in this library is the sparse matrix. For
 // convenience, we define the sparse matrix type here.
-#define SprsMat Eigen::SparseMatrix<double>
+#define stag_int Eigen::Index
+#define SprsMat Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int>
+#define EdgeTriplet Eigen::Triplet<double, stag_int>
 
 namespace stag {
 
@@ -22,10 +24,10 @@ namespace stag {
    */
   struct edge {
     // The first vertex in the edge.
-    int v;
+    stag_int v;
 
     // The second vertex in the edge
-    int u;
+    stag_int u;
 
     // The weight of the edge.
     double weight;
@@ -40,13 +42,13 @@ namespace stag {
       /**
        * Given a vertex v, return its weighted degree.
        */
-      virtual double degree(int v) = 0;
+      virtual double degree(stag_int v) = 0;
 
       /**
        * Given a vertex v, return its unweighted degree. That is, the number
        * of neighbors of v, ignoring the edge weights.
        */
-       virtual int degree_unweighted(int v) = 0;
+       virtual stag_int degree_unweighted(stag_int v) = 0;
 
       /**
        * Given a vertex v, return a vector of edges representing the
@@ -58,7 +60,7 @@ namespace stag {
        * @param v an int representing some vertex in the graph
        * @return an edge vector containing the neighborhood information
        */
-      virtual std::vector<edge> neighbors(int v) = 0;
+      virtual std::vector<edge> neighbors(stag_int v) = 0;
 
       /**
        * Given a vertex v, return a vector containing the neighbors of v.
@@ -68,7 +70,7 @@ namespace stag {
        * @param v an int representing some vertex in the graph
        * @return an int vector giving the neighbors of v
        */
-      virtual std::vector<int> neighbors_unweighted(int v) = 0;
+      virtual std::vector<stag_int> neighbors_unweighted(stag_int v) = 0;
   };
 
   /**
@@ -99,7 +101,7 @@ namespace stag {
        *                     matrix
        * @param values the values of each non-zero element in the matrix
        */
-      Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
+      Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &innerIndices,
             std::vector<double> &values);
 
       /**
@@ -155,7 +157,7 @@ namespace stag {
       /**
        * The number of vertices in the graph.
        */
-      long number_of_vertices() const;
+      stag_int number_of_vertices() const;
 
       /**
        * The number of edges in the graph.
@@ -163,13 +165,13 @@ namespace stag {
        * This is defined based on the number of non-zero elements in the
        * adjacency matrix, and ignores the weights of the edges.
        */
-       long number_of_edges() const;
+       stag_int number_of_edges() const;
 
        // Override the abstract methods in the LocalGraph base class.
-       double degree(int v) override;
-       int degree_unweighted(int v) override;
-       std::vector<edge> neighbors(int v) override;
-       std::vector<int> neighbors_unweighted(int v) override;
+       double degree(stag_int v) override;
+       stag_int degree_unweighted(stag_int v) override;
+       std::vector<edge> neighbors(stag_int v) override;
+       std::vector<stag_int> neighbors_unweighted(stag_int v) override;
 
     private:
       /**
@@ -199,7 +201,7 @@ namespace stag {
       void self_test_();
 
       // The number of vertices in the constructed graph.
-      long number_of_vertices_;
+      stag_int number_of_vertices_;
 
       // The ground truth definition of the graph object is the adjacency
       // matrix, stored in a sparse format. The adj_init_ variable is used to
@@ -243,7 +245,7 @@ namespace stag {
    * @param n
    * @return a graph object representing the n-cycle
    */
-  Graph cycle_graph(int n);
+  Graph cycle_graph(stag_int n);
 
   /**
    * Construct a complete graph on n vertices.
@@ -251,6 +253,6 @@ namespace stag {
    * @param m
    * @return a graph object
    */
-  Graph complete_graph(int n);
+  Graph complete_graph(stag_int n);
 }
 #endif //STAG_LIBRARY_H

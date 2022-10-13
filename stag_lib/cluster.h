@@ -27,7 +27,7 @@ namespace stag {
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
    */
-  std::vector<int> local_cluster(stag::LocalGraph* graph, int seed_vertex);
+  std::vector<stag_int> local_cluster(stag::LocalGraph* graph, stag_int seed_vertex);
 
   /**
    * The ACL local clustering algorithm. Given a graph and starting vertex,
@@ -42,7 +42,7 @@ namespace stag {
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
    */
-  std::vector<int> local_cluster_acl(stag::LocalGraph* graph, int seed_vertex);
+  std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex);
 
   /**
    * Compute the approximate pagerank vector as described in ACL:
@@ -53,16 +53,26 @@ namespace stag {
    *
    * The parameters s, alpha, and epsilon are used as described in the paper.
    *
+   * Note that the dimension of the returned vectors may not match the true
+   * number of vertices in the graph provided since the approximate
+   * pagerank is computed locally.
+   *
    * @param graph
    * @param seed_vector
    * @param alpha
    * @param epsilon
-   * @return A sparse column vector containing the pagerank result. Note that
-   *         the dimension of the returned vector may not match the true
-   *         number of vertices in the graph provided.
+   * @return A tuple of sparse column vectors corresponding to
+   *            p - the approximate pagerank vector
+   *            r - the residual vector
+   *         By the definition of approximate pagerank, it is the case that
+   *            p + pr(r, alpha) = pr(s, alpha)
+   *
+   * @raises ArgumentError if the provided seed_vector is not a column vector.
    */
-  SprsMat approximate_pagerank(stag::LocalGraph* graph, SprsMat &seed_vector,
-                               double alpha, double epsilon);
+  std::tuple<SprsMat, SprsMat> approximate_pagerank(stag::LocalGraph* graph,
+                                                    SprsMat &seed_vector,
+                                                    double alpha,
+                                                    double epsilon);
 
 
   /**

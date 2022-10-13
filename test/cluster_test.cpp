@@ -15,7 +15,7 @@ TEST(ClusterTest, ACL) {
   stag::Graph testGraph = stag::sbm(20, 2, 0.5, 0);
 
   // Find a cluster in the test graph
-  std::vector<int> cluster = stag::local_cluster(&testGraph, 0);
+  std::vector<stag_int> cluster = stag::local_cluster(&testGraph, 0);
 
   // Display the cluster
   for (auto i : cluster) {
