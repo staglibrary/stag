@@ -7,6 +7,8 @@
 #ifndef STAG_TEST_UTILITY_H
 #define STAG_TEST_UTILITY_H
 
+#include <iostream>
+
 #include "graph.h"
 
 namespace stag {
@@ -76,6 +78,17 @@ namespace stag {
    * Check whether a sparse matrix is symmetric.
    */
   bool isSymmetric(const SprsMat *matrix);
+
+  /**
+   * Print a vector to stderr.
+   */
+  template <typename T>
+  void stdErrVec(std::vector<T>& vec){
+    for (auto i : vec) {
+      std::cerr << i << ", ";
+    }
+    std::cerr << std::endl;
+  }
 }
 
 #endif //STAG_TEST_UTILITY_H

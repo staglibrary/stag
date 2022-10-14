@@ -23,10 +23,10 @@ namespace stag {
    */
   struct edge {
     // The first vertex in the edge.
-    stag_int v;
+    stag_int v1;
 
     // The second vertex in the edge
-    stag_int u;
+    stag_int v2;
 
     // The weight of the edge.
     double weight;

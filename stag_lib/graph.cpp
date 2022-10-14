@@ -145,7 +145,9 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
   stag_int degree_unw = degree_unweighted(v);
 
   for (stag_int i = 0; i < degree_unw; i++) {
-    edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
+    if (*(weights + vRowStart + i) != 0) {
+      edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
+    }
   }
 
   return edges;
@@ -286,7 +288,7 @@ bool stag::operator!=(const stag::Graph &lhs, const stag::Graph &rhs) {
 }
 
 bool stag::operator==(const stag::edge &lhs, const stag::edge &rhs) {
-  return lhs.u == rhs.u && lhs.v == rhs.v && lhs.weight == rhs.weight;
+  return lhs.v1 == rhs.v1 && lhs.v2 == rhs.v2 && lhs.weight == rhs.weight;
 }
 
 bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
