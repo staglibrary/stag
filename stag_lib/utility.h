@@ -48,6 +48,30 @@ namespace stag {
    std::vector<double> sprsMatToVec(const SprsMat *matrix, stag_int n);
    std::vector<double> sprsMatToVec(const SprsMat *matrix);
 
+   /**
+    * Add two vectors together element-wise.
+    *
+    * @param v1
+    * @param v2
+    * @return
+    */
+   template <typename T>
+   std::vector<T> addVectors(std::vector<T>& v1, std::vector<T>& v2) {
+     auto length = (stag_int) std::max(v1.size(), v2.size());
+     std::vector<T> ans;
+     T this_entry;
+
+     for (stag_int i = 0; i < length; i++) {
+       this_entry = 0;
+       if (v1.size() > i) this_entry += v1.at(i);
+       if (v2.size() > i) this_entry += v2.at(i);
+       ans.push_back(this_entry);
+     }
+
+     return ans;
+   }
+
+
   /**
    * Check whether a sparse matrix is symmetric.
    */
