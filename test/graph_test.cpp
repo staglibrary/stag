@@ -199,6 +199,25 @@ TEST(GraphTest, DegreeMatrix) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, InverseDegreeMatrix) {
+  // Create the test graph object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the graph degree matrix.
+  std::vector<stag_int> rowStarts = {0, 1, 2, 3, 4};
+  std::vector<stag_int> colIndices = {0, 1, 2, 3};
+  std::vector<double> values = {1./5.3333, 1./8, 1./10.3333, 1./1};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.inverse_degree_matrix());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.inverse_degree_matrix());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.inverse_degree_matrix());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, CycleGraphVolume) {
   // The volume of the cycle graph should be twice the number of vertices
   std::vector<stag_int> sizes = {3, 3, 5, 10, 20, 100};

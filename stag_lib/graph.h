@@ -108,7 +108,7 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
-      const SprsMat* adjacency() const;
+      [[nodiscard]] const SprsMat* adjacency() const;
 
       /**
        * Construct the Laplacian matrix of the graph.
@@ -145,6 +145,17 @@ namespace stag {
       const SprsMat* degree_matrix();
 
       /**
+       * The inverse degree matrix of the graph.
+       *
+       * The inverse degree matrix is an n x n matrix such that each diagonal entry is
+       * the inverse of the degree of the corresponding node, or 0 if the node
+       * has degree 0.
+       *
+       * @return a sparse Eigen matrix
+       */
+      const SprsMat* inverse_degree_matrix();
+
+      /**
        * The total volume of the graph.
        *
        * The volume is defined as the sum of the node degrees.
@@ -156,7 +167,7 @@ namespace stag {
       /**
        * The number of vertices in the graph.
        */
-      stag_int number_of_vertices() const;
+      [[nodiscard]] stag_int number_of_vertices() const;
 
       /**
        * The number of edges in the graph.
@@ -164,7 +175,7 @@ namespace stag {
        * This is defined based on the number of non-zero elements in the
        * adjacency matrix, and ignores the weights of the edges.
        */
-       stag_int number_of_edges() const;
+       [[nodiscard]] stag_int number_of_edges() const;
 
        // Override the abstract methods in the LocalGraph base class.
        double degree(stag_int v) override;
@@ -192,6 +203,12 @@ namespace stag {
       void initialise_degree_matrix_();
 
       /**
+       * Initialise the inverse degree matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_inverse_degree_matrix_();
+
+      /**
        * Check that the graph conforms to all assumptions that are currently
        * made within the library.
        *
@@ -205,7 +222,6 @@ namespace stag {
       // The ground truth definition of the graph object is the adjacency
       // matrix, stored in a sparse format. The adj_init_ variable is used to
       // indicate whether the matrix has been initialised yet.
-      bool adj_init_;
       SprsMat adjacency_matrix_;
 
       // The laplacian matrix of the graph. The lap_init_ variable is used to
@@ -223,6 +239,11 @@ namespace stag {
       // indicate whether the matrix has been initialised yet.
       bool deg_init_;
       SprsMat degree_matrix_;
+
+      // The inverse degree matrix of the graph. The inv_deg_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool inv_deg_init_;
+      SprsMat inverse_degree_matrix_;
   };
 
   /**

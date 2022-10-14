@@ -19,9 +19,9 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   number_of_vertices_ = adjacency_matrix_.outerSize();
 
   // Set the flags to indicate which matrices have been initialised.
-  adj_init_ = true;
   lap_init_ = false;
   deg_init_ = false;
+  inv_deg_init_ = false;
   norm_lap_init_ = false;
 
   // Check that the graph is configured correctly
@@ -43,9 +43,9 @@ stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &in
   number_of_vertices_ = adjacency_matrix_.outerSize();
 
   // Set the flags to indicate which matrices have been initialised.
-  adj_init_ = true;
   lap_init_ = false;
   deg_init_ = false;
+  inv_deg_init_ = false;
   norm_lap_init_ = false;
 
   // Check that the graph is configured correctly
@@ -73,6 +73,11 @@ const SprsMat* stag::Graph::normalised_laplacian() {
 const SprsMat* stag::Graph::degree_matrix() {
   initialise_degree_matrix_();
   return &degree_matrix_;
+}
+
+const SprsMat* stag::Graph::inverse_degree_matrix() {
+  initialise_inverse_degree_matrix_();
+  return &inverse_degree_matrix_;
 }
 
 double stag::Graph::total_volume() {
@@ -221,6 +226,23 @@ void stag::Graph::initialise_degree_matrix_() {
   // Compress the degree matrix storage, and set the initialised flag
   degree_matrix_.makeCompressed();
   deg_init_ = true;
+}
+
+void stag::Graph::initialise_inverse_degree_matrix_() {
+  // If the degree matrix has already been initialised, then we do not
+  // initialise it again.
+  if (inv_deg_init_) return;
+
+  // We will construct the inverse degree matrix from the degree matrix itself
+  initialise_degree_matrix_();
+  inverse_degree_matrix_ = SprsMat(adjacency_matrix_.cols(), adjacency_matrix_.cols());
+  for (stag_int i = 0; i < adjacency_matrix_.cols(); i++) {
+    inverse_degree_matrix_.insert(i, i) = 1./degree_matrix_.coeff(i, i);
+  }
+
+  // Compress the degree matrix storage, and set the initialised flag
+  inverse_degree_matrix_.makeCompressed();
+  inv_deg_init_ = true;
 }
 
 //------------------------------------------------------------------------------
