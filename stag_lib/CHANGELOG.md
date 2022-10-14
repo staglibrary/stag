@@ -22,6 +22,9 @@ throws an exception
 - [Issue #6](https://github.com/pmacg/stag/issues/6): Add `LocalGraph` abstract class for providing local graph access
 - [Issue #15](https://github.com/pmacg/stag/issues/15): Add methods for generating random graphs from the stochastic
 block model
+- New `inverse_degree_matrix()` method on the `stag::Graph` object
+- New `lazy_random_walk_matrix()` method on the `stag::Graph` object
+- [Issue #10](https://github.com/pmacg/stag/issues/10): Add approximate pagerank methods in `cluster.h`.
 
 ## [0.1.6] - 2022-10-10
 ### Added

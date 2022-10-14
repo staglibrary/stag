@@ -31,6 +31,10 @@ std::vector<stag_int> stag::local_cluster_acl(stag::LocalGraph *graph,
   return stag::sprsMatInnerIndices(&p);
 }
 
+//------------------------------------------------------------------------------
+// Pagerank and Approximate Pagerank Implementations
+//------------------------------------------------------------------------------
+
 /**
  * Perform the push operation on vertex u in the given graph.
  *
