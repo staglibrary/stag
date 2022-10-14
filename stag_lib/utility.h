@@ -39,6 +39,16 @@ namespace stag {
   std::vector<stag_int> sprsMatOuterStarts(const SprsMat *matrix);
 
   /**
+   * Given a sparse 'matrix' with only one column, convert it to a dense vector.
+   *
+   * @param matrix - the sparse vector to convert
+   * @param n (optional) - the dimension of the dense vector to construct
+   * @return a vector
+   */
+   std::vector<double> sprsMatToVec(const SprsMat *matrix, stag_int n);
+   std::vector<double> sprsMatToVec(const SprsMat *matrix);
+
+  /**
    * Check whether a sparse matrix is symmetric.
    */
   bool isSymmetric(const SprsMat *matrix);
