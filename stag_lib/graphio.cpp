@@ -17,7 +17,7 @@
  * @return a triple representing the edge (u, v, weight).
  * @throw std::invalid_argument the line cannot be parsed
  */
-Eigen::Triplet<double> parse_edgelist_content_line(std::string line) {
+EdgeTriplet parse_edgelist_content_line(std::string line) {
   // List the possible delimiters for the elements on the line
   std::vector<std::string> delimiters{",", " "};
 
@@ -94,12 +94,12 @@ stag::Graph stag::load_edgelist(std::string &filename) {
 
   // We will construct a vector of triples in order to construct the final
   // adjacency matrix
-  std::vector<Eigen::Triplet<double>> non_zero_entries;
+  std::vector<EdgeTriplet> non_zero_entries;
 
   // Read the file in one line at a time
-  int number_of_vertices = 0;
+  stag_int number_of_vertices = 0;
   std::string line;
-  Eigen::Triplet<double> this_edge;
+  EdgeTriplet this_edge;
   while (getline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
@@ -109,7 +109,7 @@ stag::Graph stag::load_edgelist(std::string &filename) {
         // Add two edges to the adjacency matrix in order to keep it symmetric.
         non_zero_entries.emplace_back(this_edge);
         non_zero_entries.emplace_back(
-            Eigen::Triplet<double>(this_edge.col(), this_edge.row(), this_edge.value()));
+            EdgeTriplet(this_edge.col(), this_edge.row(), this_edge.value()));
 
         // Update the number of vertices to be the maximum of the column and row
         // indices.

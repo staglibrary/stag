@@ -10,8 +10,8 @@
 
 TEST(UtilityTest, IsSymmetric) {
   // Construct a symmetric matrix.
-  std::vector<int> rowStarts = {0, 2, 4, 7, 8};
-  std::vector<int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 8};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
   std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
   SprsMat matrix = Eigen::Map<SprsMat>(4, 4, 8,
                                        rowStarts.data(),
@@ -32,4 +32,45 @@ TEST(UtilityTest, IsSymmetric) {
 
   // Check that the isSymmetric method gives the correct answer.
   EXPECT_EQ(stag::isSymmetric(&matrix), false);
+}
+
+TEST(UtilityTest, SprsMatToVec) {
+  // Construct a sparse matrix vector.
+  std::vector<stag_int> colStarts = {0, 4};
+  std::vector<stag_int> rowIndices = {0, 1, 2, 3};
+  std::vector<double> values = {1, 2, 3, 4};
+  SprsMat sparse_matrix = Eigen::Map<SprsMat>(4, 1, 4,
+                                              colStarts.data(),
+                                              rowIndices.data(),
+                                              values.data());
+
+  // Check that the dense vector gives the correct answer
+  EXPECT_EQ(stag::sprsMatToVec(&sparse_matrix), values);
+
+  // Construct a sparse vector with some zeros
+  rowIndices = {0, 2, 4, 6};
+  sparse_matrix = Eigen::Map<SprsMat>(7, 1, 4,
+                                      colStarts.data(),
+                                      rowIndices.data(),
+                                      values.data());
+
+  // The expected vector
+  std::vector<double> expected_vec = {1, 0, 2, 0, 3, 0, 4, 0, 0};
+  EXPECT_EQ(stag::sprsMatToVec(&sparse_matrix, 9), expected_vec);
+}
+
+TEST(UtilityTest, AddDoubleVectors) {
+  std::vector<double> v1 = {1, 2, 3};
+  std::vector<double> v2 = {1, 1};
+  std::vector<double> expected_ans = {2, 3, 3};
+  std::vector<double> ans = stag::addVectors(v1, v2);
+  EXPECT_EQ(ans, expected_ans);
+}
+
+TEST(UtilityTest, AddIntVectors) {
+  std::vector<stag_int> v1 = {1, 4};
+  std::vector<stag_int> v2 = {9, 8, 9};
+  std::vector<stag_int> expected_ans = {10, 12, 9};
+  std::vector<stag_int> ans = stag::addVectors(v1, v2);
+  EXPECT_EQ(ans, expected_ans);
 }

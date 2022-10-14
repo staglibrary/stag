@@ -13,19 +13,20 @@
 
 // The fundamental datatype used in this library is the sparse matrix. For
 // convenience, we define the sparse matrix type here.
-#define SprsMat Eigen::SparseMatrix<double, Eigen::RowMajor>
+#define stag_int Eigen::Index
+#define SprsMat Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int>
+#define EdgeTriplet Eigen::Triplet<double, stag_int>
 
 namespace stag {
-
   /**
    * A structure representing a weighted edge in a graph.
    */
   struct edge {
     // The first vertex in the edge.
-    int v;
+    stag_int v1;
 
     // The second vertex in the edge
-    int u;
+    stag_int v2;
 
     // The weight of the edge.
     double weight;
@@ -40,22 +41,25 @@ namespace stag {
       /**
        * Given a vertex v, return its weighted degree.
        */
-      virtual double degree(int v) = 0;
+      virtual double degree(stag_int v) = 0;
 
       /**
        * Given a vertex v, return its unweighted degree. That is, the number
        * of neighbors of v, ignoring the edge weights.
        */
-       virtual int degree_unweighted(int v) = 0;
+       virtual stag_int degree_unweighted(stag_int v) = 0;
 
       /**
        * Given a vertex v, return a vector of edges representing the
        * neighborhood of v.
        *
+       * The returned edges will all have the ordering (v, x) such that
+       * edge.v = v.
+       *
        * @param v an int representing some vertex in the graph
        * @return an edge vector containing the neighborhood information
        */
-      virtual std::vector<edge> neighbors(int v) = 0;
+      virtual std::vector<edge> neighbors(stag_int v) = 0;
 
       /**
        * Given a vertex v, return a vector containing the neighbors of v.
@@ -65,7 +69,7 @@ namespace stag {
        * @param v an int representing some vertex in the graph
        * @return an int vector giving the neighbors of v
        */
-      virtual std::vector<int> neighbors_unweighted(int v) = 0;
+      virtual std::vector<stag_int> neighbors_unweighted(stag_int v) = 0;
   };
 
   /**
@@ -73,7 +77,7 @@ namespace stag {
    * are always constructed from sparse matrices, and this is the internal
    * representation used as well.
    */
-  class Graph : LocalGraph {
+  class Graph : public LocalGraph {
     public:
       /**
        * Create a graph from an Eigen matrix.
@@ -96,7 +100,7 @@ namespace stag {
        *                     matrix
        * @param values the values of each non-zero element in the matrix
        */
-      Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
+      Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &innerIndices,
             std::vector<double> &values);
 
       /**
@@ -104,7 +108,7 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
-      const SprsMat* adjacency() const;
+      [[nodiscard]] const SprsMat* adjacency() const;
 
       /**
        * Construct the Laplacian matrix of the graph.
@@ -141,6 +145,29 @@ namespace stag {
       const SprsMat* degree_matrix();
 
       /**
+       * The inverse degree matrix of the graph.
+       *
+       * The inverse degree matrix is an n x n matrix such that each diagonal entry is
+       * the inverse of the degree of the corresponding node, or 0 if the node
+       * has degree 0.
+       *
+       * @return a sparse Eigen matrix
+       */
+      const SprsMat* inverse_degree_matrix();
+
+      /**
+       * The lazy random walk matrix of the graph.
+       *
+       * The lazy random walk matrix is defined to be
+       *    1/2 I + 1/2 A D^{-1}
+       * where I is the identity matrix, A is the graph adjacecny matrix and
+       * D is the degree matrix of the graph.
+       *
+       * @return a sparse Eigen matrix
+       */
+      const SprsMat* lazy_random_walk_matrix();
+
+      /**
        * The total volume of the graph.
        *
        * The volume is defined as the sum of the node degrees.
@@ -152,7 +179,7 @@ namespace stag {
       /**
        * The number of vertices in the graph.
        */
-      long number_of_vertices() const;
+      [[nodiscard]] stag_int number_of_vertices() const;
 
       /**
        * The number of edges in the graph.
@@ -160,13 +187,13 @@ namespace stag {
        * This is defined based on the number of non-zero elements in the
        * adjacency matrix, and ignores the weights of the edges.
        */
-       long number_of_edges() const;
+       [[nodiscard]] stag_int number_of_edges() const;
 
        // Override the abstract methods in the LocalGraph base class.
-       double degree(int v) override;
-       int degree_unweighted(int v) override;
-       std::vector<edge> neighbors(int v) override;
-       std::vector<int> neighbors_unweighted(int v) override;
+       double degree(stag_int v) override;
+       stag_int degree_unweighted(stag_int v) override;
+       std::vector<edge> neighbors(stag_int v) override;
+       std::vector<stag_int> neighbors_unweighted(stag_int v) override;
 
     private:
       /**
@@ -188,6 +215,18 @@ namespace stag {
       void initialise_degree_matrix_();
 
       /**
+       * Initialise the inverse degree matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_inverse_degree_matrix_();
+
+      /**
+       * Initialise the lazy random walk matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_lazy_random_walk_matrix_();
+
+      /**
        * Check that the graph conforms to all assumptions that are currently
        * made within the library.
        *
@@ -196,12 +235,11 @@ namespace stag {
       void self_test_();
 
       // The number of vertices in the constructed graph.
-      long number_of_vertices_;
+      stag_int number_of_vertices_;
 
       // The ground truth definition of the graph object is the adjacency
       // matrix, stored in a sparse format. The adj_init_ variable is used to
       // indicate whether the matrix has been initialised yet.
-      bool adj_init_;
       SprsMat adjacency_matrix_;
 
       // The laplacian matrix of the graph. The lap_init_ variable is used to
@@ -219,6 +257,16 @@ namespace stag {
       // indicate whether the matrix has been initialised yet.
       bool deg_init_;
       SprsMat degree_matrix_;
+
+      // The inverse degree matrix of the graph. The inv_deg_init_ variable is used to
+      // indicate whether the matrix has been initialised yet.
+      bool inv_deg_init_;
+      SprsMat inverse_degree_matrix_;
+
+      // The lazy random walk matrix of the graph. The lazy_rand_walk_init_ variable
+      // is used to indicate whether the matrix has been initialised yet.
+      bool lazy_rand_walk_init_;
+      SprsMat lazy_random_walk_matrix_;
   };
 
   /**
@@ -240,7 +288,7 @@ namespace stag {
    * @param n
    * @return a graph object representing the n-cycle
    */
-  Graph cycle_graph(int n);
+  Graph cycle_graph(stag_int n);
 
   /**
    * Construct a complete graph on n vertices.
@@ -248,6 +296,15 @@ namespace stag {
    * @param m
    * @return a graph object
    */
-  Graph complete_graph(int n);
+  Graph complete_graph(stag_int n);
+
+  /**
+   * Construct a barbell graph. The barbell graph consists of 2 cliques on n
+   * vertices, connected by a single edge.
+   *
+   * @param n
+   * @return
+   */
+  Graph barbell_graph(stag_int n);
 }
 #endif //STAG_LIBRARY_H

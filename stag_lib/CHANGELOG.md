@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Issue #5](https://github.com/pmacg/stag/issues/5): Rename the `Graph::volume()` method to `Graph::total_volume()`
 - [Issue #5](https://github.com/pmacg/stag/issues/5): Attempting to construct a graph with an assymetric adjacency matrix
 throws an exception
+- Sparse matrices within the library are now stored in Column-Major format
 
 ### Added
 - [Issue #5](https://github.com/pmacg/stag/issues/5): `Graph::degree_matrix()` method
@@ -21,6 +22,12 @@ throws an exception
 - [Issue #6](https://github.com/pmacg/stag/issues/6): Add `LocalGraph` abstract class for providing local graph access
 - [Issue #15](https://github.com/pmacg/stag/issues/15): Add methods for generating random graphs from the stochastic
 block model
+- New `inverse_degree_matrix()` method on the `stag::Graph` object
+- New `lazy_random_walk_matrix()` method on the `stag::Graph` object
+- [Issue #10](https://github.com/pmacg/stag/issues/10): Add approximate pagerank methods in `cluster.h`.
+- New `addVectors(v1, v2)` utility method
+- `barbell_graph(n)` graph constructor
+- [Issue #10](https://github.com/pmacg/stag/issues/10): Add ACL local clustering algorithm in `cluster.h`.
 
 ## [0.1.6] - 2022-10-10
 ### Added

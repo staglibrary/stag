@@ -19,21 +19,22 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   number_of_vertices_ = adjacency_matrix_.outerSize();
 
   // Set the flags to indicate which matrices have been initialised.
-  adj_init_ = true;
   lap_init_ = false;
   deg_init_ = false;
+  inv_deg_init_ = false;
   norm_lap_init_ = false;
+  lazy_rand_walk_init_ = false;
 
   // Check that the graph is configured correctly
   self_test_();
 }
 
-stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices,
+stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &innerIndices,
                    std::vector<double> &values) {
   // Map the provided data vectors to the sparse matrix type.
-  adjacency_matrix_ = Eigen::Map<SprsMat>(long(outerStarts.size()) - 1,
-                                          long(outerStarts.size()) - 1,
-                                          long(values.size()),
+  adjacency_matrix_ = Eigen::Map<SprsMat>((stag_int) outerStarts.size() - 1,
+                                          (stag_int) outerStarts.size() - 1,
+                                          (stag_int) values.size(),
                                           outerStarts.data(),
                                           innerIndices.data(),
                                           values.data());
@@ -43,10 +44,11 @@ stag::Graph::Graph(std::vector<int> &outerStarts, std::vector<int> &innerIndices
   number_of_vertices_ = adjacency_matrix_.outerSize();
 
   // Set the flags to indicate which matrices have been initialised.
-  adj_init_ = true;
   lap_init_ = false;
   deg_init_ = false;
+  inv_deg_init_ = false;
   norm_lap_init_ = false;
+  lazy_rand_walk_init_ = false;
 
   // Check that the graph is configured correctly
   self_test_();
@@ -75,20 +77,30 @@ const SprsMat* stag::Graph::degree_matrix() {
   return &degree_matrix_;
 }
 
+const SprsMat* stag::Graph::inverse_degree_matrix() {
+  initialise_inverse_degree_matrix_();
+  return &inverse_degree_matrix_;
+}
+
+const SprsMat* stag::Graph::lazy_random_walk_matrix() {
+  initialise_lazy_random_walk_matrix_();
+  return &lazy_random_walk_matrix_;
+}
+
 double stag::Graph::total_volume() {
   Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
   return degrees.sum();
 }
 
-long stag::Graph::number_of_vertices() const {
+stag_int stag::Graph::number_of_vertices() const {
   return number_of_vertices_;
 }
 
-long stag::Graph::number_of_edges() const {
+stag_int stag::Graph::number_of_edges() const {
   return adjacency_matrix_.nonZeros() / 2;
 }
 
-double stag::Graph::degree(int v) {
+double stag::Graph::degree(stag_int v) {
   // For now, we can be a little lazy and use the degree matrix. Once this is
   // initialised, then checking degree is constant time.
   initialise_degree_matrix_();
@@ -102,7 +114,7 @@ double stag::Graph::degree(int v) {
   }
 }
 
-int stag::Graph::degree_unweighted(int v) {
+stag_int stag::Graph::degree_unweighted(stag_int v) {
   // If the requested vertex number is greater than the number of vertices, then
   // return a degree of 0.
   if (v >= number_of_vertices_) {
@@ -111,13 +123,13 @@ int stag::Graph::degree_unweighted(int v) {
 
   // The combinatorical degree of a vertex is equal to the number of non-zero
   // entries in its adjacency matrix row.
-  const int *indexPtr = adjacency_matrix_.outerIndexPtr();
-  int rowStart = *(indexPtr + v);
-  int nextRowStart = *(indexPtr + v + 1);
+  const stag_int *indexPtr = adjacency_matrix_.outerIndexPtr();
+  stag_int rowStart = *(indexPtr + v);
+  stag_int nextRowStart = *(indexPtr + v + 1);
   return nextRowStart - rowStart;
 }
 
-std::vector<stag::edge> stag::Graph::neighbors(int v) {
+std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
   // If the vertex v does not exist, return the empty vector.
   if (v >= number_of_vertices_) {
     return {};
@@ -127,29 +139,31 @@ std::vector<stag::edge> stag::Graph::neighbors(int v) {
 
   // Iterate through the non-zero entries in the vth row of the adjacency matrix
   const double *weights = adjacency_matrix_.valuePtr();
-  const int *innerIndices = adjacency_matrix_.innerIndexPtr();
-  const int *rowStarts = adjacency_matrix_.outerIndexPtr();
-  int vRowStart = *(rowStarts + v);
-  int degree_unw = degree_unweighted(v);
+  const stag_int *innerIndices = adjacency_matrix_.innerIndexPtr();
+  const stag_int *rowStarts = adjacency_matrix_.outerIndexPtr();
+  stag_int vRowStart = *(rowStarts + v);
+  stag_int degree_unw = degree_unweighted(v);
 
-  for (int i = 0; i < degree_unw; i++) {
-    edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
+  for (stag_int i = 0; i < degree_unw; i++) {
+    if (*(weights + vRowStart + i) != 0) {
+      edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
+    }
   }
 
   return edges;
 }
 
-std::vector<int> stag::Graph::neighbors_unweighted(int v) {
+std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
   // If the vertex v does not exist, return the empty vector.
   if (v >= number_of_vertices_) {
     return {};
   }
 
   // Return the non-zero indices in the vth row of the adjacency matrix
-  const int *innerIndices = adjacency_matrix_.innerIndexPtr();
-  const int *rowStarts = adjacency_matrix_.outerIndexPtr();
-  int vRowStart = *(rowStarts + v);
-  int degree = degree_unweighted(v);
+  const stag_int *innerIndices = adjacency_matrix_.innerIndexPtr();
+  const stag_int *rowStarts = adjacency_matrix_.outerIndexPtr();
+  stag_int vRowStart = *(rowStarts + v);
+  stag_int degree = degree_unweighted(v);
   return {innerIndices + vRowStart, innerIndices + vRowStart + degree};
 }
 
@@ -190,8 +204,8 @@ void stag::Graph::initialise_normalised_laplacian_() {
 
   // Construct the inverse degree matrix
   SprsMat sqrt_inv_deg_mat(number_of_vertices_, number_of_vertices_);
-  std::vector<Eigen::Triplet<double>> non_zero_entries;
-  for (int i = 0; i < number_of_vertices_; i++) {
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < number_of_vertices_; i++) {
     non_zero_entries.emplace_back(i, i, 1 / sqrt(degree_matrix_.coeff(i, i)));
   }
   sqrt_inv_deg_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
@@ -214,13 +228,49 @@ void stag::Graph::initialise_degree_matrix_() {
   // Construct the vertex degrees.
   Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
   degree_matrix_ = SprsMat(adjacency_matrix_.cols(), adjacency_matrix_.cols());
-  for (int i = 0; i < adjacency_matrix_.cols(); i++) {
+  for (stag_int i = 0; i < adjacency_matrix_.cols(); i++) {
     degree_matrix_.insert(i, i) = degrees[i];
   }
 
   // Compress the degree matrix storage, and set the initialised flag
   degree_matrix_.makeCompressed();
   deg_init_ = true;
+}
+
+void stag::Graph::initialise_inverse_degree_matrix_() {
+  // If the inverse degree matrix has already been initialised, then we do not
+  // initialise it again.
+  if (inv_deg_init_) return;
+
+  // We will construct the inverse degree matrix from the degree matrix itself
+  initialise_degree_matrix_();
+  inverse_degree_matrix_ = SprsMat(adjacency_matrix_.cols(), adjacency_matrix_.cols());
+  for (stag_int i = 0; i < adjacency_matrix_.cols(); i++) {
+    inverse_degree_matrix_.insert(i, i) = 1./degree_matrix_.coeff(i, i);
+  }
+
+  // Compress the degree matrix storage, and set the initialised flag
+  inverse_degree_matrix_.makeCompressed();
+  inv_deg_init_ = true;
+}
+
+void stag::Graph::initialise_lazy_random_walk_matrix_() {
+  // If the lazy random walk matrix has already been initialised, then we do not
+  // initialise it again.
+  if (lazy_rand_walk_init_) return;
+
+  // The lazy random walk matrix is defined to be
+  //   (1/2) I + (1/2) A * D^{-1}
+  initialise_inverse_degree_matrix_();
+  SprsMat identityMatrix(number_of_vertices_, number_of_vertices_);
+  identityMatrix.setIdentity();
+
+  lazy_random_walk_matrix_ = SprsMat(number_of_vertices_, number_of_vertices_);
+  lazy_random_walk_matrix_ = (1./2) * identityMatrix + (1./2) * adjacency_matrix_ * inverse_degree_matrix_;
+
+  // Compress and set initialisation flag
+  lazy_random_walk_matrix_.makeCompressed();
+  lazy_rand_walk_init_ = true;
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +288,7 @@ bool stag::operator!=(const stag::Graph &lhs, const stag::Graph &rhs) {
 }
 
 bool stag::operator==(const stag::edge &lhs, const stag::edge &rhs) {
-  return lhs.u == rhs.u && lhs.v == rhs.v && lhs.weight == rhs.weight;
+  return lhs.v1 == rhs.v1 && lhs.v2 == rhs.v2 && lhs.weight == rhs.weight;
 }
 
 bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
@@ -248,10 +298,10 @@ bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
 //------------------------------------------------------------------------------
 // Standard Graph Constructors
 //------------------------------------------------------------------------------
-stag::Graph stag::cycle_graph(int n) {
+stag::Graph stag::cycle_graph(stag_int n) {
   SprsMat adj_mat(n, n);
-  std::vector<Eigen::Triplet<double>> non_zero_entries;
-  for (int i = 0; i < n; i++) {
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < n; i++) {
     non_zero_entries.emplace_back(i, (i + n + 1) % n, 1);
     non_zero_entries.emplace_back(i, (i + n - 1) % n, 1);
   }
@@ -259,16 +309,38 @@ stag::Graph stag::cycle_graph(int n) {
   return stag::Graph(adj_mat);
 }
 
-stag::Graph stag::complete_graph(int n) {
+stag::Graph stag::complete_graph(stag_int n) {
   SprsMat adj_mat(n, n);
-  std::vector<Eigen::Triplet<double>> non_zero_entries;
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < n; i++) {
+    for (stag_int j = 0; j < n; j++) {
       if (i != j) {
         non_zero_entries.emplace_back(i, j, 1);
       }
     }
   }
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
+}
+
+stag::Graph stag::barbell_graph(stag_int n) {
+  // Construct the non-zer entries in the complete blocks of the adjacency matrix
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < n; i++) {
+    for (stag_int j = 0; j < n; j++) {
+      if (i != j) {
+        non_zero_entries.emplace_back(i, j, 1);
+        non_zero_entries.emplace_back(n + i, n + j, 1);
+      }
+    }
+  }
+
+  // Add a single edge to connect the complete graphs
+  non_zero_entries.emplace_back(n - 1, n, 1);
+  non_zero_entries.emplace_back(n, n - 1, 1);
+
+  // Construct the final adjacency matrix
+  SprsMat adj_mat(2 * n, 2 * n);
   adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
   return stag::Graph(adj_mat);
 }
