@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(stag_test)
 
-# GoogleTest requires at least C++14
-set(CMAKE_CXX_STANDARD 14)
+# Require at least C++20
+set(CMAKE_CXX_STANDARD 20)
 
 # Download googletest
 include(FetchContent)

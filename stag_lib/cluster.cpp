@@ -6,6 +6,7 @@
 */
 #include <vector>
 #include <queue>
+#include <unordered_set>
 #include <stdexcept>
 #include <iostream>
 #include <Eigen/Sparse>
@@ -35,8 +36,8 @@ std::vector<stag_int> stag::local_cluster_acl(stag::LocalGraph *graph,
  *
  * Updates the sparse vectors p and r, according to:
  *   p'(u) = p(u) + alpha * r(u)
- *   r'(u) = (1 - alpha) * r(u) / 2
  *   r'(v) = r(v) + (1 - alpha) * w(u, v) * r(u) / (2 * deg(u))
+ *   r'(u) = (1 - alpha) * r(u) / 2
  * for all v which are neighbors of u.
  *
  * @param graph
@@ -54,9 +55,6 @@ void push(stag::LocalGraph *graph, SprsMat *p, SprsMat *r, double alpha, stag_in
   // Update p according to the push operation
   p->coeffRef(u, 0) = p->coeff(u, 0) + alpha * r->coeff(u, 0);
 
-  // Update r according to the push operation
-  r->coeffRef(u, 0) = (1 - alpha) * r->coeff(u, 0) / 2;
-
   // Iterate through the neighbors of u
   double deg = graph->degree(u);
   stag_int v;
@@ -73,6 +71,10 @@ void push(stag::LocalGraph *graph, SprsMat *p, SprsMat *r, double alpha, stag_in
     // Perform the push operation on r for the vertex v
     r->coeffRef(v, 0) = r->coeff(v, 0) + (1 - alpha) * e.weight * r->coeff(u, 0) / (deg * 2);
   }
+
+  // Update r(u) according to the push operation
+  // This must happen after updating the neighbors of r
+  r->coeffRef(u, 0) = (1 - alpha) * r->coeff(u, 0) / 2;
 }
 
 std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
@@ -90,14 +92,18 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
 
   // We will maintain a queue of vertices satisfying
   //    r(u) >= epsilon * deg(u)
+  // Along with the queue, maintain an unordered set which tracks the vertices
+  // already in the queue.
   stag_int u;
   double deg;
   std::queue<stag_int> vertex_queue;
+  std::unordered_set<stag_int> queue_members;
   for (SprsMat::InnerIterator it(seed_vector, 0); it; ++it) {
     u = it.row();
     deg = graph->degree(u);
     if (r.coeff(u, 0) >= epsilon * deg) {
       vertex_queue.push(u);
+      queue_members.insert(u);
     }
   }
 
@@ -107,20 +113,28 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
     // Get the next vertex from the queue
     u = vertex_queue.front();
     vertex_queue.pop();
+    queue_members.erase(u);
 
     // Perform the push operation on this vertex
     push(graph, &p, &r, alpha, u);
 
     // Check u to see if it should be added back to the queue
     deg = graph->degree(u);
-    if (r.coeff(u, 0) >= epsilon * deg) vertex_queue.push(u);
+    if (r.coeff(u, 0) >= epsilon * deg) {
+      vertex_queue.push(u);
+      queue_members.insert(u);
+    }
 
     // Check the neighbors of u to see if they should be added back to the queue
+    // Skip any neighbors which are already in the queue.
     stag_int v;
     for (stag::edge e : graph->neighbors(u)) {
       v = e.u;
       deg = graph->degree(v);
-      if (r.coeff(e.u, 0) >= epsilon * deg) vertex_queue.push(v);
+      if (r.coeff(e.u, 0) >= epsilon * deg && !queue_members.contains(v)) {
+        vertex_queue.push(v);
+        queue_members.insert(v);
+      }
     }
   }
 
