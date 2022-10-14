@@ -297,5 +297,14 @@ namespace stag {
    * @return a graph object
    */
   Graph complete_graph(stag_int n);
+
+  /**
+   * Construct a barbell graph. The barbell graph consists of 2 cliques on n
+   * vertices, connected by a single edge.
+   *
+   * @param n
+   * @return
+   */
+  Graph barbell_graph(stag_int n);
 }
 #endif //STAG_LIBRARY_H

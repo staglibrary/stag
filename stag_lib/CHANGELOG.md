@@ -25,6 +25,8 @@ block model
 - New `inverse_degree_matrix()` method on the `stag::Graph` object
 - New `lazy_random_walk_matrix()` method on the `stag::Graph` object
 - [Issue #10](https://github.com/pmacg/stag/issues/10): Add approximate pagerank methods in `cluster.h`.
+- New `addVectors(v1, v2)` utility method
+- `barbell_graph(n)` graph constructor
 
 ## [0.1.6] - 2022-10-10
 ### Added

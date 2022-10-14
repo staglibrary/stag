@@ -337,6 +337,39 @@ TEST(GraphTest, CompleteGraphNormalisedLaplacian) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, BarbellGraph) {
+  // Create a small complete graph
+  stag::Graph testGraph = stag::barbell_graph(4);
+
+  // Define the expected laplacian matrix
+  std::vector<stag_int> colStarts = {0, 3, 6, 9, 13, 17, 20, 23, 26};
+  std::vector<stag_int> rowIndices = {1, 2, 3,
+                                      0, 2, 3,
+                                      0, 1, 3,
+                                      0, 1, 2, 4,
+                                      3, 5, 6, 7,
+                                      4, 6, 7,
+                                      4, 5, 7,
+                                      4, 5, 6};
+  std::vector<double> values = {1, 1, 1,
+                                1, 1, 1,
+                                1, 1, 1,
+                                1, 1, 1, 1,
+                                1, 1, 1, 1,
+                                1, 1, 1,
+                                1, 1, 1,
+                                1, 1, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, Equality) {
   // Create two identical graphs
   stag::Graph graph1 = stag::cycle_graph(10);

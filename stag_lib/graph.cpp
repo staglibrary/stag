@@ -320,3 +320,25 @@ stag::Graph stag::complete_graph(stag_int n) {
   adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
   return stag::Graph(adj_mat);
 }
+
+stag::Graph stag::barbell_graph(stag_int n) {
+  // Construct the non-zer entries in the complete blocks of the adjacency matrix
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < n; i++) {
+    for (stag_int j = 0; j < n; j++) {
+      if (i != j) {
+        non_zero_entries.emplace_back(i, j, 1);
+        non_zero_entries.emplace_back(n + i, n + j, 1);
+      }
+    }
+  }
+
+  // Add a single edge to connect the complete graphs
+  non_zero_entries.emplace_back(n - 1, n, 1);
+  non_zero_entries.emplace_back(n, n - 1, 1);
+
+  // Construct the final adjacency matrix
+  SprsMat adj_mat(2 * n, 2 * n);
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
+}
