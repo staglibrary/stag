@@ -156,6 +156,18 @@ namespace stag {
       const SprsMat* inverse_degree_matrix();
 
       /**
+       * The lazy random walk matrix of the graph.
+       *
+       * The lazy random walk matrix is defined to be
+       *    1/2 I + 1/2 A D^{-1}
+       * where I is the identity matrix, A is the graph adjacecny matrix and
+       * D is the degree matrix of the graph.
+       *
+       * @return a sparse Eigen matrix
+       */
+      const SprsMat* lazy_random_walk_matrix();
+
+      /**
        * The total volume of the graph.
        *
        * The volume is defined as the sum of the node degrees.
@@ -209,6 +221,12 @@ namespace stag {
       void initialise_inverse_degree_matrix_();
 
       /**
+       * Initialise the lazy random walk matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_lazy_random_walk_matrix_();
+
+      /**
        * Check that the graph conforms to all assumptions that are currently
        * made within the library.
        *
@@ -244,6 +262,11 @@ namespace stag {
       // indicate whether the matrix has been initialised yet.
       bool inv_deg_init_;
       SprsMat inverse_degree_matrix_;
+
+      // The lazy random walk matrix of the graph. The lazy_rand_walk_init_ variable
+      // is used to indicate whether the matrix has been initialised yet.
+      bool lazy_rand_walk_init_;
+      SprsMat lazy_random_walk_matrix_;
   };
 
   /**

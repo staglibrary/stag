@@ -23,6 +23,7 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   deg_init_ = false;
   inv_deg_init_ = false;
   norm_lap_init_ = false;
+  lazy_rand_walk_init_ = false;
 
   // Check that the graph is configured correctly
   self_test_();
@@ -47,6 +48,7 @@ stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &in
   deg_init_ = false;
   inv_deg_init_ = false;
   norm_lap_init_ = false;
+  lazy_rand_walk_init_ = false;
 
   // Check that the graph is configured correctly
   self_test_();
@@ -78,6 +80,11 @@ const SprsMat* stag::Graph::degree_matrix() {
 const SprsMat* stag::Graph::inverse_degree_matrix() {
   initialise_inverse_degree_matrix_();
   return &inverse_degree_matrix_;
+}
+
+const SprsMat* stag::Graph::lazy_random_walk_matrix() {
+  initialise_lazy_random_walk_matrix_();
+  return &lazy_random_walk_matrix_;
 }
 
 double stag::Graph::total_volume() {
@@ -229,7 +236,7 @@ void stag::Graph::initialise_degree_matrix_() {
 }
 
 void stag::Graph::initialise_inverse_degree_matrix_() {
-  // If the degree matrix has already been initialised, then we do not
+  // If the inverse degree matrix has already been initialised, then we do not
   // initialise it again.
   if (inv_deg_init_) return;
 
@@ -243,6 +250,25 @@ void stag::Graph::initialise_inverse_degree_matrix_() {
   // Compress the degree matrix storage, and set the initialised flag
   inverse_degree_matrix_.makeCompressed();
   inv_deg_init_ = true;
+}
+
+void stag::Graph::initialise_lazy_random_walk_matrix_() {
+  // If the lazy random walk matrix has already been initialised, then we do not
+  // initialise it again.
+  if (lazy_rand_walk_init_) return;
+
+  // The lazy random walk matrix is defined to be
+  //   (1/2) I + (1/2) A * D^{-1}
+  initialise_inverse_degree_matrix_();
+  SprsMat identityMatrix(number_of_vertices_, number_of_vertices_);
+  identityMatrix.setIdentity();
+
+  lazy_random_walk_matrix_ = SprsMat(number_of_vertices_, number_of_vertices_);
+  lazy_random_walk_matrix_ = (1./2) * identityMatrix + (1./2) * adjacency_matrix_ * inverse_degree_matrix_;
+
+  // Compress and set initialisation flag
+  lazy_random_walk_matrix_.makeCompressed();
+  lazy_rand_walk_init_ = true;
 }
 
 //------------------------------------------------------------------------------

@@ -203,7 +203,7 @@ TEST(GraphTest, InverseDegreeMatrix) {
   // Create the test graph object
   stag::Graph testGraph = createTestGraph();
 
-  // Create the expected data for the graph degree matrix.
+  // Create the expected data for the inverse degree matrix.
   std::vector<stag_int> rowStarts = {0, 1, 2, 3, 4};
   std::vector<stag_int> colIndices = {0, 1, 2, 3};
   std::vector<double> values = {1./5.3333, 1./8, 1./10.3333, 1./1};
@@ -215,6 +215,28 @@ TEST(GraphTest, InverseDegreeMatrix) {
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, LazyRandomWalkMatrix) {
+  // Create the test graph object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the lazy random walk matrix.
+  std::vector<stag_int> colStarts = {0, 3, 6, 10, 12};
+  std::vector<stag_int> rowIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> values = {1./2, 1./5.3333, 3.3333/10.6666,
+                                1./8, 1./2, 3./8,
+                                3.3333/20.6666, 3./10.3333, 1./2, 1./20.6666,
+                                1./2, 1./2};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.lazy_random_walk_matrix());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.lazy_random_walk_matrix());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.lazy_random_walk_matrix());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
