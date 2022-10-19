@@ -57,6 +57,19 @@ std::vector<double> stag::sprsMatToVec(const SprsMat* matrix, stag_int n) {
   return dense_vec;
 }
 
+SprsMat stag::sprsMatFromVectors(std::vector<stag_int>& column_starts,
+                                 std::vector<stag_int>& row_indices,
+                                 std::vector<double>& values) {
+  SprsMat constructed_mat = Eigen::Map<SprsMat>((stag_int) column_starts.size() - 1,
+                                                (stag_int) column_starts.size() - 1,
+                                                (stag_int) values.size(),
+                                                column_starts.data(),
+                                                row_indices.data(),
+                                                values.data());
+  constructed_mat.makeCompressed();
+  return constructed_mat;
+}
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ArgumentSelectionDefects"
 bool stag::isSymmetric(const SprsMat *matrix) {
