@@ -70,6 +70,11 @@ namespace stag {
        * @return an int vector giving the neighbors of v
        */
       virtual std::vector<stag_int> neighbors_unweighted(stag_int v) = 0;
+
+      /**
+       * Destructor for the LocalGraph object.
+       */
+      virtual ~LocalGraph() = default;
   };
 
   /**
@@ -194,6 +199,7 @@ namespace stag {
        stag_int degree_unweighted(stag_int v) override;
        std::vector<edge> neighbors(stag_int v) override;
        std::vector<stag_int> neighbors_unweighted(stag_int v) override;
+       ~Graph() override = default;
 
     private:
       /**
