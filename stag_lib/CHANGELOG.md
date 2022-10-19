@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Issue #27](https://github.com/staglibrary/stag/issues/27): Use `long long` integer type throughout the library
 
 ### Added
+- [Issue #29](https://github.com/staglibrary/stag/issues/29): Add `sprsMatFromVectors` helper method to construct sparse matrices
 
 ### Fixed
 - [Issue #26](https://github.com/staglibrary/stag/issues/26): Add destructor to abstract `LocalGraph` class

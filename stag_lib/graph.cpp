@@ -32,13 +32,7 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
 stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &innerIndices,
                    std::vector<double> &values) {
   // Map the provided data vectors to the sparse matrix type.
-  adjacency_matrix_ = Eigen::Map<SprsMat>((stag_int) outerStarts.size() - 1,
-                                          (stag_int) outerStarts.size() - 1,
-                                          (stag_int) values.size(),
-                                          outerStarts.data(),
-                                          innerIndices.data(),
-                                          values.data());
-  adjacency_matrix_.makeCompressed();
+  adjacency_matrix_ = stag::sprsMatFromVectors(outerStarts, innerIndices, values);
 
   // The number of vertices is the dimensions of the adjacency matrix
   number_of_vertices_ = adjacency_matrix_.outerSize();

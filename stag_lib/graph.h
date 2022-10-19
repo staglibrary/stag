@@ -8,14 +8,18 @@
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 
-#include <Eigen/Sparse>
-#include <vector>
-
 // The fundamental datatype used in this library is the sparse matrix. For
 // convenience, we define the sparse matrix type here.
 #define stag_int long long
 #define SprsMat Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int>
 #define EdgeTriplet Eigen::Triplet<double, stag_int>
+
+// Redefine the eigen index type to be the same as stag_int
+#undef EIGEN_DEFAULT_DENSE_INDEX_TYPE
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE stag_int
+
+#include <Eigen/Sparse>
+#include <vector>
 
 namespace stag {
   /**
@@ -165,7 +169,7 @@ namespace stag {
        *
        * The lazy random walk matrix is defined to be
        *    1/2 I + 1/2 A D^{-1}
-       * where I is the identity matrix, A is the graph adjacecny matrix and
+       * where I is the identity matrix, A is the graph adjacency matrix and
        * D is the degree matrix of the graph.
        *
        * @return a sparse Eigen matrix
@@ -209,7 +213,7 @@ namespace stag {
       void initialise_laplacian_();
 
       /**
-       * Initialise the normalised Laplacian matrix of the grpah is it has not
+       * Initialise the normalised Laplacian matrix of the graph is it has not
        * been initialised yet.
        */
       void initialise_normalised_laplacian_();

@@ -51,6 +51,25 @@ namespace stag {
    std::vector<double> sprsMatToVec(const SprsMat *matrix);
 
    /**
+    * Construct a sparse matrix from the CSC data vectors.
+    *
+    * For documentation on the format of the data vectors, please see the
+    * documentation for the Eigen sparse matrix object.
+    *
+    * For now, this method does not perform any error checking on the provided
+    * vectors. The caller is responsible for ensuring that the provided data
+    * vectors are well-formed.
+    *
+    * @param column_starts
+    * @param row_indices
+    * @param values
+    * @return
+    */
+   SprsMat sprsMatFromVectors(std::vector<stag_int>& column_starts,
+                              std::vector<stag_int>& row_indices,
+                              std::vector<double>& values);
+
+   /**
     * Add two vectors together element-wise.
     *
     * @param v1
