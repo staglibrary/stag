@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+- [Issue #26](https://github.com/staglibrary/stag/issues/26): Add destructor to abstract `LocalGraph` class
+
 ## [0.2.0] - 2022-10-15
 ### Changed
 - [Issue #5](https://github.com/staglibrary/stag/issues/5): Rename the `Graph::volume()` method to `Graph::total_volume()`
