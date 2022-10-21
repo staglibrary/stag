@@ -8,18 +8,18 @@
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 
+#include <Eigen/Sparse>
+#include <vector>
+
 // The fundamental datatype used in this library is the sparse matrix. For
 // convenience, we define the sparse matrix type here.
-#define stag_int long long
-#define SprsMat Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int>
-#define EdgeTriplet Eigen::Triplet<double, stag_int>
+typedef long long stag_int;
+typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
+typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 
 // Redefine the eigen index type to be the same as stag_int
 #undef EIGEN_DEFAULT_DENSE_INDEX_TYPE
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE stag_int
-
-#include <Eigen/Sparse>
-#include <vector>
 
 namespace stag {
   /**
