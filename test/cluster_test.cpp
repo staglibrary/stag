@@ -74,3 +74,25 @@ TEST(ClusterTest, localSBM) {
   }
   EXPECT_GE(inside / cluster.size(), 0.9);
 }
+
+TEST(ClusterTest, sweepSet) {
+  // Construct a test graph
+  stag::Graph testGraph = stag::barbell_graph(4);
+
+  // Construct the vector on which to sweep
+  SprsMat vec(8, 1);
+  vec.coeffRef(0, 0) = 0.1;
+  vec.coeffRef(1, 0) = 0.25;
+  vec.coeffRef(2, 0) = 0.2;
+  vec.coeffRef(3, 0) = 0.15;
+  vec.coeffRef(4, 0) = 0.05;
+  vec.makeCompressed();
+
+  // Compute the sweep set
+  std::vector<stag_int> sweep_set = stag::sweep_set_conductance(&testGraph, vec);
+  std::stable_sort(sweep_set.begin(), sweep_set.end());
+
+  // Test the result
+  std::vector<stag_int> expected_sweep = {0, 1, 2, 3};
+  EXPECT_EQ(sweep_set, expected_sweep);
+}
