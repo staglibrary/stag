@@ -59,7 +59,7 @@ TEST(ClusterTest, localSBM) {
   stag::Graph testGraph = stag::sbm(2000, 4, 0.9, 0.01);
 
   // Find a cluster using the default local clustering algorithm
-  std::vector<stag_int> cluster = stag::local_cluster(&testGraph, 0, 500 * 500);
+  std::vector<stag_int> cluster = stag::local_cluster(&testGraph, 0, testGraph.total_volume() / 4);
   std::stable_sort(cluster.begin(), cluster.end());
 
   // Check the number of returned vertices

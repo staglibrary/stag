@@ -4,6 +4,10 @@ All notable changes to the library are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- [Issue #37](https://github.com/staglibrary/stag/issues/37): Allow float type as target volume in local clustering method
+
 ## [0.2.1] - 2022-10-19
 ### Changed
 - [Issue #27](https://github.com/staglibrary/stag/issues/27): Use `long long` integer type throughout the library
