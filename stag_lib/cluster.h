@@ -28,7 +28,7 @@ namespace stag {
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
    */
-  std::vector<stag_int> local_cluster(stag::LocalGraph* graph, stag_int seed_vertex, stag_int target_volume);
+  std::vector<stag_int> local_cluster(stag::LocalGraph* graph, stag_int seed_vertex, double target_volume);
 
   /**
    * The ACL local clustering algorithm. Given a graph and starting vertex,

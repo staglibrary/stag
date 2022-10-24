@@ -14,14 +14,14 @@
 #include <cluster.h>
 #include <utility.h>
 
-std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, stag_int target_volume) {
+std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, double target_volume) {
   // The 'locality' parameter should essentially be a constant if we expect the conductance
   // of the target cluster to be a constant. Set it to 0.01.
   // The error parameter should decrease as the inverse of the target volume.
   return stag::local_cluster_acl(graph,
                                  seed_vertex,
                                  0.01,
-                                 1./ (double) target_volume);
+                                 1./ target_volume);
 }
 
 //------------------------------------------------------------------------------
