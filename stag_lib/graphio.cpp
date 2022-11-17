@@ -19,7 +19,7 @@
  */
 EdgeTriplet parse_edgelist_content_line(std::string line) {
   // List the possible delimiters for the elements on the line
-  std::vector<std::string> delimiters{",", " "};
+  std::vector<std::string> delimiters{",", " ", "\t"};
 
   // Split the line to extract the edge information
   int num_tokens_found = 0;
