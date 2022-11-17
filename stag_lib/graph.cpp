@@ -6,6 +6,32 @@
 #include "graph.h"
 #include "utility.h"
 
+
+//------------------------------------------------------------------------------
+// Local Graph Methods
+//------------------------------------------------------------------------------
+
+std::vector<double> stag::LocalGraph::degrees(std::vector<stag_int> vertices) {
+  std::vector<double> degrees;
+
+  for (stag_int v : vertices) {
+    degrees.emplace_back(degree(v));
+  }
+
+  return degrees;
+}
+
+std::vector<stag_int> stag::LocalGraph::degrees_unweighted(
+    std::vector<stag_int> vertices) {
+  std::vector<stag_int> degrees;
+
+  for (stag_int v : vertices) {
+    degrees.emplace_back(degree_unweighted(v));
+  }
+
+  return degrees;
+}
+
 //------------------------------------------------------------------------------
 // Graph Object Constructors
 //------------------------------------------------------------------------------
@@ -318,7 +344,8 @@ stag::Graph stag::complete_graph(stag_int n) {
 }
 
 stag::Graph stag::barbell_graph(stag_int n) {
-  // Construct the non-zer entries in the complete blocks of the adjacency matrix
+  // Construct the non-zero entries in the complete blocks of the adjacency
+  // matrix
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 0; i < n; i++) {
     for (stag_int j = 0; j < n; j++) {
@@ -335,6 +362,20 @@ stag::Graph stag::barbell_graph(stag_int n) {
 
   // Construct the final adjacency matrix
   SprsMat adj_mat(2 * n, 2 * n);
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
+}
+
+stag::Graph stag::star_graph(stag_int n) {
+  // Construct the non-zero entries in the adjacency matrix
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 1; i < n; i++) {
+    non_zero_entries.emplace_back(0, i, 1);
+    non_zero_entries.emplace_back(i, 0, 1);
+  }
+
+  // Construct the final adjacency matrix
+  SprsMat adj_mat(n, n);
   adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
   return stag::Graph(adj_mat);
 }

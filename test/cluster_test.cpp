@@ -53,6 +53,29 @@ TEST(ClusterTest, ACL) {
   EXPECT_EQ(cluster, expected_cluster);
 }
 
+TEST(ClusterTest, pagerankStart) {
+  // Ensure that the approximate pagerank method works for a starting vertex
+  // containing multiple starting vertices.
+  stag::Graph testGraph = stag::star_graph(10);
+
+  // Create the starting vector
+  SprsMat seed_vector(10, 1);
+  seed_vector.coeffRef(0, 0) = 0.5;
+  seed_vector.coeffRef(4, 0) = 0.5;
+
+  // Run the approximate pagerank method.
+  // We set epsilon to be 0.1 so that the central vertex in the star graph
+  // does not get added to the 'push queue' at the start of the APR algorithm.
+  auto result = stag::approximate_pagerank(&testGraph,
+                                           seed_vector,
+                                           0.1,
+                                           0.1);
+
+  // Make sure that the starting vertex 4 has a non-zero
+  // value on the resulting p vector.
+  ASSERT_GT(std::get<0>(result).coeff(4, 0), 0);
+}
+
 TEST(ClusterTest, localSBM) {
   // Construct an SBM and check the clustering method
   // Note that there is some small probability that this will fail.

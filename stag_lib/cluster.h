@@ -97,6 +97,10 @@ namespace stag {
    * is larger than half of the volume of the total graph, then this method may
    * return unexpected results.
    *
+   * Note that the caller is responsible for any required normalisation of the
+   * input vector. In particular, this method does not normalise the vector by
+   * the node degrees.
+   *
    * @param graph
    * @param vec
    * @return a vector containing the indices of vec which give the minimum
