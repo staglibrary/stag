@@ -137,8 +137,8 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
     if (r.coeff(u, 0) >= epsilon * degrees.at(degree_index)) {
       vertex_queue.push(u);
       queue_members.insert(u);
-      degree_index++;
     }
+    degree_index++;
   }
 
   // While the queue is not empty, push an entry off the queue and apply the
