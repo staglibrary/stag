@@ -19,7 +19,7 @@
  */
 EdgeTriplet parse_edgelist_content_line(std::string line) {
   // List the possible delimiters for the elements on the line
-  std::vector<std::string> delimiters{",", " "};
+  std::vector<std::string> delimiters{",", " ", "\t"};
 
   // Split the line to extract the edge information
   int num_tokens_found = 0;
@@ -89,7 +89,7 @@ stag::Graph stag::load_edgelist(std::string &filename) {
 
   // If the file could not be opened, throw an exception
   if (!is.is_open()) {
-    throw std::runtime_error("Could not open edgelist file.");
+    throw std::runtime_error(std::strerror(errno));
   }
 
   // We will construct a vector of triples in order to construct the final
@@ -139,7 +139,7 @@ void stag::save_edgelist(stag::Graph &graph, std::string &filename) {
 
   // If the file could not be opened, throw an exception
   if (!os.is_open()) {
-    throw std::runtime_error("Could not open edgelist file for writing.");
+    throw std::runtime_error(std::strerror(errno));
   }
 
   // Write header information to the output file.

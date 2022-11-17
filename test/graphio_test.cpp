@@ -7,7 +7,6 @@
 */
 #include <iostream>
 #include <gtest/gtest.h>
-#include "stag.h"
 #include "graphio.h"
 #include "utility.h"
 #include "graph.h"
@@ -77,6 +76,25 @@ TEST(GraphioTest, FromEdgelistMissingWeights) {
   std::vector<stag_int> rowStarts = {0, 2, 4, 6};
   std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1};
   std::vector<double> values = {1, 0.5, 1, 1, 0.5, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_EQ(values, newValues);
+}
+
+TEST(GraphioTest, FromEdgelistTabs) {
+  std::string filename = "test/data/test5.edgelist";
+  stag::Graph testGraph = stag::load_edgelist(filename);
+
+  // Create the expected data for the graph adjacency matrix.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 6};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1};
+  std::vector<double> values = {0.5, 0.5, 0.5, 1, 0.5, 1};
 
   // Check that the adjacency matrix has the form that we expect
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
