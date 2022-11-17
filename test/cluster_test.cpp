@@ -53,6 +53,23 @@ TEST(ClusterTest, ACL) {
   EXPECT_EQ(cluster, expected_cluster);
 }
 
+TEST(ClusterTest, pagerankStart) {
+  // Ensure that the approximate pagerank method works for a starting vertex
+  // containing multiple starting vertices.
+  stag::Graph testGraph = stag::barbell_graph(10);
+
+  // Create the starting vector
+  SprsMat seed_vector(10, 1);
+  seed_vector.coeffRef(2, 0) = 0.5;
+  seed_vector.coeffRef(4, 0) = 0.5;
+
+  // Run the approximate pagerank method
+  auto result = stag::approximate_pagerank(&testGraph,
+                                           seed_vector,
+                                           0.1,
+                                           0.01);
+}
+
 TEST(ClusterTest, localSBM) {
   // Construct an SBM and check the clustering method
   // Note that there is some small probability that this will fail.

@@ -6,6 +6,32 @@
 #include "graph.h"
 #include "utility.h"
 
+
+//------------------------------------------------------------------------------
+// Local Graph Methods
+//------------------------------------------------------------------------------
+
+std::vector<double> stag::LocalGraph::degrees(std::vector<stag_int> vertices) {
+  std::vector<double> degrees;
+
+  for (stag_int v : vertices) {
+    degrees.emplace_back(degree(v));
+  }
+
+  return degrees;
+}
+
+std::vector<stag_int> stag::LocalGraph::degrees_unweighted(
+    std::vector<stag_int> vertices) {
+  std::vector<stag_int> degrees;
+
+  for (stag_int v : vertices) {
+    degrees.emplace_back(degree_unweighted(v));
+  }
+
+  return degrees;
+}
+
 //------------------------------------------------------------------------------
 // Graph Object Constructors
 //------------------------------------------------------------------------------

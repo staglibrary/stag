@@ -39,6 +39,11 @@ namespace stag {
   /**
    * LocalGraph is an abstract class which defines methods for exploring the
    * local neighborhood of a graph.
+   *
+   * To maximise the performance of the local algorithms using this class,
+   * subclasses should cache the results of expensive queries. For example,
+   * if querying the neighbors of a vertex requires accessing the disk, then
+   * the result should be cached.
    */
   class LocalGraph {
     public:
@@ -74,6 +79,29 @@ namespace stag {
        * @return an int vector giving the neighbors of v
        */
       virtual std::vector<stag_int> neighbors_unweighted(stag_int v) = 0;
+
+      /**
+       * Given a list of vertices, return the degrees of each vertex in the
+       * list.
+       *
+       * Providing a method for computing the degrees 'in bulk' increases the
+       * efficiency of algorithms on graphs which are not stored directly in
+       * memory.
+       *
+       * @param vertices a vector of ints representing the vertices to be
+       *                 queried.
+       * @return a vector of degrees
+       */
+      std::vector<double> degrees(std::vector<stag_int> vertices);
+
+      /**
+       * Given a list of vertices, return their unweighted degrees.
+       *
+       * @param vertices a vector of ints representing the vertices to be
+       *                 queried.
+       * @return a vector of integer degrees
+       */
+      std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices);
 
       /**
        * Destructor for the LocalGraph object.
