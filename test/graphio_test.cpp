@@ -7,11 +7,9 @@
 */
 #include <iostream>
 #include <gtest/gtest.h>
-#include "stag.h"
 #include "graphio.h"
 #include "utility.h"
 #include "graph.h"
-#include <fstream>
 
 TEST(GraphioTest, FromEdgelistSimple) {
   std::string filename = "test/data/test1.edgelist";
