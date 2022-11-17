@@ -5,7 +5,7 @@
  * license.
 */
 #include <vector>
-#include <queue>
+#include <deque>
 #include <unordered_set>
 #include <stdexcept>
 #include <algorithm>
@@ -129,13 +129,13 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
   stag_int u;
   std::vector<double> degrees = graph->degrees(
       stag::sprsMatInnerIndices(&seed_vector));
-  std::queue<stag_int> vertex_queue;
+  std::deque<stag_int> vertex_queue;
   std::unordered_set<stag_int> queue_members;
   stag_int degree_index = 0;
   for (SprsMat::InnerIterator it(seed_vector, 0); it; ++it) {
     u = it.row();
     if (r.coeff(u, 0) >= epsilon * degrees.at(degree_index)) {
-      vertex_queue.push(u);
+      vertex_queue.push_back(u);
       queue_members.insert(u);
     }
     degree_index++;
@@ -146,15 +146,17 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
   while (!vertex_queue.empty()) {
     // Get the next vertex from the queue
     u = vertex_queue.front();
-    vertex_queue.pop();
+    vertex_queue.pop_front();
     queue_members.erase(u);
 
     // Perform the push operation on this vertex
     push(graph, &p, &r, alpha, u);
 
     // Check u to see if it should be added back to the queue
+    // If so, then we add it back to the start of the queue in order to be as
+    // cache-efficient as possible when accessing a graph from disk.
     if (r.coeff(u, 0) >= epsilon * graph->degree(u)) {
-      vertex_queue.push(u);
+      vertex_queue.push_front(u);
       queue_members.insert(u);
     }
 
@@ -168,7 +170,7 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
       v = e.v2;
       if (r.coeff(e.v2, 0) >= epsilon * neighbor_degrees.at(degree_index) &&
             !queue_members.contains(v)) {
-        vertex_queue.push(v);
+        vertex_queue.push_back(v);
         queue_members.insert(v);
       }
       degree_index++;
