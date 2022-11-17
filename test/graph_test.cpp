@@ -337,11 +337,30 @@ TEST(GraphTest, CompleteGraphNormalisedLaplacian) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, StarGraph) {
+  // Create a small star graph
+  stag::Graph testGraph = stag::star_graph(5);
+
+  // Define the expected adjacency matrix
+  std::vector<stag_int> colStarts = {0, 4, 5, 6, 7, 8};
+  std::vector<stag_int> rowIndices = {1, 2, 3, 4, 0, 0, 0, 0};
+  std::vector<stag_int> values = {1, 1, 1, 1, 1, 1, 1, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, BarbellGraph) {
-  // Create a small complete graph
+  // Create a small barbell graph
   stag::Graph testGraph = stag::barbell_graph(4);
 
-  // Define the expected laplacian matrix
+  // Define the expected adjacency matrix
   std::vector<stag_int> colStarts = {0, 3, 6, 9, 13, 17, 20, 23, 26};
   std::vector<stag_int> rowIndices = {1, 2, 3,
                                       0, 2, 3,

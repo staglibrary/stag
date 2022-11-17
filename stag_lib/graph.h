@@ -344,5 +344,14 @@ namespace stag {
    * @return
    */
   Graph barbell_graph(stag_int n);
+
+  /**
+   * Construct a start graph. The star graph consists of one central vertex
+   * connected by an edge to n-1 outer vertices.
+   *
+   * @param n
+   * @return a graph object
+   */
+   Graph star_graph(stag_int n);
 }
 #endif //STAG_LIBRARY_H
