@@ -1,0 +1,5 @@
+# This is a basic edgelist file with weights
+# Entries are separated with tabs
+0	1	0.5
+1	2	1
+2	0	0.5
