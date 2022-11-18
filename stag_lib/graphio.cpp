@@ -6,6 +6,8 @@
 #include <fstream>
 #include <stdexcept>
 
+#include "neo4j-client.h"
+
 #include "graph.h"
 #include "graphio.h"
 
@@ -161,4 +163,72 @@ void stag::save_edgelist(stag::Graph &graph, std::string &filename) {
 
   // Close the output file stream
   os.close();
+}
+
+//------------------------------------------------------------------------------
+// Neo4j Graph Implementation
+//------------------------------------------------------------------------------
+
+stag::Neo4jGraph::Neo4jGraph(const std::string& uri, const std::string& username,
+                             const std::string& password) {
+  // Initialise the neo4j database connection
+  neo4j_client_init();
+
+  // Connect to the database using the given credentials
+  connection = neo4j_connect("neo4j://localhost:7687", NULL, NEO4J_INSECURE);
+
+  // Check that the connection has succeeded
+  if (connection == nullptr) {
+    std::cerr << errno << std::endl;
+    neo4j_perror(stderr, errno, "Neo4j connection failed");
+  }
+}
+
+double stag::Neo4jGraph::degree(stag_int v) {
+  return (double) degree_unweighted(v);
+}
+
+stag_int stag::Neo4jGraph::degree_unweighted(stag_int v) {
+  stag_int query_size = snprintf(nullptr,
+                                 0,
+                                 "MATCH (n1)-[]-(n2) WHERE id(n1)=%lld RETURN count(n2)",
+                                 v);
+  char query[query_size+1];
+  sprintf(query,
+          "MATCH (n1)-[]-(n2) WHERE id(n1)=%lld RETURN count(n2)",
+          v);
+  std::cout << query << std::endl;
+  neo4j_result_stream_t* results = neo4j_run(connection,
+                                             "return 5",
+                                             neo4j_null);
+  if (results == nullptr) {
+    neo4j_perror(stderr, errno, "Failed to get degree");
+    return 0;
+  }
+
+  neo4j_result_t* result = neo4j_fetch_next(results);
+
+  if (result == nullptr) {
+    neo4j_perror(stderr, errno, "Failed to fetch degree result.");
+    return 0;
+  }
+
+  neo4j_value_t value = neo4j_result_field(result, 0);
+  stag_int degree = neo4j_int_value(value);
+  neo4j_close_results(results);
+  return degree;
+}
+
+std::vector<stag::edge> stag::Neo4jGraph::neighbors(stag_int v) {
+  return {};
+}
+
+std::vector<stag_int> stag::Neo4jGraph::neighbors_unweighted(stag_int v) {
+  return {};
+}
+
+stag::Neo4jGraph::~Neo4jGraph() {
+  // Close the connection to the backend database.
+  neo4j_close(connection);
+  neo4j_client_cleanup();
 }

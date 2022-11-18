@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "neo4j-client.h"
+
 #include <graph.h>
 
 namespace stag {
@@ -39,6 +41,26 @@ namespace stag {
    * @param filename the name of the file to save the edgelist data to
    */
   void save_edgelist(stag::Graph &graph, std::string &filename);
+
+  /**
+   * A local graph backed by a neo4j database.
+   */
+  class Neo4jGraph : public LocalGraph {
+    public:
+      Neo4jGraph(const std::string& uri,
+                 const std::string& username,
+                 const std::string& password);
+
+      double degree(stag_int v) override;
+      stag_int degree_unweighted(stag_int v) override;
+      std::vector<edge> neighbors(stag_int v) override;
+      std::vector<stag_int> neighbors_unweighted(stag_int v) override;
+      ~Neo4jGraph() override;
+
+    private:
+      // The connection to the underlying neo4j database.
+      neo4j_connection_t* connection;
+  };
 }
 
 #endif //STAG_TEST_GRAPHIO_H

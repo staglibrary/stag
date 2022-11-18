@@ -42,6 +42,8 @@ include_directories(eigen-3.3.9) # Eigen - header-only
 include_directories(stag_lib)
 add_subdirectory(stag_lib stag_lib)
 
+
+# Link everything together
 target_link_libraries(
         stagt
         GTest::gtest_main

@@ -130,3 +130,9 @@ TEST(GraphioTest, SaveEdgelist) {
   newGraph = stag::load_edgelist(filename);
   EXPECT_EQ(testGraph, newGraph);
 }
+
+TEST(GraphioTest, Neo4jConnect) {
+  // Check that we can connect to a neo4j database
+  stag::Neo4jGraph testGraph = stag::Neo4jGraph("neo4j://neo4j:password@localhost:7474", "", "");
+  std::cout << testGraph.degree_unweighted(1) << std::endl;
+}
