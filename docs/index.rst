@@ -10,14 +10,9 @@ Welcome to STAG's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Getting Started
+===============
+STAG is a C++ library providing several spectral algorithms for graphs.
 
 Docs
 ====
