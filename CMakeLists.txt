@@ -4,6 +4,9 @@ project(stag_test)
 # Require at least C++20
 set(CMAKE_CXX_STANDARD 20)
 
+# Add the cmake folder
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 # Download googletest
 include(FetchContent)
 FetchContent_Declare(
@@ -51,3 +54,7 @@ target_link_libraries(
 # Do the googletest magic
 include(GoogleTest)
 gtest_discover_tests(stagt)
+
+# Build the docs
+add_subdirectory("docs")
+
