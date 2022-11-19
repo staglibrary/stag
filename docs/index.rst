@@ -24,13 +24,6 @@ Docs
 
 .. doxygenstruct:: stag::edge
    :members:
-   :protected-members:
-   :private-members:
-   :undoc-members:
-   :members-only:
-   :outline:
-   :no-link:
-   :allow-dot-graphs:
 
 .. doxygenclass:: stag::Graph
    :members:
