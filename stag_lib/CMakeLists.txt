@@ -20,6 +20,5 @@ include_directories(../eigen-3.3.9) # Eigen - header-only
 
 # Define the STAG library
 add_library(stag SHARED ${SOURCE_FILES} ${HEADER_FILES})
-
-# Create an object file named 'stag.so'.
 set_target_properties(stag PROPERTIES PREFIX "")
+
