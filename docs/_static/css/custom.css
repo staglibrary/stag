@@ -4,7 +4,7 @@
 
 .wy-nav-side {
     background: #d3a99f;
-    position: absolute;
+    top: 72px;
 }
 
 .wy-menu-vertical a {
@@ -17,11 +17,6 @@
 }
 
 .wy-grid-for-nav {
-    max-width: 1100px;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    position: relative;
-    float: none !important;
     margin-top: 72px;
 }
 
@@ -31,4 +26,8 @@
 
 ul {
     padding: 0;
+}
+
+html {
+    scroll-padding-top: 72px;
 }

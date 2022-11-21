@@ -29,7 +29,8 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_logo = '_static/img/logo/ginger.png'
 html_theme_options = {
-    'logo_only': True
+    'logo_only': True,
+    'sticky_navigation': False,
 }
 
 # Add all vendor CSS and javascript
@@ -47,3 +48,7 @@ for root, dirs, files in os.walk("_static/vendor"):
 html_css_files.append('css/custom.css')
 html_css_files.append('css/style.css')
 html_js_files.append('js/custom.js')
+
+# Needed to fix the scrolling bug
+html_js_files.append('https://cdn.jsdelivr.net/npm/jquery.scrollto@2.1.3/jquery.scrollTo.min.js')
+

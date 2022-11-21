@@ -46,3 +46,10 @@ window.onload = () => {
 
     target.insertBefore(newElement, target.firstChild);
 }
+
+// Fix the scrolling issue
+// On url change, scroll to the selected element
+window.addEventListener('hashchange',() => {
+    var hash = window.location.hash;
+    $(window).scrollTo(hash, {offset: -100});
+})

@@ -9,20 +9,8 @@ Welcome to STAG's documentation!
 The documentation site is still under construction.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-Getting Started
-===============
-STAG is a C++ library providing several spectral algorithms for graphs.
-
-Docs
-====
-
-.. doxygenstruct:: stag::edge
-   :members:
-
-.. doxygenclass:: stag::Graph
-   :members:
-
-
+   getting-started
+   reference

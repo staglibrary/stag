@@ -1,9 +1,11 @@
-/**
+/** @cond
  * Definitions related to the core Graph object used to represent graphs within
  * the library.
  *
  * This file is provided as part of the STAG library and released under the MIT
  * license.
+ *
+ * @endcond
  */
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
@@ -11,10 +13,19 @@
 #include <Eigen/Sparse>
 #include <vector>
 
-// The fundamental datatype used in this library is the sparse matrix. For
-// convenience, we define the sparse matrix type here.
+
+/**
+ * The integer type used throughout the library.
+ */
 typedef long long stag_int;
+
+/**
+ *
+ * The fundamental datatype used in this library is the sparse matrix.
+ * We use the `Eigen::SparseMatrix` class in column-major format.
+ */
 typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
+
 typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 
 // Redefine the eigen index type to be the same as stag_int
@@ -26,13 +37,19 @@ namespace stag {
    * A structure representing a weighted edge in a graph.
    */
   struct edge {
-    // The first vertex in the edge.
+    /**
+     * The first vertex in the edge.
+     */
     stag_int v1;
 
-    // The second vertex in the edge
+    /**
+     * The second vertex in the edge.
+     */
     stag_int v2;
 
-    // The weight of the edge.
+    /**
+     * The weight of the edge.
+     */
     double weight;
   };
 
@@ -353,5 +370,7 @@ namespace stag {
    * @return a graph object
    */
    Graph star_graph(stag_int n);
+
 }
 #endif //STAG_LIBRARY_H
+

@@ -6,12 +6,11 @@ find_package(Sphinx)
 #############################################################
 
 # Find all the public headers
-get_target_property(STAG_PUBLIC_HEADER_DIR stag INTERFACE_INCLUDE_DIRECTORIES)
-file(GLOB_RECURSE STAG_PUBLIC_HEADERS ${STAG_PUBLIC_HEADER_DIR}/*.h)
+file(GLOB_RECURSE STAG_PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/stag_lib/*.h)
 
 set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/stag_lib)
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/docs/doxygen)
-set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
+set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/xml/index.xml)
 set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
 set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
@@ -20,7 +19,7 @@ configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 
 file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
 add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
-                   DEPENDS ${CAT_CUTIFIER_PUBLIC_HEADERS}
+                   DEPENDS ${STAG_PUBLIC_HEADERS}
                    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
                    MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
                    COMMENT "Generating docs with doxygen")
@@ -38,6 +37,11 @@ set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 # All documentation files should go here
 set(DOCUMENTATION_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/index.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/getting-started.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/graphs.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/cluster.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/types.rst
     ${CMAKE_CURRENT_SOURCE_DIR}/_static/css/custom.css
     ${CMAKE_CURRENT_SOURCE_DIR}/_static/css/style.css
     ${CMAKE_CURRENT_SOURCE_DIR}/_static/js/custom.js
