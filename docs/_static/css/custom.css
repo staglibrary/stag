@@ -17,6 +17,11 @@
 }
 
 .wy-grid-for-nav {
+    max-width: 1100px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    position: relative;
+    float: none !important;
     margin-top: 72px;
 }
 

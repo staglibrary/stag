@@ -45,6 +45,15 @@ window.onload = () => {
         "</header><!-- End Header -->\n"
 
     target.insertBefore(newElement, target.firstChild);
+
+    // Call the onresize method
+    window.onresize(null);
+}
+
+window.onresize = () => {
+    // Configure the (absolute) location of the navigation bar
+    var left_position = $(".wy-grid-for-nav").css('marginLeft');
+    $(".wy-nav-side").css("left", left_position);
 }
 
 // Fix the scrolling issue
