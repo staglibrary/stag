@@ -9,7 +9,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-debug
-      - run: cmake --build cmake-build-debug
+      - run: cmake --build cmake-build-debug --target stagt
       - uses: actions/upload-artifact@master
         with:
           name: test-binary
@@ -18,6 +18,24 @@ jobs:
         with:
           name: shared-library
           path: cmake-build-debug/stag_lib/stag.so
+
+  Docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen
+      - name: Install Sphinx
+        run: sudo apt-get install -y python3-sphinx
+      - name: Install Breathe
+        run: sudo python3 -m pip install breathe
+      - name: Install RTD Theme
+        run: sudo python3 -m pip install sphinx_rtd_theme
+      - name: Build Docs
+        run: |
+          cmake -S . -B cmake-build-debug
+          cmake --build cmake-build-debug --target Documentation
 
   Test:
     runs-on: ubuntu-latest

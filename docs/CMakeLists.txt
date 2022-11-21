@@ -1,4 +1,9 @@
-find_package(Doxygen REQUIRED)
+find_package(Doxygen)
+find_package(Sphinx)
+
+#############################################################
+# Doxygen build
+#############################################################
 
 # Find all the public headers
 get_target_property(STAG_PUBLIC_HEADER_DIR stag INTERFACE_INCLUDE_DIRECTORIES)
@@ -20,9 +25,11 @@ add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
                    MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
                    COMMENT "Generating docs with doxygen")
 
-add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
+add_custom_target(Doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
 
-find_package(Sphinx REQUIRED)
+#############################################################
+# Sphinx build
+#############################################################
 
 set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
 set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
@@ -46,6 +53,7 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                    MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
                    COMMENT "Generating documentation with Sphinx")
 
-# Nice named target so we can run the job easily
-add_custom_target(Sphinx ALL DEPENDS ${SPHINX_INDEX_FILE})
-
+#############################################################
+# Documentation target
+#############################################################
+add_custom_target(Documentation ALL DEPENDS ${SPHINX_INDEX_FILE})
