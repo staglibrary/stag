@@ -22,10 +22,28 @@ breathe_default_project = "STAG"
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
-
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_logo = '_static/img/logo/ginger.png'
+html_theme_options = {
+    'logo_only': True
+}
+
+# Add all vendor CSS and javascript
+import os
+html_css_files = []
+html_js_files = []
+for root, dirs, files in os.walk("_static/vendor"):
+    for file in files:
+        if file.endswith(".css"):
+            html_css_files.append(os.path.join(root[8:], file))
+        if file.endswith(".js"):
+            html_js_files.append(os.path.join(root[8:], file))
+
+# Finally, add custom scripts for the documentation
+html_css_files.append('css/custom.css')
+html_css_files.append('css/style.css')
+html_js_files.append('js/custom.js')

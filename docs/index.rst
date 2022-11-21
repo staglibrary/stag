@@ -6,6 +6,8 @@
 Welcome to STAG's documentation!
 ================================
 
+The documentation site is still under construction.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -22,4 +24,5 @@ Docs
 
 .. doxygenclass:: stag::Graph
    :members:
+
 
