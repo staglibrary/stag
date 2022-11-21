@@ -40,8 +40,11 @@ set(DOCUMENTATION_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/getting-started.rst
     ${CMAKE_CURRENT_SOURCE_DIR}/reference.rst
     ${CMAKE_CURRENT_SOURCE_DIR}/graphs.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/graphio.rst
     ${CMAKE_CURRENT_SOURCE_DIR}/cluster.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/random.rst
     ${CMAKE_CURRENT_SOURCE_DIR}/types.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/utility.rst
     ${CMAKE_CURRENT_SOURCE_DIR}/_static/css/custom.css
     ${CMAKE_CURRENT_SOURCE_DIR}/_static/css/style.css
     ${CMAKE_CURRENT_SOURCE_DIR}/_static/js/custom.js

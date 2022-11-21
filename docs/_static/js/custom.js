@@ -46,19 +46,4 @@ window.onload = () => {
 
     target.insertBefore(newElement, target.firstChild);
 
-    // Call the onresize method
-    window.onresize(null);
 }
-
-window.onresize = () => {
-    // Configure the (absolute) location of the navigation bar
-    var left_position = $(".wy-grid-for-nav").css('marginLeft');
-    $(".wy-nav-side").css("left", left_position);
-}
-
-// Fix the scrolling issue
-// On url change, scroll to the selected element
-window.addEventListener('hashchange',() => {
-    var hash = window.location.hash;
-    $(window).scrollTo(hash, {offset: -100});
-})

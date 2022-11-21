@@ -7,8 +7,21 @@ so it may be useful to also refer to the `Eigen documentation <https://eigen.tux
 
 Installation
 ------------
-To include the STAG library in your C++ project, ...
+To include the STAG library in your C++ project:
 
-Quick Start
------------
-To create a graph using STAG, ...
+  - download STAG from github
+  - copy the ``stag_lib`` and ``eigen-3.3.9`` directories into your project
+  - add the following to your ``CMakeLists.txt``.
+
+.. code-block::
+   :linenos:
+
+   include_directories(eigen-3.3.9) # Eigen - header-only
+   include_directories(stag_lib)
+   add_subdirectory(stag_lib stag_lib)
+
+   target_link_libraries(
+           YOUR_PROJECT
+           stag
+   )
+

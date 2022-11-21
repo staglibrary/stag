@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to STAG's documentation!
+STAG |release| documentation
 ================================
 
-The documentation site is still under construction.
+Welcome to the STAG library documentation.
 
 .. toctree::
    :maxdepth: 1
