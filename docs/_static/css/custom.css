@@ -25,6 +25,9 @@ html {
 .justify-content-between {
     justify-content: space-between !important;
     width: 100%;
-    margin-left: 5em;
-    margin-right: 5em;
+    max-width: 1320px;
+    padding-left: 2em;
+    padding-right: 2em;
+    margin-left: auto;
+    margin-right: auto;
 }
