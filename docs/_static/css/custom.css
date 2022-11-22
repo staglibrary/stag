@@ -3,9 +3,28 @@ html {
 }
 
 .page {
-    margin-top: 80px;
+    margin-top: 72px;
 }
 
-.theme-toggle-container {
-    visibility: hidden;
+.fixed-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.align-items-center {
+    align-items: center !important;
+}
+
+.d-flex {
+    display: flex !important;
+}
+
+.justify-content-between {
+    justify-content: space-between !important;
+    width: 100%;
+    margin-left: 5em;
+    margin-right: 5em;
 }

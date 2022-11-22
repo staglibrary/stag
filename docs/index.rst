@@ -7,6 +7,7 @@ STAG |release| documentation
 ================================
 
 Welcome to the STAG library documentation.
+This is documentation for the C++ library.
 
 .. toctree::
    :maxdepth: 1
