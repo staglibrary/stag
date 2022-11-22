@@ -31,7 +31,7 @@ jobs:
       - name: Install Breathe
         run: sudo python3 -m pip install breathe
       - name: Install RTD Theme
-        run: sudo python3 -m pip install sphinx_rtd_theme
+        run: sudo python3 -m pip install furo
       - name: Build Docs
         run: |
           cmake -S . -B cmake-build-debug
