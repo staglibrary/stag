@@ -32,6 +32,6 @@ html {
     margin-right: auto;
 }
 
-.sidebar-sticky {
+.sidebar-sticky, toc-sticky {
     top: 72px;
 }

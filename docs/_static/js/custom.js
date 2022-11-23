@@ -52,14 +52,16 @@ window.onload = () => {
     target.insertBefore(newElement, target.firstChild);
 
     // Add favicon code to the header
-    target = document.head;
-    target.innerHTML += "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\">\n" +
-        "<link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/favicon-32x32.png\">\n" +
-        "<link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"/favicon-16x16.png\">\n" +
-        "<link rel=\"manifest\" href=\"/site.webmanifest\">\n" +
-        "<link rel=\"mask-icon\" href=\"/safari-pinned-tab.svg\" color=\"#5bbad5\">\n" +
-        "<meta name=\"msapplication-TileColor\" content=\"#2b5797\">\n" +
-        "<meta name=\"theme-color\" content=\"#ffffff\">";
+    if (!location.hostname.includes("localhost")) {
+        target = document.head;
+        target.innerHTML += "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\">\n" +
+            "<link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/favicon-32x32.png\">\n" +
+            "<link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"/favicon-16x16.png\">\n" +
+            "<link rel=\"manifest\" href=\"/site.webmanifest\">\n" +
+            "<link rel=\"mask-icon\" href=\"/safari-pinned-tab.svg\" color=\"#5bbad5\">\n" +
+            "<meta name=\"msapplication-TileColor\" content=\"#2b5797\">\n" +
+            "<meta name=\"theme-color\" content=\"#ffffff\">";
+    }
 
     // Set the header background to the side-bar background color
     $("#header").css('background', $(".sidebar-drawer").css('background'));
