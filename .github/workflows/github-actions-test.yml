@@ -1,6 +1,5 @@
 
 name: Build
-run-name: Build ${{ github.sha }}
 on: [push]
 jobs:
   Build:
