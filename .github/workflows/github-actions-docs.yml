@@ -1,0 +1,36 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - 'docs-*'
+
+jobs:
+  Publish_Docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen
+      - name: Install Sphinx
+        run: sudo apt-get install -y python3-sphinx
+      - name: Install Breathe
+        run: sudo python3 -m pip install breathe
+      - name: Install RTD Theme
+        run: sudo python3 -m pip install furo
+      - name: Build Docs
+        run: |
+          cmake -S . -B cmake-build-debug
+          cmake --build cmake-build-debug --target Documentation
+      - name: Publish docs
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.WEBSITE_SSH_DEPLOY_KEY }}
+        with:
+          source-directory: 'cmake-build-debug/docs/docs/sphinx'
+          destination-github-username: 'staglibrary'
+          destination-repository-name: 'stagorg.github.io'
+          user-email: macgregor.pr@gmail.com
+          target-branch: master
+          target-directory: docs/cpp
