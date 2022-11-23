@@ -74,6 +74,13 @@ window.onload = () => {
     } else {
         $(".navbar a").css('color', light_color);
     }
+
+    // Re-initialise the scrollspy from the furo sphinx theme now we've added
+    // the header
+    window.document.dispatchEvent(new Event("DOMContentLoaded", {
+        bubbles: true,
+        cancelable: true
+    }));
 }
 
 function cycleHeaderThemeOnce() {
