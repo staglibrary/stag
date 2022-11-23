@@ -35,7 +35,7 @@ window.onload = () => {
         "                <li class=\"dropdown active\"><a href=\"#\"><span>Documentation</span> <i class=\"bi bi-chevron-down\"></i></a>\n" +
         "                            <ul>\n" +
         "                                <li><a href=\"index.html\">C++</a></li>\n" +
-        // "                                <li><a href=\"https://staglibrary.io/docs/python\">Python</a></li>\n" +
+        "                                <li><a href=\"https://staglibrary.io/docs/python/index.html\">Python</a></li>\n" +
         "                                <li>\n" +
         "                            </ul>\n" +
         "                </li>\n" +
