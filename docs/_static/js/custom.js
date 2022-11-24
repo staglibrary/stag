@@ -31,7 +31,7 @@ function update_header() {
         "    <div class=\"container d-flex align-items-center justify-content-between\">\n" +
         "\n" +
         "        <div class=\"logo\">\n" +
-        "            <h1 class=\"text-light\"><a href=\"https://staglibrary.io/docs/python/index.html\"><span>STAG Python</span></a></h1>\n" +
+        "            <h1 class=\"text-light\"><a href=\"https://staglibrary.io/docs/python/index.html\"><span>STAG C++</span></a></h1>\n" +
         "            <!-- Uncomment below if you prefer to use an image logo -->\n" +
         "            <!-- <a href=\"index.html\"><img src=\"assets/img/logo.png\" alt=\"\" class=\"img-fluid\"></a>-->\n" +
         "        </div>\n" +
@@ -54,7 +54,7 @@ function update_header() {
         "                <li class=\"dropdown active\"><a href=\"#\"><span>Documentation</span> <i class=\"bi bi-chevron-down\"></i></a>\n" +
         "                            <ul>\n" +
         "                                <li><a href=\"https://staglibrary.io/docs/cpp/index.html\">C++</a></li>\n" +
-        "                                <li><a href=\"index.html\">Python</a></li>\n" +
+        "                                <li><a href=\"https://staglibrary.io/docs/python/index.html\">Python</a></li>\n" +
         "                                <li>\n" +
         "                            </ul>\n" +
         "                </li>\n" +

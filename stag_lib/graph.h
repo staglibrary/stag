@@ -168,7 +168,11 @@ namespace stag {
        * Construct the Laplacian matrix of the graph.
        *
        * The Laplacian matrix is defined by
+       *
+       * \f[
        *   L = D - A
+       * \f]
+       *
        * where D is the diagonal matrix of vertex degrees and A is the adjacency
        * matrix of the graph.
        *
