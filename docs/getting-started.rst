@@ -9,9 +9,9 @@ Installation
 ------------
 To include the STAG library in your C++ project:
 
-  - download STAG from github
-  - copy the ``stag_lib`` and ``eigen-3.3.9`` directories into your project
-  - add the following to your ``CMakeLists.txt``.
+- download STAG from github
+- copy the ``stag_lib`` and ``eigen-3.3.9`` directories into your project
+- add the following to your ``CMakeLists.txt``.
 
 .. code-block::
    :linenos:
