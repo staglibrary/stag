@@ -14,7 +14,6 @@ To include the STAG library in your C++ project:
 - add the following to your ``CMakeLists.txt``.
 
 .. code-block::
-   :linenos:
 
    set(CMAKE_CXX_STANDARD 20) # STAG requires at least C++20.
 
@@ -26,4 +25,21 @@ To include the STAG library in your C++ project:
            YOUR_PROJECT
            stag
    )
+
+Then, you can construct a graph in your project with the following code.
+
+.. code-block::
+
+   #include <iostream>
+   #include "graph.h"
+
+   int main() {
+     stag::Graph myGraph = stag::cycle_graph(10);
+
+     // Display the adjacency matrix of the graph
+     std::cout << *myGraph.adjacency() << std::endl;
+
+     return 0;
+   }
+
 
