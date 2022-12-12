@@ -16,6 +16,8 @@ To include the STAG library in your C++ project:
 .. code-block::
    :linenos:
 
+   set(CMAKE_CXX_STANDARD 20) # STAG requires at least C++20.
+
    include_directories(eigen-3.3.9) # Eigen - header-only
    include_directories(stag_lib)
    add_subdirectory(stag_lib stag_lib)
