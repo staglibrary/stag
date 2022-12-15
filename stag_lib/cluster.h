@@ -12,6 +12,17 @@
 #include <graph.h>
 
 namespace stag {
+
+  /**
+   * Default spectral clustering algorithm.
+   *
+   * @param graph
+   * @param k
+   * @return a vector giving the cluster membership for each vertex in the graph
+   */
+  std::vector<stag_int> spectral_cluster(stag::Graph* graph, stag_int k);
+
+
   /**
    * Default local clustering algorithm. Given a graph and starting vertex,
    * return a cluster which is close to the starting vertex.

@@ -19,6 +19,10 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# Find and include the Eigen library
+find_package(Eigen3 3.1 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 # Google test
 enable_testing()
 
@@ -30,7 +34,7 @@ add_executable(
         test/utility_test.cpp
         test/graphio_test.cpp
         test/random_test.cpp
-        test/cluster_test.cpp)
+        test/cluster_test.cpp test/spectrum_test.cpp)
 
 # Add the test data files - these need to be copied to the binary directory for the testing application to work
 # correctly
@@ -41,7 +45,6 @@ configure_file(test/data/test4.edgelist test/data/test4.edgelist COPYONLY)
 configure_file(test/data/test5.edgelist test/data/test5.edgelist COPYONLY)
 
 # Add libraries
-include_directories(eigen-3.3.9) # Eigen - header-only
 include_directories(stag_lib)
 add_subdirectory(stag_lib stag_lib)
 

@@ -20,6 +20,20 @@
             EXPECT_NEAR(expected[idx], actual[idx], thresh) << "at index: " << idx;\
         }
 
+TEST(ClusterTest, SpectralCluster) {
+  // Construct a test graph from the SBM
+  stag::Graph testGraph = stag::sbm(1000, 5, 0.6, 0.1);
+
+  // Find the clusters
+  auto clusters = stag::spectral_cluster(&testGraph, 5);
+
+  // Show the clusters
+  for (auto c : clusters) {
+    std::cout << c << ", ";
+  }
+  std::cout << std::endl;
+}
+
 TEST(ClusterTest, ApproxPageRank) {
   // Construct a test graph
   std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
