@@ -1,9 +1,9 @@
-/**
- * Graph clustering algorithms based on spectral methods.
- *
- * This file is provided as part of the STAG library and released under the MIT
- * license.
- */
+//
+// Graph clustering algorithms based on spectral methods.
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #ifndef STAG_TEST_CLUSTER_H
 #define STAG_TEST_CLUSTER_H
 
@@ -12,6 +12,21 @@
 #include <graph.h>
 
 namespace stag {
+
+  /**
+   * Spectral clustering algorithm.
+   *
+   * Computes the k eigenvectors of the normalised Laplacian matrix of the graph
+   * with the smallest eigenvalue. Then, performs the k-means clustering algorithm
+   * on the spectral embedding of the vertices.
+   *
+   * @param graph the graph object to be clustered
+   * @param k the number of clusters to find
+   * @return a vector giving the cluster membership for each vertex in the graph
+   */
+  std::vector<stag_int> spectral_cluster(stag::Graph* graph, stag_int k);
+
+
   /**
    * Default local clustering algorithm. Given a graph and starting vertex,
    * return a cluster which is close to the starting vertex.

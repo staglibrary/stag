@@ -1,12 +1,10 @@
-/** @cond
- * Definitions related to the core Graph object used to represent graphs within
- * the library.
- *
- * This file is provided as part of the STAG library and released under the MIT
- * license.
- *
- * @endcond
- */
+//
+// Definitions related to the core Graph object used to represent graphs within
+// the library.
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 

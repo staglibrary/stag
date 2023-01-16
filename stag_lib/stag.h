@@ -1,9 +1,9 @@
-/**
- * Definitions relating to the configuration of the STAG library.
- *
- * This file is provided as part of the STAG library and released under the MIT
- * license.
- */
+//
+// Definitions relating to the configuration of the STAG library.
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #ifndef STAG_TEST_STAG_H
 #define STAG_TEST_STAG_H
 

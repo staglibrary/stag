@@ -20,6 +20,47 @@
             EXPECT_NEAR(expected[idx], actual[idx], thresh) << "at index: " << idx;\
         }
 
+TEST(ClusterTest, SpectralCluster) {
+  // Construct a test graph from the SBM
+  stag_int n = 1000;
+  stag_int k = 5;
+  stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
+
+  // Find the clusters
+  auto clusters = stag::spectral_cluster(&testGraph, k);
+
+  // There should be approximately the same number of each cluster
+  stag_int c1 = 0;
+  stag_int c2 = 0;
+
+  for (auto c : clusters) {
+    if (c == 1) c1++;
+    if (c == 2) c2++;
+  }
+  EXPECT_NEAR(c1 / c2, 1, 0.01);
+}
+
+TEST(ClusterTest, SpectralClusterDisconnected) {
+  // Construct a sparse disconnected graph from the SBM
+  stag_int n = 1000;
+  stag_int k = 2;
+  stag::Graph testGraph = stag::sbm(n, k, 0.5, 0);
+
+  // Find the clusters
+  auto clusters = stag::spectral_cluster(&testGraph, k);
+
+  // There should be exactly the same number of each cluster
+  stag_int c0 = 0;
+  stag_int c1 = 0;
+
+  for (auto c : clusters) {
+    if (c == 0) c0++;
+    if (c == 1) c1++;
+  }
+  EXPECT_EQ(c0, n / k);
+  EXPECT_EQ(c1, n / k);
+}
+
 TEST(ClusterTest, ApproxPageRank) {
   // Construct a test graph
   std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};

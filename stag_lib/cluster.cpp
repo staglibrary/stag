@@ -1,9 +1,7 @@
-/**
-* Implementations of the clustering algorithms defined in cluster.h.
- *
- * This file is provided as part of the STAG library and released under the MIT
- * license.
-*/
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #include <vector>
 #include <deque>
 #include <unordered_set>
@@ -13,6 +11,35 @@
 #include <graph.h>
 #include <cluster.h>
 #include <utility.h>
+#include <spectrum.h>
+#include <KMeansRex/KMeansRexCoreInterface.h>
+
+std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
+  assert(k < graph->number_of_vertices() / 2);
+
+  // Start by computing the 'first' k eigenvalues of the normalised graph
+  // laplacian matrix.
+  const SprsMat* lap = graph->normalised_laplacian();
+  Eigen::MatrixXd eigvecs = stag::compute_eigenvectors(lap, k);
+
+  // Run k-means clustering on the spectral embedding of the vertices
+  Eigen::MatrixXd centres = Eigen::MatrixXd::Zero(k, k);
+  Eigen::VectorXd clusters = Eigen::VectorXd::Zero(eigvecs.rows());
+  char initialisation[9] = "plusplus";
+  RunKMeans(eigvecs.data(),
+            eigvecs.rows(),
+            k,
+            k,
+            k * 100,
+            42,
+            initialisation,
+            centres.data(),
+            clusters.data()
+            );
+
+  // Move the eigen data into the vector to return
+  return {clusters.data(), clusters.data() + clusters.rows()};
+}
 
 std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, double target_volume) {
   // The 'locality' parameter should essentially be a constant if we expect the conductance

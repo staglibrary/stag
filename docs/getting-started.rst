@@ -7,17 +7,49 @@ so it may be useful to also refer to the `Eigen documentation <https://eigen.tux
 
 Installation
 ------------
-To include the STAG library in your C++ project:
+To include the STAG library in your C++ project, you should first install the following
+dependencies.
 
-- download STAG from github
-- copy the ``stag_lib`` and ``eigen-3.3.9`` directories into your project
-- add the following to your ``CMakeLists.txt``.
+- Eigen (version >= 3.1)
+- Spectra (version >= 1.0.1)
+
+You should refer to their documentation for installation instructions,
+although the following should work on a standard linux system.
+
+.. code-block::
+
+    # Create a directory to work in
+    mkdir libraries
+    cd libraries
+
+    # Install Eigen
+    wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+    tar xzvf eigen-3.4.0.tar.gz
+    cd eigen-3.4.0
+    mkdir build_dir
+    cd build_dir
+    cmake ..
+    sudo make install
+    cd ../..
+
+    # Install Spectra
+    wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
+    tar xzvf v1.0.1.tar.gz
+    cd spectra-1.0.1
+    mkdir build_dir
+    cd build_dir
+    cmake ..
+    sudo make install
+    cd ../..
+
+Then, download STAG from github and copy the ``stag_lib`` directory into you project.
+Adding the following to your ``CMakeLists.txt`` will compile STAG and make it available
+to the code in your project.
 
 .. code-block::
 
    set(CMAKE_CXX_STANDARD 20) # STAG requires at least C++20.
 
-   include_directories(eigen-3.3.9) # Eigen - header-only
    include_directories(stag_lib)
    add_subdirectory(stag_lib stag_lib)
 

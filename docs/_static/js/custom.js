@@ -31,7 +31,7 @@ function update_header() {
         "    <div class=\"container d-flex align-items-center justify-content-between\">\n" +
         "\n" +
         "        <div class=\"logo\">\n" +
-        "            <h1 class=\"text-light\"><a href=\"https://staglibrary.io/docs/python/index.html\"><span>STAG C++</span></a></h1>\n" +
+        "            <h1 class=\"text-light\"><a href=\"https://staglibrary.io/docs/cpp/index.html\"><span>STAG C++</span></a></h1>\n" +
         "            <!-- Uncomment below if you prefer to use an image logo -->\n" +
         "            <!-- <a href=\"index.html\"><img src=\"assets/img/logo.png\" alt=\"\" class=\"img-fluid\"></a>-->\n" +
         "        </div>\n" +

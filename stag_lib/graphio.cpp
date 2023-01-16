@@ -1,12 +1,13 @@
-/**
- * This file is provided as part of the STAG library and released under the MIT
- * license.
-*/
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
 
 #include "graph.h"
+#include "utility.h"
 #include "graphio.h"
 
 /**
@@ -100,7 +101,7 @@ stag::Graph stag::load_edgelist(std::string &filename) {
   stag_int number_of_vertices = 0;
   std::string line;
   EdgeTriplet this_edge;
-  while (getline(is, line)) {
+  while (stag::safeGetline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
         // This line of the input file isn't a comment, parse it.

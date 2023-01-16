@@ -1,9 +1,9 @@
-/**
- * Definitions of utility methods for dealing with sparse matrices.
- *
- * This file is provided as part of the STAG library and released under the MIT
- * license.
- */
+//
+// Definitions of utility methods for dealing with sparse matrices.
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #ifndef STAG_TEST_UTILITY_H
 #define STAG_TEST_UTILITY_H
 
@@ -108,6 +108,15 @@ namespace stag {
     }
     std::cerr << std::endl;
   }
+
+  /**
+   * Get the next line from an input stream, while safely handling all types of
+   * line endings (CR, LF, CRLF).
+   *
+   * @param is the input stream to process
+   * @param t the string variable in which to store the returned line
+   */
+  std::istream& safeGetline(std::istream& is, std::string& t);
 }
 
 #endif //STAG_TEST_UTILITY_H

@@ -1,5 +1,5 @@
-find_package(Doxygen)
-find_package(Sphinx)
+find_program(SPHINX_EXECUTABLE sphinx-build)
+find_program(DOXYGEN_EXECUTABLE doxygen)
 
 #############################################################
 # Doxygen build
