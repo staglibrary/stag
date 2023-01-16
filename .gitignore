@@ -1,8 +1,11 @@
 # Build output
 **/cmake-build-debug/
+**/cmake-build-release/
 **/build/
 
 # Intellij-type IDEs
 **/.idea/tasks.xml
 **/.idea/workspace.xml
 
+# Visual Studio Code
+.vs/
