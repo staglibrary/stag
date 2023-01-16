@@ -9,7 +9,7 @@
 project = 'STAG'
 copyright = '2022, The STAG Team'
 author = 'The STAG Team'
-release = '0.3.0'
+release = '0.4.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
