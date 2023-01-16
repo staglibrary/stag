@@ -16,10 +16,14 @@
 
 
 namespace stag {
-  // Define the spectra operation for the SprsMat type
+  /*
+   * The spectra operation for multiplying the SprsMat type
+   */
   typedef Spectra::SparseSymMatProd<double, Eigen::Upper, Eigen::ColMajor, stag_int> SprsMatOp;
 
-  // Define an eigensystem - a tuple of eigenvalues and eigenvectors
+  /*
+   * An eigensystem is defined to be a tuple of eigenvalues and eigenvectors
+   */
   typedef std::tuple<Eigen::VectorXd, Eigen::MatrixXd> EigenSystem;
 
   /*
