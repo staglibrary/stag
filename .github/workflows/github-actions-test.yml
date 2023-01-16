@@ -14,7 +14,7 @@ jobs:
           cd spectra-1.0.1/
           mkdir build && cd build
           cmake ..
-          make all && make install
+          sudo make all && sudo make install
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-debug
