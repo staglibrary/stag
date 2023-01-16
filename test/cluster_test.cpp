@@ -22,16 +22,43 @@
 
 TEST(ClusterTest, SpectralCluster) {
   // Construct a test graph from the SBM
-  stag::Graph testGraph = stag::sbm(1000, 5, 0.6, 0.1);
+  stag_int n = 1000;
+  stag_int k = 5;
+  stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
 
   // Find the clusters
-  auto clusters = stag::spectral_cluster(&testGraph, 5);
+  auto clusters = stag::spectral_cluster(&testGraph, k);
 
-  // Show the clusters
+  // There should be approximately the same number of each cluster
+  stag_int c1 = 0;
+  stag_int c2 = 0;
+
   for (auto c : clusters) {
-    std::cout << c << ", ";
+    if (c == 1) c1++;
+    if (c == 2) c2++;
   }
-  std::cout << std::endl;
+  EXPECT_NEAR(c1 / c2, 1, 0.01);
+}
+
+TEST(ClusterTest, SpectralClusterDisconnected) {
+  // Construct a sparse disconnected graph from the SBM
+  stag_int n = 1000;
+  stag_int k = 2;
+  stag::Graph testGraph = stag::sbm(n, k, 0.5, 0);
+
+  // Find the clusters
+  auto clusters = stag::spectral_cluster(&testGraph, k);
+
+  // There should be exactly the same number of each cluster
+  stag_int c0 = 0;
+  stag_int c1 = 0;
+
+  for (auto c : clusters) {
+    if (c == 0) c0++;
+    if (c == 1) c1++;
+  }
+  EXPECT_EQ(c0, n / k);
+  EXPECT_EQ(c1, n / k);
 }
 
 TEST(ClusterTest, ApproxPageRank) {

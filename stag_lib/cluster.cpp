@@ -15,6 +15,8 @@
 #include <KMeansRex/KMeansRexCoreInterface.h>
 
 std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
+  assert(k < graph->number_of_vertices() / 2);
+
   // Start by computing the 'first' k eigenvalues of the normalised graph
   // laplacian matrix.
   const SprsMat* lap = graph->normalised_laplacian();
