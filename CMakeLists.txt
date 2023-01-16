@@ -34,7 +34,8 @@ add_executable(
         test/utility_test.cpp
         test/graphio_test.cpp
         test/random_test.cpp
-        test/cluster_test.cpp test/spectrum_test.cpp)
+        test/cluster_test.cpp
+        test/spectrum_test.cpp)
 
 # Add the test data files - these need to be copied to the binary directory for the testing application to work
 # correctly
