@@ -10,6 +10,6 @@
 
 TEST(StagTest, Version) {
   EXPECT_EQ(stag::VERSION_MAJOR, 0);
-  EXPECT_EQ(stag::VERSION_MINOR, 3);
+  EXPECT_EQ(stag::VERSION_MINOR, 4);
   EXPECT_EQ(stag::VERSION_PATCH, 0);
 }
