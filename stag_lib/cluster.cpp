@@ -1,9 +1,7 @@
-/**
-* Implementations of the clustering algorithms defined in cluster.h.
- *
- * This file is provided as part of the STAG library and released under the MIT
- * license.
-*/
+//
+// This file is provided as part of the STAG library and released under the MIT
+// license.
+//
 #include <vector>
 #include <deque>
 #include <unordered_set>
@@ -22,16 +20,17 @@ std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
   const SprsMat* lap = graph->normalised_laplacian();
   Eigen::MatrixXd eigvecs = stag::compute_eigenvectors(lap, k);
 
-  // Run k-means clustering
+  // Run k-means clustering on the spectral embedding of the vertices
   Eigen::MatrixXd centres = Eigen::MatrixXd::Zero(k, k);
   Eigen::VectorXd clusters = Eigen::VectorXd::Zero(eigvecs.rows());
+  char initialisation[9] = "plusplus";
   RunKMeans(eigvecs.data(),
             eigvecs.rows(),
             k,
             k,
             k * 100,
             42,
-            "plusplus",
+            initialisation,
             centres.data(),
             clusters.data()
             );
