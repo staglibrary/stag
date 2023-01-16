@@ -71,7 +71,7 @@ namespace stag {
        * Given a vertex v, return its unweighted degree. That is, the number
        * of neighbors of v, ignoring the edge weights.
        */
-       virtual stag_int degree_unweighted(stag_int v) = 0;
+      virtual stag_int degree_unweighted(stag_int v) = 0;
 
       /**
        * Given a vertex v, return a vector of edges representing the
@@ -107,7 +107,7 @@ namespace stag {
        *                 queried.
        * @return a vector of degrees
        */
-      std::vector<double> degrees(std::vector<stag_int> vertices);
+      virtual std::vector<double> degrees(std::vector<stag_int> vertices) = 0;
 
       /**
        * Given a list of vertices, return their unweighted degrees.
@@ -116,7 +116,7 @@ namespace stag {
        *                 queried.
        * @return a vector of integer degrees
        */
-      std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices);
+      virtual std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) = 0;
 
       /**
        * Destructor for the LocalGraph object.
@@ -250,6 +250,8 @@ namespace stag {
        stag_int degree_unweighted(stag_int v) override;
        std::vector<edge> neighbors(stag_int v) override;
        std::vector<stag_int> neighbors_unweighted(stag_int v) override;
+       std::vector<double> degrees(std::vector<stag_int> vertices) override;
+       std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
        ~Graph() override = default;
 
     private:
