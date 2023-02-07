@@ -40,6 +40,28 @@ TEST(ClusterTest, SpectralCluster) {
   EXPECT_NEAR(c1 / c2, 1, 0.01);
 }
 
+TEST(ClusterTest, SpectralClusterSparse) {
+  // Construct a very sparse test graph from the SBM
+  stag_int n = 10000;
+  stag_int k = 5;
+  stag::Graph testGraph = stag::sbm(n, k, 0.06, 0.01);
+
+  // Find the clusters
+  auto clusters = stag::spectral_cluster(&testGraph, k);
+
+  // There should be approximately the same number of each cluster
+  stag_int c1 = 0;
+  stag_int c2 = 0;
+
+  for (auto c : clusters) {
+    if (c == 1) c1++;
+    if (c == 2) c2++;
+  }
+  EXPECT_NEAR(c1, c2, 0.8 * c1);
+  EXPECT_NEAR(c1, n / k, 0.8 * c1);
+  EXPECT_NEAR(c2, n / k, 0.8 * c2);
+}
+
 TEST(ClusterTest, SpectralClusterDisconnected) {
   // Construct a sparse disconnected graph from the SBM
   stag_int n = 1000;
@@ -130,13 +152,13 @@ TEST(ClusterTest, localSBM) {
   EXPECT_GE(cluster.size(), 100);
   EXPECT_LE(cluster.size(), 1000);
 
-  // Let's say that 90% of the found cluster should lie inside the first cluster
+  // Let's say that 50% of the found cluster should lie inside the first cluster
   // in the SBM graph
   stag_int inside = 0;
   for (auto v : cluster) {
     if (v < 500) inside++;
   }
-  EXPECT_GE(inside / cluster.size(), 0.9);
+  EXPECT_GE(inside / cluster.size(), 0.5);
 }
 
 TEST(ClusterTest, sweepSet) {

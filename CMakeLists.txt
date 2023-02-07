@@ -44,6 +44,7 @@ configure_file(test/data/test2.edgelist test/data/test2.edgelist COPYONLY)
 configure_file(test/data/test3.edgelist test/data/test3.edgelist COPYONLY)
 configure_file(test/data/test4.edgelist test/data/test4.edgelist COPYONLY)
 configure_file(test/data/test5.edgelist test/data/test5.edgelist COPYONLY)
+configure_file(test/data/test6.edgelist test/data/test6.edgelist COPYONLY)
 
 # Add libraries
 include_directories(stag_lib)
