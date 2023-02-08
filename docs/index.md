@@ -1,4 +1,4 @@
-STAG C++ Documentation
+STAG C++
 ================================
 Welcome to the STAG library documentation.
 This is documentation for the C++ library.

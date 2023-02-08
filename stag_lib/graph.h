@@ -29,6 +29,10 @@ typedef long long stag_int;
  */
 typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
 
+/**
+ * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value
+ * of an entry in a graph adjacency matrix.
+ */
 typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 
 /**
@@ -364,16 +368,16 @@ namespace stag {
   /**
    * Construct a cycle graph on n vertices.
    *
-   * @param n
-   * @return a graph object representing the n-cycle
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing a cycle graph
    */
   Graph cycle_graph(stag_int n);
 
   /**
    * Construct a complete graph on n vertices.
    *
-   * @param m
-   * @return a graph object
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing a complete graph
    */
   Graph complete_graph(stag_int n);
 
@@ -381,8 +385,8 @@ namespace stag {
    * Construct a barbell graph. The barbell graph consists of 2 cliques on n
    * vertices, connected by a single edge.
    *
-   * @param n
-   * @return
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object represengint the barbell graph
    */
   Graph barbell_graph(stag_int n);
 
@@ -390,8 +394,8 @@ namespace stag {
    * Construct a star graph. The star graph consists of one central vertex
    * connected by an edge to n-1 outer vertices.
    *
-   * @param n
-   * @return a graph object
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing the star graph
    */
    Graph star_graph(stag_int n);
 

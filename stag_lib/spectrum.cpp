@@ -5,8 +5,6 @@
 #include "spectrum.h"
 
 #include <Spectra/SymEigsSolver.h>
-#include <Spectra/MatOp/SparseSymMatProd.h>
-#include <cstdlib>
 #include <stdexcept>
 #include <algorithm>
 

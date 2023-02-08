@@ -36,8 +36,12 @@ namespace stag {
    *                           or an approximation.
    * @return the randomly generated graph
    */
-  Graph sbm(stag_int n, stag_int k, double p, double q);
   Graph sbm(stag_int n, stag_int k, double p, double q, bool exact);
+
+  /**
+   * @overload
+   */
+  Graph sbm(stag_int n, stag_int k, double p, double q);
 
   /**
    * Generate a graph from the Erdos-Renyi model.
@@ -54,8 +58,12 @@ namespace stag {
    * @param exact (optional) - whether to sample from the exact model
    * @return the randomly generated graph
    */
-  Graph erdos_renyi(stag_int n, double p);
   Graph erdos_renyi(stag_int n, double p, bool exact);
+
+  /**
+   * \overload
+   */
+  Graph erdos_renyi(stag_int n, double p);
 }
 
 #endif //STAG_TEST_RANDOM_H

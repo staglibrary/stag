@@ -53,6 +53,10 @@ namespace stag {
    * @return a vector
    */
    std::vector<double> sprsMatToVec(const SprsMat *matrix, stag_int n);
+
+   /**
+    * \overload
+    */
    std::vector<double> sprsMatToVec(const SprsMat *matrix);
 
    /**

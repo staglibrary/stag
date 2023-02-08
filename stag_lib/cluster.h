@@ -97,8 +97,12 @@ namespace stag {
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
    */
-  std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
   std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality, double error);
+
+  /**
+   * \overload
+   */
+  std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
 
   /**
    * Compute the approximate pagerank vector as described in ACL:
@@ -123,7 +127,7 @@ namespace stag {
    *         By the definition of approximate pagerank, it is the case that
    *            p + pr(r, alpha) = pr(s, alpha)
    *
-   * @raises ArgumentError if the provided seed_vector is not a column vector.
+   * @throws std::invalid_argument if the provided seed_vector is not a column vector.
    */
   std::tuple<SprsMat, SprsMat> approximate_pagerank(stag::LocalGraph* graph,
                                                     SprsMat &seed_vector,
