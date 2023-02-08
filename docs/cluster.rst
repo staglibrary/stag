@@ -1,7 +1,9 @@
 Clustering Algorithms
 =====================
 
-The STAG library contains several clustering algorithms.
+The STAG library provides two graph clustering algorithms:
+    - :cpp:func:`stag::spectral_cluster`
+    - :cpp:func:`stag::local_cluster`
 
 .. doxygenfunction:: stag::spectral_cluster
 

@@ -4,6 +4,11 @@
 // This file is provided as part of the STAG library and released under the MIT
 // license.
 //
+
+/**
+ * @file cluster.h
+ */
+
 #ifndef STAG_TEST_CLUSTER_H
 #define STAG_TEST_CLUSTER_H
 
@@ -14,15 +19,41 @@
 namespace stag {
 
   /**
-   * Spectral clustering algorithm.
+   * @brief Spectral clustering algorithm.
    *
-   * Computes the k eigenvectors of the normalised Laplacian matrix of the graph
-   * with the smallest eigenvalue. Then, performs the k-means clustering algorithm
-   * on the spectral embedding of the vertices.
+   * This is a simple graph clustering method, which provides a clustering of the entire graph.
+   * To use spectral clustering, simply pass a `stag::Graph` object
+   * and the number of clusters you would like to find.
+   *
+   *     #include <iostream>
+   *     #include "graph.h"
+   *     #include "cluster.h"
+   *
+   *     int main() {
+   *       stag::Graph myGraph = stag::barbell_graph(10);
+   *       std::vector<stag_int> clusters = stag::spectral_cluster(&myGraph, 2);
+   *
+   *       for (auto c : clusters) {
+   *         std::cout << c << ", ";
+   *       }
+   *       std::cout << std::endl;
+   *
+   *       return 0;
+   *     }
+   *
+   * The spectral clustering algorithm has the following steps.
+   *   - Compute the \f$k\f$ smallest eigenvectors of the normalised Laplacian matrix.
+   *   - Embed the vertices into \f$\mathbb{R}^k\f$ according to the eigenvectors.
+   *   - Cluster the vertices into k clusters using a k-means clustering algorithm.
    *
    * @param graph the graph object to be clustered
    * @param k the number of clusters to find
    * @return a vector giving the cluster membership for each vertex in the graph
+   *
+   * \par References
+   * Andersen, Reid, Fan Chung, and Kevin Lang.
+   * "Local graph partitioning using pagerank vectors." FOCS'06.
+   *
    */
   std::vector<stag_int> spectral_cluster(stag::Graph* graph, stag_int k);
 

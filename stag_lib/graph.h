@@ -5,6 +5,11 @@
 // This file is provided as part of the STAG library and released under the MIT
 // license.
 //
+
+/**
+ * @file graph.h
+ */
+
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 
@@ -26,9 +31,15 @@ typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
 
 typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 
+/**
+ * \cond
+ */
 // Redefine the eigen index type to be the same as stag_int
 #undef EIGEN_DEFAULT_DENSE_INDEX_TYPE
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE stag_int
+/**
+ * \endcond
+ */
 
 namespace stag {
   /**
@@ -329,6 +340,11 @@ namespace stag {
   };
 
   /**
+   * \cond
+   * Do not generate documentation for operator definitions.
+   */
+
+  /**
    * Define equality for two graphs. Two graphs are equal iff their adjacency
    * matrices are equal
    */
@@ -340,6 +356,10 @@ namespace stag {
    */
   bool operator==(const edge& lhs, const edge& rhs);
   bool operator!=(const edge& lhs, const edge& rhs);
+
+  /**
+   * \endcond
+   */
 
   /**
    * Construct a cycle graph on n vertices.

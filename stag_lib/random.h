@@ -4,6 +4,11 @@
 // This file is provided as part of the STAG library and released under the MIT
 // license.
 //
+
+/**
+ * @file random.h
+ */
+
 #ifndef STAG_TEST_RANDOM_H
 #define STAG_TEST_RANDOM_H
 
