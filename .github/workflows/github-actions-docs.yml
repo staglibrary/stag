@@ -21,7 +21,7 @@ jobs:
           sudo make all && sudo make install
       - name: Install Doxygen
         run: |
-          sudo apt-get install doxygen=1.9.1-2ubuntu2
+          sudo apt-get install doxygen
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Build Docs
