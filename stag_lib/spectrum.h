@@ -5,6 +5,11 @@
 // This file is provided as part of the STAG library and released under the MIT
 // license.
 //
+
+/**
+ * @file spectrum.h
+ */
+
 #ifndef STAG_TEST_SPECTRUM_H
 #define STAG_TEST_SPECTRUM_H
 
@@ -33,6 +38,8 @@ namespace stag {
    * from the Spectra library. Likely to be one of:
    *   - Spectra::SortRule::SmallestMagn (default),
    *   - Spectra::SortRule::LargestMagn.
+   *
+   * @throws if the eigenvalue calculation does not converge
    */
   stag::EigenSystem compute_eigensystem(const SprsMat* mat, stag_int num,
                                         Spectra::SortRule sort);

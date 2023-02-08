@@ -7,6 +7,8 @@
 #include <Spectra/SymEigsSolver.h>
 #include <Spectra/MatOp/SparseSymMatProd.h>
 #include <cstdlib>
+#include <stdexcept>
+#include <algorithm>
 
 
 stag::EigenSystem stag::compute_eigensystem(
@@ -14,13 +16,17 @@ stag::EigenSystem stag::compute_eigensystem(
   stag::SprsMatOp op(*mat);
 
   // Construct eigen solver object, requesting the smallest k eigenvalues
-  Spectra::SymEigsSolver<SprsMatOp> eigs(
-      op, num, fmin(2*num, mat->rows()));
+  long ncv = std::min<stag_int>(20 * num, mat->rows());
+  Spectra::SymEigsSolver<SprsMatOp> eigs(op, num, ncv);
 
   // Initialize and compute
   eigs.init();
   eigs.compute(sort);
-  assert(eigs.info() == Spectra::CompInfo::Successful);
+
+  // Ensure that the calculation has converged
+  if (eigs.info() != Spectra::CompInfo::Successful) {
+    throw std::runtime_error("Eigenvalue calculation failed to converge.");
+  }
 
   // Retrieve results
   Eigen::VectorXd eigenvalues;

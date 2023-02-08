@@ -9,6 +9,7 @@
 #include <utility.h>
 #include <random.h>
 #include <spectrum.h>
+#include <graphio.h>
 
 TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
   // Create a small complete graph
@@ -84,3 +85,15 @@ TEST(SpectrumTest, DisconnectedGraph) {
     EXPECT_GE(eigenvalues[2], 0.1);
 }
 
+TEST(SpectrumTest, HugeGraph) {
+  // Load the graph from file
+  std::string filename = "test/data/test6.edgelist";
+  stag::Graph graph = stag::load_edgelist(filename);
+
+  // Extract the unnormalised laplacian matrix
+  const SprsMat* lap = graph.laplacian();
+
+  // Compute the first 3 eigenvalues and eigenvectors.
+  stag_int k = 3;
+  stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
+}
