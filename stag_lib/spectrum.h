@@ -8,7 +8,7 @@
 
 /**
  * @file spectrum.h
- * \brief Methods for computing eigenvalues and eigenvectors of sparse matrices.
+ * Methods for computing eigenvalues and eigenvectors of sparse matrices.
  */
 
 #ifndef STAG_TEST_SPECTRUM_H
@@ -50,7 +50,7 @@ namespace stag {
    * The following example demonstrates how to compute the 3 largest eigenvectors
    * and eigenvalues of a cycle graph.
    *
-   *     #include <iostream>
+   * \code{.cpp}
    *     #include <Spectra/SymEigsSolver.h>
    *     #include "graph.h"
    *     #include "spectrum.h"
@@ -72,6 +72,7 @@ namespace stag {
    *
    *       return 0;
    *     }
+   * \endcode
    *
    * @param mat the matrix on which to operate
    * @param num the number of eigenvalues and eigenvectors to compute
