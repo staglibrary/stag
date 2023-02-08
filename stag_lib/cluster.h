@@ -25,6 +25,7 @@ namespace stag {
    * To use spectral clustering, simply pass a `stag::Graph` object
    * and the number of clusters you would like to find.
    *
+   * \code{.cpp}
    *     #include <iostream>
    *     #include "graph.h"
    *     #include "cluster.h"
@@ -40,6 +41,7 @@ namespace stag {
    *
    *       return 0;
    *     }
+   * \endcode
    *
    * The spectral clustering algorithm has the following steps.
    *   - Compute the \f$k\f$ smallest eigenvectors of the normalised Laplacian matrix.
