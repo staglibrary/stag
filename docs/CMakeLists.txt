@@ -1,4 +1,3 @@
-find_program(SPHINX_EXECUTABLE sphinx-build)
 find_program(DOXYGEN_EXECUTABLE doxygen)
 
 #############################################################
