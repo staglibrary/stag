@@ -21,10 +21,7 @@ jobs:
           sudo make all && sudo make install
       - name: Install Doxygen
         run: |
-          wget https://sourceforge.net/projects/doxygen/files/rel-1.9.1/doxygen-1.9.1.linux.bin.tar.gz
-          tar xzvf doxygen-1.9.1.linux.bin.tar.gz
-          sudo cp doxygen-1.9.1/bin/doxygen /usr/bin/doxygen
-          sudo chmod +x /usr/bin/doxygen
+          sudo apt-get install doxygen=1.9.1-2ubuntu2
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Build Docs
