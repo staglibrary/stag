@@ -53,28 +53,29 @@ namespace stag {
    * @return a vector giving the cluster membership for each vertex in the graph
    *
    * \par References
-   * Andersen, Reid, Fan Chung, and Kevin Lang.
-   * "Local graph partitioning using pagerank vectors." FOCS'06.
-   *
+   * A. Ng, M. Jordan, Y. Weiss.
+   * On spectral clustering: Analysis and an algorithm. NeurIPS'01
    */
   std::vector<stag_int> spectral_cluster(stag::Graph* graph, stag_int k);
 
 
   /**
-   * Default local clustering algorithm. Given a graph and starting vertex,
-   * return a cluster which is close to the starting vertex.
+   * \brief Local clustering algorithm based on personalised Pagerank.
    *
-   * This method defaults to use the ACL local clustering algorithm.
+   * Given a graph and starting vertex, return a cluster which is close to the
+   * starting vertex.
    *
-   * [ACL] Andersen, Reid, Fan Chung, and Kevin Lang.
-   * "Local graph partitioning using pagerank vectors." 2006
-   * 47th Annual IEEE Symposium on Foundations of Computer Science (FOCS'06). IEEE, 2006.
+   * This method uses the ACL local clustering algorithm.
    *
    * @param graph - a graph object implementing the LocalGraph interface
    * @param seed_vertex - the starting vertex in the graph
    * @param target_volume - the approximate volume of the cluster you would like to find
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
+   *
+   * \par References
+   * R. Andersen, F. Chung, K. Lang.
+   * Local graph partitioning using pagerank vectors. FOCS'06
    */
   std::vector<stag_int> local_cluster(stag::LocalGraph* graph, stag_int seed_vertex, double target_volume);
 
@@ -85,10 +86,6 @@ namespace stag {
    * The locality parameter is passed as the alpha parameter in the personalised
    * pagerank calculation.
    *
-   * [ACL] Andersen, Reid, Fan Chung, and Kevin Lang.
-   * "Local graph partitioning using pagerank vectors." 2006
-   * 47th Annual IEEE Symposium on Foundations of Computer Science (FOCS'06). IEEE, 2006.
-   *
    * @param graph - a graph object implementing the LocalGraph interface
    * @param seed_vertex - the starting vertex in the graph
    * @param locality - a value in [0, 1] indicating how 'local' the cluster should
@@ -98,6 +95,10 @@ namespace stag {
    *                           pagerank. Default 0.001.
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
+   *
+   * \par References
+   * R. Andersen, F. Chung, K. Lang.
+   * Local graph partitioning using pagerank vectors. FOCS'06
    */
   std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality, double error);
 
@@ -107,13 +108,9 @@ namespace stag {
   std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
 
   /**
-   * Compute the approximate pagerank vector as described in ACL:
+   * \brief Compute the approximate pagerank vector.
    *
-   * [ACL] Andersen, Reid, Fan Chung, and Kevin Lang.
-   * "Local graph partitioning using pagerank vectors." 2006
-   * 47th Annual IEEE Symposium on Foundations of Computer Science (FOCS'06). IEEE, 2006.
-   *
-   * The parameters s, alpha, and epsilon are used as described in the paper.
+   * The parameters s, alpha, and epsilon are used as described in the ACL paper.
    *
    * Note that the dimension of the returned vectors may not match the true
    * number of vertices in the graph provided since the approximate
@@ -130,6 +127,10 @@ namespace stag {
    *            p + pr(r, alpha) = pr(s, alpha)
    *
    * @throws std::invalid_argument if the provided seed_vector is not a column vector.
+   *
+   * \par References
+   * R. Andersen, F. Chung, K. Lang.
+   * Local graph partitioning using pagerank vectors. FOCS'06
    */
   std::tuple<SprsMat, SprsMat> approximate_pagerank(stag::LocalGraph* graph,
                                                     SprsMat &seed_vector,
