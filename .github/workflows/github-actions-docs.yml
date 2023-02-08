@@ -21,8 +21,10 @@ jobs:
           sudo make all && sudo make install
       - name: Install Doxygen
         run: |
-          sudo apt-get update
-          sudo apt-get install doxygen
+          wget https://www.doxygen.nl/files/doxygen-1.9.6.linux.bin.tar.gz
+          tar xzvf doxygen-1.9.6.linux.bin.tar.gz
+          sudo cp doxygen-1.9.6/bin/doxygen /usr/bin/doxygen
+          sudo chmod +x /usr/bin/doxygen
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Build Docs
