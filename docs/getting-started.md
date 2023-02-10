@@ -221,3 +221,83 @@ int main() {
     return 0;
 }
 ~~~~~~~~~~~~~~~~
+
+Clustering
+----------
+
+The cluster.h module provides two clustering methods which are applicable for a wide variety of applications.
+
+### Spectral clustering
+
+Spectral clustering is a popular and simple graph clustering algorithm.
+STAG provides a simple spectral clustering interface which is demonstrated in the following example.
+
+~~~~~~~~~~~~~~{.cpp}
+#include <iostream>
+#include "graph.h"
+#include "random.h"
+#include "cluster.h"
+
+int main() {
+  // Construct a graph with 5 clusters using the 
+  // stochastic block model.
+  stag_int n = 1000;
+  stag_int k = 5;
+  stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
+
+  // Find the clusters
+  auto labels = stag::spectral_cluster(&testGraph, k);
+  
+  // Display the cluster membership of each vertex in the graph
+  for (auto c : labels) {
+    std::cout << c << ", ";
+  }
+  std::cout << std::endl;
+  
+  return 0;
+}
+~~~~~~~~~~~~~~
+
+The stag::spectral_cluster method returns a vector giving the cluster label
+of each vertex in the graph.
+
+### Local clustering
+
+Given a vertex of the underlying graph as input, a local clustering algorithm finds a
+cluster around the input vertex. 
+The algorithm runs in time proportional to the size of the returned 
+cluster and independent of the size of the entire graph.
+
+Local clustering is provided by the stag::local_cluster method which can be used as
+in the following example.
+
+~~~~~~~~~~~~~~{.cpp}
+#include <iostream>
+#include "graph.h"
+#include "random.h"
+#include "cluster.h"
+
+int main() {
+  // Construct a graph with 4 clusters using the 
+  // stochastic block model.
+  stag::Graph myGraph = stag::sbm(2000, 4, 0.9, 0.01);
+
+  // Find a cluster containing the vertex 0
+  std::vector<stag_int> cluster = stag::local_cluster(
+    &myGraph, 0, myGraph.total_volume() / 4);
+ 
+  // Display the vertices in the found cluster 
+  for (auto v : cluster) {
+    std::cout << v << ", ";
+  }
+  std::cout << std::endl;
+  
+  return 0;
+}
+~~~~~~~~~~~~~~
+
+Notice that the local clustering method requires an estimate of the volume of the target cluster.
+This parameter does *not* impose a hard constraint on the algorithm and so an approximate volume is enough.
+
+The stag::local_cluster method returns a vector containing the ID of each vertex in the local cluster.
+
