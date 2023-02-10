@@ -384,7 +384,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing a cycle graph
    */
-  Graph cycle_graph(stag_int n);
+  stag::Graph cycle_graph(stag_int n);
 
   /**
    * Construct a complete graph on n vertices.
@@ -392,7 +392,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing a complete graph
    */
-  Graph complete_graph(stag_int n);
+  stag::Graph complete_graph(stag_int n);
 
   /**
    * Construct a barbell graph. The barbell graph consists of 2 cliques on n
@@ -401,7 +401,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object represengint the barbell graph
    */
-  Graph barbell_graph(stag_int n);
+  stag::Graph barbell_graph(stag_int n);
 
   /**
    * Construct a star graph. The star graph consists of one central vertex
@@ -410,7 +410,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing the star graph
    */
-   Graph star_graph(stag_int n);
+   stag::Graph star_graph(stag_int n);
 
 }
 #endif //STAG_LIBRARY_H

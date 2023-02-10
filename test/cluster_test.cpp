@@ -20,16 +20,6 @@
             EXPECT_NEAR(expected[idx], actual[idx], thresh) << "at index: " << idx;\
         }
 
-TEST(ClusterTest, temp) {
-  stag::Graph myGraph = stag::barbell_graph(10);
-  std::vector<stag_int> clusters = stag::spectral_cluster(&myGraph, 2);
-
-  for (auto c : clusters) {
-    std::cout << c << ", ";
-  }
-  std::cout << std::endl;
-}
-
 TEST(ClusterTest, SpectralCluster) {
   // Construct a test graph from the SBM
   stag_int n = 1000;
