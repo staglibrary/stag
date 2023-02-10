@@ -7,6 +7,7 @@ If you are looking for the Python library documentation, it can be found
 
 If you are new to the STAG library, see [Getting Started](@ref getting-started) for instructions on
 getting up and running.
-
-Alternatively, the `reference` page contains the complete documentation of th
-library methods.
+Alternatively, the <a href="files.html">Modules</a> and
+<a href="annotated.html">Classes</a>
+pages contain the
+complete documentation of the library methods.

@@ -143,6 +143,9 @@ namespace stag {
    * The core object used to represent a graph for use with the library. Graphs
    * are always constructed from sparse matrices, and this is the internal
    * representation used as well.
+   * Vertices of the graph are always referred to by their unique integer index.
+   * This index corresponds to the position of the vertex in the stored adjacency
+   * matrix of the graph.
    */
   class Graph : public LocalGraph {
     public:
@@ -155,11 +158,13 @@ namespace stag {
       explicit Graph(const SprsMat& adjacency_matrix);
 
       /**
-       * Create a graph from raw arrays describing a CSR sparse matrix.
+       * Create a graph from raw arrays describing a CSC sparse matrix.
        *
-       * To use this constructor, you should understand the CSR sparse matrix
-       * format. Note that this library uses the RowMajor format from the Eigen
+       * To use this constructor, you should understand the CSC sparse matrix
+       * format. Note that this library uses the ColMajor format from the Eigen
        * library.
+       * For more information, refer to the
+       * [Eigen Documentation](https://eigen.tuxfamily.org/dox/group__TopicStorageOrders.html).
        *
        * @param outerStarts the indices of the start of each row in the CSR
        *                    matrix
@@ -171,14 +176,14 @@ namespace stag {
             std::vector<double> &values);
 
       /**
-       * Return the sparse adjacency matrix of the graph
+       * \brief Return the sparse adjacency matrix of the graph.
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
       const SprsMat* adjacency() const;
 
       /**
-       * Construct the Laplacian matrix of the graph.
+       * \brief Return the Laplacian matrix of the graph.
        *
        * The Laplacian matrix is defined by
        *
@@ -186,20 +191,28 @@ namespace stag {
        *   L = D - A
        * \f]
        *
-       * where D is the diagonal matrix of vertex degrees and A is the adjacency
-       * matrix of the graph.
+       * where \f$D\f$ is the diagonal matrix of vertex degrees
+       * (stag::Graph::degree_matrix)
+       * and A is the adjacency matrix of the graph
+       * (stag::Graph::adjacency).
        *
        * @return a sparse Eigen matrix representing the graph Laplacian
        */
       const SprsMat* laplacian();
 
       /**
-       * Construct the normalised Laplacian matrix of the graph.
+       * \brief Return the normalised Laplacian matrix of the graph.
        *
        * The normalised Laplacian matrix is defined by
-       *   Ln = D^{-1/2} L D^{-1/2}
-       * where D is the diagonal matrix of vertex degrees and L is the Laplacian
-       * matrix of the graph.
+       *
+       * \f[
+       *   \mathcal{L} = D^{-1/2} L D^{-1/2}
+       * \f]
+       *
+       * where \f$D\f$ is the diagonal matrix of vertex degrees
+       * (stag::Graph::degree_matrix)
+       * and \f$L\f$ is the Laplacian matrix of the graph
+       * (stag::Graph::laplacian).
        *
        * @return a sparse Eigen matrix representing the normalised Laplacian
        */

@@ -34,6 +34,25 @@ stag::Graph createTestGraph() {
   return {rowStarts, colIndices, values};
 }
 
+TEST(GraphTest, temp) {
+  // Construct a sparse matrix representing the
+  // triangle graph adjacency matrix.
+  stag_int n = 3;
+  SprsMat adj(n, n);
+  adj.coeffRef(0, 1) = 1;
+  adj.coeffRef(0, 2) = 1;
+  adj.coeffRef(1, 0) = 1;
+  adj.coeffRef(1, 2) = 1;
+  adj.coeffRef(2, 0) = 1;
+  adj.coeffRef(2, 1) = 1;
+
+  // Create a new STAG graph
+  stag::Graph myGraph(adj);
+
+  // Display the adjacency matrix of the graph
+  std::cout << *myGraph.adjacency() << std::endl;
+}
+
 TEST(GraphTest, Volume) {
   stag::Graph testGraph = createTestGraph();
   EXPECT_EQ(testGraph.total_volume(), 24.6666);
