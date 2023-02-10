@@ -20,29 +20,20 @@
 namespace stag {
 
   /**
-   * Given a sparse matrix, return the values vector, compatible with the CSR
+   * Given a sparse matrix, return the values vector, compatible with the CSC
    * format of other libraries.
-   *
-   * @param matrix
-   * @return
    */
   std::vector<double> sprsMatValues(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the InnerIndices vector, compatible with the
-   * CSR format of other libraries.
-   *
-   * @param matrix
-   * @return
+   * CSC format of other libraries.
    */
   std::vector<stag_int> sprsMatInnerIndices(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the OuterStarts vector, compatible with the
-   * CSR format of other libraries.
-   *
-   * @param matrix
-   * @return
+   * CSC format of other libraries.
    */
   std::vector<stag_int> sprsMatOuterStarts(const SprsMat *matrix);
 
@@ -69,11 +60,6 @@ namespace stag {
     * For now, this method does not perform any error checking on the provided
     * vectors. The caller is responsible for ensuring that the provided data
     * vectors are well-formed.
-    *
-    * @param column_starts
-    * @param row_indices
-    * @param values
-    * @return
     */
    SprsMat sprsMatFromVectors(std::vector<stag_int>& column_starts,
                               std::vector<stag_int>& row_indices,
@@ -81,10 +67,6 @@ namespace stag {
 
    /**
     * Add two vectors together element-wise.
-    *
-    * @param v1
-    * @param v2
-    * @return
     */
    template <typename T>
    std::vector<T> addVectors(std::vector<T>& v1, std::vector<T>& v2) {
@@ -109,6 +91,11 @@ namespace stag {
   bool isSymmetric(const SprsMat *matrix);
 
   /**
+   * \cond
+   * Do not document the stdErrVec or safeGetline method
+   */
+
+  /**
    * Print a vector to stderr.
    */
   template <typename T>
@@ -127,6 +114,10 @@ namespace stag {
    * @param t the string variable in which to store the returned line
    */
   std::istream& safeGetline(std::istream& is, std::string& t);
+
+  /**
+   * \endcond
+   */
 }
 
 #endif //STAG_TEST_UTILITY_H

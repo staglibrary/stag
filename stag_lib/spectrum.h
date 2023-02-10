@@ -39,7 +39,7 @@ namespace stag {
   typedef std::tuple<Eigen::VectorXd, Eigen::MatrixXd> EigenSystem;
 
   /**
-   * \brief Compute the eigenvalues and eigenvectors of a given matrix.
+   * Compute the eigenvalues and eigenvectors of a given matrix.
    *
    * By default, this will compute the eigenvalues of smallest magnitude.
    * This default can be overridden by the sort parameter which takes a Spectra::SortRule
@@ -89,7 +89,7 @@ namespace stag {
   stag::EigenSystem compute_eigensystem(const SprsMat* mat, stag_int num);
 
   /**
-   * \brief Compute the eigenvalues of a given matrix.
+   * Compute the eigenvalues of a given matrix.
    *
    * By default, this will compute the eigenvalues of smallest magnitude.
    * This default can be overridden by the sort parameter which takes a Spectra::SortRule
@@ -115,7 +115,7 @@ namespace stag {
   Eigen::VectorXd compute_eigenvalues(const SprsMat* mat, stag_int num);
 
   /**
-   * \brief Compute the eigenvectors of a given matrix.
+   * Compute the eigenvectors of a given matrix.
    *
    * By default, this will compute the eigenvectors corresponding to the
    * eigenvalues of smallest magnitude.

@@ -154,6 +154,34 @@ namespace stag {
       /**
        * Create a graph from an Eigen matrix.
        *
+       * \par Example
+       *
+       * \code{cpp}
+       * #include <iostream>
+       * #include "graph.h"
+       *
+       * int main() {
+       *   // Construct a sparse matrix representing the
+       *   // triangle graph adjacency matrix.
+       *   stag_int n = 3;
+       *   SprsMat adj(n, n);
+       *   adj.coeffRef(0, 1) = 1;
+       *   adj.coeffRef(0, 2) = 1;
+       *   adj.coeffRef(1, 0) = 1;
+       *   adj.coeffRef(1, 2) = 1;
+       *   adj.coeffRef(2, 0) = 1;
+       *   adj.coeffRef(2, 1) = 1;
+       *
+       *   // Create a new STAG graph
+       *   stag::Graph myGraph(adj);
+       *
+       *   // Display the adjacency matrix of the graph
+       *   std::cout << *myGraph.adjacency() << std::endl;
+       *
+       *   return 0;
+       * }
+       * \endcode
+       *
        * @param adjacency_matrix the sparse eigen matrix representing the adjacency matrix
        *               of the graph.
        */
@@ -178,14 +206,14 @@ namespace stag {
             std::vector<double> &values);
 
       /**
-       * \brief Return the sparse adjacency matrix of the graph.
+       * Return the sparse adjacency matrix of the graph.
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
       const SprsMat* adjacency() const;
 
       /**
-       * \brief Return the Laplacian matrix of the graph.
+       * Return the Laplacian matrix of the graph.
        *
        * The Laplacian matrix is defined by
        *
@@ -203,7 +231,7 @@ namespace stag {
       const SprsMat* laplacian();
 
       /**
-       * \brief Return the normalised Laplacian matrix of the graph.
+       * Return the normalised Laplacian matrix of the graph.
        *
        * The normalised Laplacian matrix is defined by
        *
@@ -223,7 +251,7 @@ namespace stag {
       /**
        * The degree matrix of the graph.
        *
-       * The degree matrix is an n x n matrix such that each diagonal entry is
+       * The degree matrix is an \f$n \times n\f$ matrix such that each diagonal entry is
        * the degree of the corresponding node.
        *
        * @return a sparse Eigen matrix
@@ -233,7 +261,7 @@ namespace stag {
       /**
        * The inverse degree matrix of the graph.
        *
-       * The inverse degree matrix is an n x n matrix such that each diagonal entry is
+       * The inverse degree matrix is an \f$n \times n\f$ matrix such that each diagonal entry is
        * the inverse of the degree of the corresponding node, or 0 if the node
        * has degree 0.
        *
@@ -245,9 +273,13 @@ namespace stag {
        * The lazy random walk matrix of the graph.
        *
        * The lazy random walk matrix is defined to be
-       *    1/2 I + 1/2 A D^{-1}
-       * where I is the identity matrix, A is the graph adjacency matrix and
-       * D is the degree matrix of the graph.
+       *
+       * \f[
+       *    \frac{1}{2} I + \frac{1}{2} A D^{-1}
+       * \f]
+       *
+       * where \f$I\f$ is the identity matrix, \f$A\f$ is the graph adjacency matrix and
+       * \f$D\f$ is the degree matrix of the graph.
        *
        * @return a sparse Eigen matrix
        */

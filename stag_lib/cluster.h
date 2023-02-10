@@ -8,6 +8,8 @@
 /**
  * @file cluster.h
  * \brief Algorithms for finding clusters in graphs.
+ *
+ * The two key clustering methods provided by this module are stag::spectral_cluster and stag::local_cluster.
  */
 
 #ifndef STAG_TEST_CLUSTER_H
@@ -20,7 +22,7 @@
 namespace stag {
 
   /**
-   * @brief Spectral clustering algorithm.
+   * Spectral clustering algorithm.
    *
    * This is a simple graph clustering method, which provides a clustering of the entire graph.
    * To use spectral clustering, simply pass a `stag::Graph` object
@@ -61,7 +63,7 @@ namespace stag {
 
 
   /**
-   * \brief Local clustering algorithm based on personalised Pagerank.
+   * Local clustering algorithm based on personalised Pagerank.
    *
    * Given a graph and starting vertex, return a cluster which is close to the
    * starting vertex.
@@ -109,7 +111,7 @@ namespace stag {
   std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
 
   /**
-   * \brief Compute the approximate pagerank vector.
+   * Compute the approximate pagerank vector.
    *
    * The parameters s, alpha, and epsilon are used as described in the ACL paper.
    *
