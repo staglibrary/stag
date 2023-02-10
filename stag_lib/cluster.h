@@ -67,9 +67,9 @@ namespace stag {
    *
    * This method uses the ACL local clustering algorithm.
    *
-   * @param graph - a graph object implementing the LocalGraph interface
-   * @param seed_vertex - the starting vertex in the graph
-   * @param target_volume - the approximate volume of the cluster you would like to find
+   * @param graph a graph object implementing the LocalGraph interface
+   * @param seed_vertex the starting vertex in the graph
+   * @param target_volume the approximate volume of the cluster you would like to find
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
    *
@@ -86,13 +86,13 @@ namespace stag {
    * The locality parameter is passed as the alpha parameter in the personalised
    * pagerank calculation.
    *
-   * @param graph - a graph object implementing the LocalGraph interface
-   * @param seed_vertex - the starting vertex in the graph
-   * @param locality - a value in [0, 1] indicating how 'local' the cluster should
-   *                   be. A value of '1' will return the return only the seed vertex
-   *                   and a value of '0' will explore the whole graph.
+   * @param graph a graph object implementing the LocalGraph interface
+   * @param seed_vertex the starting vertex in the graph
+   * @param locality a value in \f$[0, 1]\f$ indicating how 'local' the cluster should
+   *                 be. A value of \f$1\f$ will return the return only the seed vertex
+   *                 and a value of \f$0\f$ will explore the whole graph.
    * @param error (optional) - the acceptable error in the calculation of the approximate
-   *                           pagerank. Default 0.001.
+   *                           pagerank. Default \f$0.001\f$.
    * @return a vector containing the indices of vectors considered to be in the
    *         same cluster as the seed_vertex.
    *
@@ -116,15 +116,16 @@ namespace stag {
    * number of vertices in the graph provided since the approximate
    * pagerank is computed locally.
    *
-   * @param graph
-   * @param seed_vector
-   * @param alpha
-   * @param epsilon
+   * @param graph a stag::LocalGraph object
+   * @param seed_vector the seed vector of the personalised pagerank
+   * @param alpha the locality parameter of the personalised pagerank
+   * @param epsilon the error parameter of the personalised pagerank
    * @return A tuple of sparse column vectors corresponding to
-   *            p - the approximate pagerank vector
-   *            r - the residual vector
+   *          - p: the approximate pagerank vector
+   *          - r: the residual vector
+   *
    *         By the definition of approximate pagerank, it is the case that
-   *            p + pr(r, alpha) = pr(s, alpha)
+   *            p + ppr(r, alpha) = ppr(s, alpha).
    *
    * @throws std::invalid_argument if the provided seed_vector is not a column vector.
    *
@@ -140,10 +141,19 @@ namespace stag {
   /**
    * Find the sweep set of the given vector with the minimum conductance.
    *
-   * First, sort the vector, and then let
-   *     S_i = {v_j : j <= i}
+   * First, sort the vector such that \f$v_1, \ldots, v_n\f$. Then let
+   *
+   * \f[
+   *     S_i = \{v_j : j <= i\}
+   * \f]
+   *
    * and return the set of original indices corresponding to
-   *     argmin_i conducance(S_i)
+   *
+   * \f[
+   *     \mathrm{argmin}_i \phi(S_i)
+   * \f]
+   *
+   * where \f$\phi(S)\f$ is the conductance of \f$S\f$.
    *
    * This method is expected to be run on vectors whose support is much less
    * than the total size of the graph. If the total volume of the support of vec
@@ -154,10 +164,10 @@ namespace stag {
    * input vector. In particular, this method does not normalise the vector by
    * the node degrees.
    *
-   * @param graph
-   * @param vec
+   * @param graph a stag::LocalGraph object
+   * @param vec the vector to sweep over
    * @return a vector containing the indices of vec which give the minimum
-   *         conductance in the given graph.
+   *         conductance in the given graph
    */
   std::vector<stag_int> sweep_set_conductance(stag::LocalGraph* graph,
                                               SprsMat& vec);
