@@ -7,6 +7,7 @@
 
 /**
  * @file cluster.h
+ * \brief Algorithms for finding clusters in graphs.
  */
 
 #ifndef STAG_TEST_CLUSTER_H

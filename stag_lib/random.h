@@ -7,6 +7,7 @@
 
 /**
  * @file random.h
+ * \brief Mathods for generating graphs from random graph models
  */
 
 #ifndef STAG_TEST_RANDOM_H

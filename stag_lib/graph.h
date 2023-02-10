@@ -8,6 +8,7 @@
 
 /**
  * @file graph.h
+ * \brief Core graph class definitions and constructors.
  */
 
 #ifndef STAG_LIBRARY_H
@@ -47,7 +48,7 @@ typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 
 namespace stag {
   /**
-   * A structure representing a weighted edge in a graph.
+   * \brief A structure representing a weighted edge in a graph.
    */
   struct edge {
     /**
@@ -67,8 +68,8 @@ namespace stag {
   };
 
   /**
-   * LocalGraph is an abstract class which defines methods for exploring the
-   * local neighborhood of a graph.
+   * \brief An abstract class which defines methods for exploring the
+   * local neighborhood of vertices in a graph.
    *
    * To maximise the performance of the local algorithms using this class,
    * subclasses should cache the results of expensive queries. For example,
@@ -140,8 +141,9 @@ namespace stag {
   };
 
   /**
-   * The core object used to represent a graph for use with the library. Graphs
-   * are always constructed from sparse matrices, and this is the internal
+   * \brief The core object used to represent graphs for use with the library.
+   *
+   * Graphs are always constructed from sparse matrices, and this is the internal
    * representation used as well.
    * Vertices of the graph are always referred to by their unique integer index.
    * This index corresponds to the position of the vertex in the stored adjacency

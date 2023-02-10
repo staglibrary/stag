@@ -7,6 +7,7 @@
 
 /**
  * @file utility.h
+ * \brief Helper methods for processing sparse matrices
  */
 
 #ifndef STAG_TEST_UTILITY_H

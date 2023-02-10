@@ -8,7 +8,7 @@
 
 /**
  * @file spectrum.h
- * Methods for computing eigenvalues and eigenvectors of sparse matrices.
+ * \brief Methods for computing eigenvalues and eigenvectors of sparse matrices.
  */
 
 #ifndef STAG_TEST_SPECTRUM_H

@@ -5,6 +5,7 @@
 
 /**
  * @file graphio.h
+ * \brief Methods for reading and writing graphs to disk.
  */
 
 #ifndef STAG_TEST_GRAPHIO_H
