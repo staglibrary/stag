@@ -182,6 +182,28 @@ TEST(ClusterTest, localSBM) {
   EXPECT_GE(inside / cluster.size(), 0.5);
 }
 
+TEST(ClusterTest, LocalClusterArguments) {
+  // Create a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+
+  // Check vertex is valid
+  stag_int v = -1;
+  double target_vol = 100;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  v = n;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  // Check volume is valid
+  v = 0;
+  target_vol = 0;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  target_vol = -1;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+}
+
 TEST(ClusterTest, sweepSet) {
   // Construct a test graph
   stag::Graph testGraph = stag::barbell_graph(4);

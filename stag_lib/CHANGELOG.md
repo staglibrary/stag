@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - [Issue #28](https://github.com/staglibrary/stag/issues/28): Add argument error checking
+- `vertex_exists` method to LocalGraph object
 
 ## [0.4.0] - 2023-01-16
 ### Fixed

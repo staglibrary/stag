@@ -459,3 +459,17 @@ TEST(GraphTest, Equality) {
   graph2 = stag::complete_graph(4);
   EXPECT_NE(graph1, graph2);
 }
+
+TEST(GraphTest, VertexExists) {
+  stag_int n = 4;
+  stag::Graph testGraph = stag::complete_graph(n);
+
+  EXPECT_TRUE(testGraph.vertex_exists(0));
+  EXPECT_TRUE(testGraph.vertex_exists(1));
+  EXPECT_TRUE(testGraph.vertex_exists(2));
+  EXPECT_TRUE(testGraph.vertex_exists(3));
+
+  EXPECT_FALSE(testGraph.vertex_exists(4));
+  EXPECT_FALSE(testGraph.vertex_exists(-1));
+  EXPECT_FALSE(testGraph.vertex_exists(100));
+}

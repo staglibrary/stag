@@ -122,7 +122,7 @@ std::vector<stag_int> stag::Graph::degrees_unweighted(
 
 
 double stag::Graph::degree(stag_int v) {
-  check_vertex_argument_(v);
+  check_vertex_argument(v);
 
   // For now, we can be a little lazy and use the degree matrix. Once this is
   // initialised, then checking degree is constant time.
@@ -134,7 +134,7 @@ double stag::Graph::degree(stag_int v) {
 }
 
 stag_int stag::Graph::degree_unweighted(stag_int v) {
-  check_vertex_argument_(v);
+  check_vertex_argument(v);
 
   // The combinatorical degree of a vertex is equal to the number of non-zero
   // entries in its adjacency matrix row.
@@ -145,7 +145,7 @@ stag_int stag::Graph::degree_unweighted(stag_int v) {
 }
 
 std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
-  check_vertex_argument_(v);
+  check_vertex_argument(v);
 
   // Iterate through the non-zero entries in the vth row of the adjacency matrix
   const double *weights = adjacency_matrix_.valuePtr();
@@ -165,7 +165,7 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
 }
 
 std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
-  check_vertex_argument_(v);
+  check_vertex_argument(v);
 
   // Return the non-zero indices in the vth row of the adjacency matrix
   const stag_int *innerIndices = adjacency_matrix_.innerIndexPtr();
@@ -173,6 +173,10 @@ std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
   stag_int vRowStart = *(rowStarts + v);
   stag_int degree = degree_unweighted(v);
   return {innerIndices + vRowStart, innerIndices + vRowStart + degree};
+}
+
+bool stag::Graph::vertex_exists(stag_int v) {
+  return v >= 0 && v < number_of_vertices_;
 }
 
 //------------------------------------------------------------------------------
@@ -186,7 +190,7 @@ void stag::Graph::self_test_() {
   }
 }
 
-void stag::Graph::check_vertex_argument_(stag_int v) {
+void stag::Graph::check_vertex_argument(stag_int v) {
   // Check that the value is smaller than the number of vertices
   if (v >= number_of_vertices_) {
     throw std::invalid_argument("Specified vertex index too large.");

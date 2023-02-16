@@ -67,6 +67,17 @@ std::vector<stag_int> stag::local_cluster_acl(stag::LocalGraph *graph,
                                               stag_int seed_vertex,
                                               double locality,
                                               double error) {
+  // Check that the arguments are valid.
+  if (!graph->vertex_exists(seed_vertex)) {
+    throw std::invalid_argument("Seed vertex does not exist.");
+  }
+  if (locality < 0 || locality > 1) {
+    throw std::invalid_argument("Locality parameter must be between 0 and 1.");
+  }
+  if (error < 0 || error > 1) {
+    throw std::invalid_argument("Error parameter must be between 0 and 1.");
+  }
+
   // Compute the approximate pagerank vector
   SprsMat seedDist(seed_vertex + 1, 1);
   seedDist.coeffRef(seed_vertex, 0) = 1;
