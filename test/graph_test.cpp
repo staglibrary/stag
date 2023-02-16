@@ -297,6 +297,21 @@ TEST(GraphTest, CycleGraphVolume) {
   }
 }
 
+TEST(GraphTest, AverageDegree) {
+  // The average degree of the cycle graph is always 2
+  std::vector<stag_int> sizes = {3, 5, 10, 20, 100};
+  for (stag_int n: sizes) {
+    stag::Graph testGraph = stag::cycle_graph(n);
+    EXPECT_EQ(testGraph.average_degree(), 2);
+  }
+
+  // The average degree of the star graph is 2 * (n-1) / n.
+  for (stag_int n: sizes) {
+    stag::Graph testGraph = stag::star_graph(n);
+    EXPECT_EQ(testGraph.average_degree(), 2. * (n-1) / n);
+  }
+}
+
 TEST(GraphTest, CycleGraphLaplacian) {
   // Create a small cycle graph
   stag::Graph testGraph = stag::cycle_graph(4);
