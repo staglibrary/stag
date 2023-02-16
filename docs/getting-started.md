@@ -10,6 +10,8 @@ so it may be useful to also refer to the [Eigen documentation](https://eigen.tux
 
 Installation
 ------------
+
+### Dependencies
 To include the STAG library in your C++ project, you should first install the following
 dependencies.
 
@@ -46,27 +48,42 @@ sudo make install
 cd ../..
 ~~~~~~~~~~~~~~~~~~~~
 
-Then, download STAG from GitHub with
+### Installing STAG
 
-~~~~~~~~~~~~{.bash}
-git clone git@github.com:staglibrary/stag.git
-~~~~~~~~~~~~
+Then, you should download the latest version of the STAG library. For example:
 
-and copy the ``stag_lib`` directory into you project.
-Adding the following to your ``CMakeLists.txt`` will compile STAG and make it available
-to the code in your project.
+```bash
+wget https://github.com/staglibrary/stag/archive/refs/tags/v1.0.0.tar.gz
+tar xzvf v1.0.0.tar.gz
+cd stag-1.0.0
+```
+
+Then, you can build and install STAG with cmake.
+
+```bash
+mkdir build_dir
+cd build_dir
+cmake ..
+sudo make install
+```
+
+Adding the following to your ``CMakeLists.txt`` will make the STAG library available to your project.
 
 ~~~~~~~~~~~~~~~~~~~~{.cmake}
-    set(CMAKE_CXX_STANDARD 20) # STAG requires at least C++20.
-
-    include_directories(stag_lib)
-    add_subdirectory(stag_lib stag_lib)
-
-    target_link_libraries(
-            YOUR_PROJECT
-            stag
-    )
+set(CMAKE_CXX_STANDARD 20) # STAG requires at least C++20.
+ 
+# Find and include the STAG library
+find_package(stag REQUIRED)
+message(STATUS "Found STAG!")
+include_directories(${STAG_INCLUDE_DIRS})
+ 
+target_link_libraries(
+        YOUR_PROJECT
+        stag
+)
 ~~~~~~~~~~~~~~~~~~~~
+
+You may find it helpful to refer to the [example STAG project](https://github.com/staglibrary/example-stag-project).
 
 Constructing Graphs
 -------------------
@@ -87,7 +104,7 @@ You can construct a named graph with the following code.
 
 ~~~~~~~~~~~~~~~~~~~~{.cpp}
     #include <iostream>
-    #include "graph.h"
+    #include <stag/graph.h>
 
     int main() {
       stag::Graph myGraph = stag::cycle_graph(10);
@@ -106,7 +123,7 @@ the default constructor.
 
 ~~~~~~~~~~~~~~~~~~~~{.cpp}
     #include <iostream>
-    #include "graph.h"
+    #include <stag/graph.h>
 
     int main() {
         // Construct a sparse matrix representing the
@@ -156,8 +173,8 @@ To load a STAG graph from an edgelist file, you can use the following code.
 
 ~~~~~~~~~~~~~~~{.cpp}
     #include <iostream>
-    #include "graph.h"
-    #include "graphio.h"
+    #include <stag/graph.h>
+    #include <stag/graphio.h>
 
     int main() {
         // Load the graph from the file
@@ -175,8 +192,8 @@ The STAG library can also save a graph to an edgelist file.
 
 ~~~~~~~~~~~~~~~{.cpp}
     #include <iostream>
-    #include "graph.h"
-    #include "graphio.h"
+    #include <stag/graph.h>
+    #include <stag/graphio.h>
 
     int main() {
         // Create a cycle graph
@@ -198,8 +215,8 @@ block model.
 
 ~~~~~~~~~~~~~~~~{.cpp}
 #include <iostream>
-#include "graph.h"
-#include "random.h"
+#include <stag/graph.h>
+#include <stag/random.h>
 
 int main() {
     // Create an Erdos-Renyi random graph with
@@ -235,9 +252,9 @@ STAG provides a simple spectral clustering interface which is demonstrated in th
 
 ~~~~~~~~~~~~~~{.cpp}
 #include <iostream>
-#include "graph.h"
-#include "random.h"
-#include "cluster.h"
+#include <stag/graph.h>
+#include <stag/random.h>
+#include <stag/cluster.h>
 
 int main() {
   // Construct a graph with 5 clusters using the 
@@ -274,9 +291,9 @@ in the following example.
 
 ~~~~~~~~~~~~~~{.cpp}
 #include <iostream>
-#include "graph.h"
-#include "random.h"
-#include "cluster.h"
+#include <stag/graph.h>
+#include <stag/random.h>
+#include <stag/cluster.h>
 
 int main() {
   // Construct a graph with 4 clusters using the 

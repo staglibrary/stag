@@ -167,7 +167,7 @@ namespace stag {
        *
        * \code{cpp}
        * #include <iostream>
-       * #include "graph.h"
+       * #include <stag/graph.h>
        *
        * int main() {
        *   // Construct a sparse matrix representing the
