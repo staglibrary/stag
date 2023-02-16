@@ -473,3 +473,23 @@ TEST(GraphTest, VertexExists) {
   EXPECT_FALSE(testGraph.vertex_exists(-1));
   EXPECT_FALSE(testGraph.vertex_exists(100));
 }
+
+TEST(GraphTest, ArgumentChecking) {
+  stag_int n = -1;
+  EXPECT_THROW(stag::cycle_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::complete_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
+
+  n = 0;
+  EXPECT_THROW(stag::cycle_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::complete_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
+
+  n = 1;
+  EXPECT_THROW(stag::cycle_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::complete_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
+}

@@ -95,6 +95,18 @@ stag_int stag::Graph::number_of_edges() const {
   return adjacency_matrix_.nonZeros() / 2;
 }
 
+void stag::Graph::check_vertex_argument(stag_int v) {
+  // Check that the value is smaller than the number of vertices
+  if (v >= number_of_vertices_) {
+    throw std::invalid_argument("Specified vertex index too large.");
+  }
+
+  // Check that the specified vertex is not negative
+  if (v < 0) {
+    throw std::invalid_argument("Vertex indices cannot be negative.");
+  }
+}
+
 //------------------------------------------------------------------------------
 // Local Graph Methods
 //------------------------------------------------------------------------------
@@ -187,18 +199,6 @@ void stag::Graph::self_test_() {
   // Check that the adjacency matrix is symmetric.
   if (!stag::isSymmetric(&adjacency_matrix_)) {
     throw std::domain_error("Graph adjacency matrix must be symmetric.");
-  }
-}
-
-void stag::Graph::check_vertex_argument(stag_int v) {
-  // Check that the value is smaller than the number of vertices
-  if (v >= number_of_vertices_) {
-    throw std::invalid_argument("Specified vertex index too large.");
-  }
-
-  // Check that the specified vertex is not negative
-  if (v < 0) {
-    throw std::invalid_argument("Vertex indices cannot be negative.");
   }
 }
 
@@ -323,6 +323,8 @@ bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
 // Standard Graph Constructors
 //------------------------------------------------------------------------------
 stag::Graph stag::cycle_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   SprsMat adj_mat(n, n);
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 0; i < n; i++) {
@@ -334,6 +336,8 @@ stag::Graph stag::cycle_graph(stag_int n) {
 }
 
 stag::Graph stag::complete_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   SprsMat adj_mat(n, n);
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 0; i < n; i++) {
@@ -348,6 +352,8 @@ stag::Graph stag::complete_graph(stag_int n) {
 }
 
 stag::Graph stag::barbell_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   // Construct the non-zero entries in the complete blocks of the adjacency
   // matrix
   std::vector<EdgeTriplet> non_zero_entries;
@@ -371,6 +377,8 @@ stag::Graph stag::barbell_graph(stag_int n) {
 }
 
 stag::Graph stag::star_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   // Construct the non-zero entries in the adjacency matrix
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 1; i < n; i++) {
