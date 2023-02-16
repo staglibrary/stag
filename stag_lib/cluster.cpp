@@ -45,6 +45,8 @@ std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
 }
 
 std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, double target_volume) {
+  if (target_volume <= 0) throw std::invalid_argument("Target volume must be positive.");
+
   // The 'locality' parameter should essentially be a constant if we expect the conductance
   // of the target cluster to be a constant. Set it to 0.01.
   // The error parameter should decrease as the inverse of the target volume.
@@ -74,8 +76,8 @@ std::vector<stag_int> stag::local_cluster_acl(stag::LocalGraph *graph,
   if (locality < 0 || locality > 1) {
     throw std::invalid_argument("Locality parameter must be between 0 and 1.");
   }
-  if (error < 0 || error > 1) {
-    throw std::invalid_argument("Error parameter must be between 0 and 1.");
+  if (error <= 0) {
+    throw std::invalid_argument("Error parameter must be greater than 0.");
   }
 
   // Compute the approximate pagerank vector
@@ -159,8 +161,8 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
   if (alpha < 0 || alpha > 1) {
     throw std::invalid_argument("Alpha parameter must be between 0 and 1.");
   }
-  if (epsilon < 0 || epsilon > 1) {
-    throw std::invalid_argument("Epsilon parameter must be between 0 and 1.");
+  if (epsilon <= 0) {
+    throw std::invalid_argument("Epsilon parameter must be greater than 0.");
   }
 
   // Initialise p to be the all-zeros vector.

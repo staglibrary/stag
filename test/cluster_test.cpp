@@ -185,7 +185,7 @@ TEST(ClusterTest, localSBM) {
 TEST(ClusterTest, LocalClusterArguments) {
   // Create a test graph
   stag_int n = 100;
-  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+  stag::Graph testGraph = stag::cycle_graph(n);
 
   // Check vertex is valid
   stag_int v = -1;
@@ -202,12 +202,16 @@ TEST(ClusterTest, LocalClusterArguments) {
 
   target_vol = -1;
   EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  // A very small (< 1) target_volume should work
+  target_vol = 0.1;
+  EXPECT_NO_THROW(stag::local_cluster(&testGraph, v, target_vol));
 }
 
 TEST(ClusterTest, ACLArguments) {
   // Create a test graph
   stag_int n = 100;
-  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+  stag::Graph testGraph = stag::cycle_graph(n);
 
   // Check vertex is valid
   stag_int v = -1;
@@ -231,14 +235,14 @@ TEST(ClusterTest, ACLArguments) {
   eps = -0.1;
   EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
 
-  eps = 2;
+  eps = 0;
   EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
 }
 
 TEST(ClusterTest, PageRankArguments) {
   // Create a test graph
   stag_int n = 100;
-  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+  stag::Graph testGraph = stag::cycle_graph(n);
 
   // Check seed vector is valid
   SprsMat v(101, 1);
@@ -262,7 +266,7 @@ TEST(ClusterTest, PageRankArguments) {
   eps = -0.1;
   EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
 
-  eps = 2;
+  eps = 0;
   EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
 }
 

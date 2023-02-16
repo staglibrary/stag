@@ -139,9 +139,6 @@ double stag::Graph::degree(stag_int v) {
   // For now, we can be a little lazy and use the degree matrix. Once this is
   // initialised, then checking degree is constant time.
   initialise_degree_matrix_();
-
-  // If the vertex number is larger than the number of vertices in the graph,
-  // then we say that the degree is 0.
   return degree_matrix_.coeff(v, v);
 }
 
