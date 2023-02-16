@@ -122,25 +122,19 @@ std::vector<stag_int> stag::Graph::degrees_unweighted(
 
 
 double stag::Graph::degree(stag_int v) {
+  check_vertex_argument_(v);
+
   // For now, we can be a little lazy and use the degree matrix. Once this is
   // initialised, then checking degree is constant time.
   initialise_degree_matrix_();
 
   // If the vertex number is larger than the number of vertices in the graph,
   // then we say that the degree is 0.
-  if (v < number_of_vertices_) {
-    return degree_matrix_.coeff(v, v);
-  } else {
-    return 0;
-  }
+  return degree_matrix_.coeff(v, v);
 }
 
 stag_int stag::Graph::degree_unweighted(stag_int v) {
-  // If the requested vertex number is greater than the number of vertices, then
-  // return a degree of 0.
-  if (v >= number_of_vertices_) {
-    return 0;
-  }
+  check_vertex_argument_(v);
 
   // The combinatorical degree of a vertex is equal to the number of non-zero
   // entries in its adjacency matrix row.
@@ -151,12 +145,7 @@ stag_int stag::Graph::degree_unweighted(stag_int v) {
 }
 
 std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
-  // If the vertex v does not exist, return the empty vector.
-  if (v >= number_of_vertices_) {
-    return {};
-  }
-
-  std::vector<stag::edge> edges;
+  check_vertex_argument_(v);
 
   // Iterate through the non-zero entries in the vth row of the adjacency matrix
   const double *weights = adjacency_matrix_.valuePtr();
@@ -165,6 +154,7 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
   stag_int vRowStart = *(rowStarts + v);
   stag_int degree_unw = degree_unweighted(v);
 
+  std::vector<stag::edge> edges;
   for (stag_int i = 0; i < degree_unw; i++) {
     if (*(weights + vRowStart + i) != 0) {
       edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
@@ -175,10 +165,7 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
 }
 
 std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
-  // If the vertex v does not exist, return the empty vector.
-  if (v >= number_of_vertices_) {
-    return {};
-  }
+  check_vertex_argument_(v);
 
   // Return the non-zero indices in the vth row of the adjacency matrix
   const stag_int *innerIndices = adjacency_matrix_.innerIndexPtr();
@@ -196,6 +183,18 @@ void stag::Graph::self_test_() {
   // Check that the adjacency matrix is symmetric.
   if (!stag::isSymmetric(&adjacency_matrix_)) {
     throw std::domain_error("Graph adjacency matrix must be symmetric.");
+  }
+}
+
+void stag::Graph::check_vertex_argument_(stag_int v) {
+  // Check that the value is smaller than the number of vertices
+  if (v >= number_of_vertices_) {
+    throw std::invalid_argument("Specified vertex index too large.");
+  }
+
+  // Check that the specified vertex is not negative
+  if (v < 0) {
+    throw std::invalid_argument("Vertex indices cannot be negative.");
   }
 }
 

@@ -1,7 +1,7 @@
 # STAG: Spectral Toolkit of Algorithms for Graphs
 
 [![Build](https://github.com/pmacg/stag/actions/workflows/github-actions-test.yml/badge.svg?branch=main)](https://github.com/pmacg/stag/actions/workflows/github-actions-test.yml)
-[![Docs](https://github.com/staglibrary/stag/actions/workflows/github-actions-docs.yml/badge.svg)](https://github.com/staglibrary/stag/actions/workflows/github-actions-docs.yml)
+[![Docs](https://github.com/staglibrary/stag/actions/workflows/github-actions-docs.yml/badge.svg)](https://staglibrary.io/docs/cpp)
 
 STAG is a C++ library providing efficient spectral algorithms for the analysis of massive graphs.
 There is also an accompanying [STAG Python library](https://github.com/staglibrary/stagpy).

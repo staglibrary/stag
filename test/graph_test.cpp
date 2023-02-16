@@ -71,6 +71,30 @@ TEST(GraphTest, Degree) {
   EXPECT_EQ(testGraph.degree(100), 0);
 }
 
+TEST(GraphTest, OutOfRangeVertices) {
+  // Check that we cannot request information for a vertex index that is out of range.
+  stag::Graph testGraph = createTestGraph();
+
+  EXPECT_THROW(testGraph.degree(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.degree(-1), std::invalid_argument);
+
+  EXPECT_THROW(testGraph.degree_unweighted(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.degree_unweighted(-1), std::invalid_argument);
+
+  EXPECT_THROW(testGraph.neighbors(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.neighbors(-1), std::invalid_argument);
+
+  EXPECT_THROW(testGraph.neighbors_unweighted(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.neighbors_unweighted(-1), std::invalid_argument);
+
+  // The degrees and degrees_unweighted methods take vectors of degrees
+  std::vector<stag_int> vs1 = {0, 2, 4};
+  EXPECT_THROW(testGraph.degrees(vs1), std::invalid_argument);
+
+  std::vector<stag_int> vs2 = {0, -1, 3};
+  EXPECT_THROW(testGraph.degrees_unweighted(vs2), std::invalid_argument);
+}
+
 TEST(GraphTest, UnweightedNeighbors) {
   stag::Graph testGraph = createTestGraph();
 
@@ -135,6 +159,39 @@ TEST(GraphTest, AsymmetricAdjacency) {
   EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
                std::domain_error);
 }
+
+TEST(GraphTest, MalformedAdjacency1) {
+  // Creating a graph with invalid sparse matrix data
+  // should throw an error.
+
+  // Create the incorrect data for the graph adjacency matrix.
+  // Notice that there are not enough specified values for the length of the column
+  // vector.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 8};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6};
+
+  // Attempt to create the graph object. Should throw an exception.
+  EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
+               std::invalid_argument);
+}
+
+TEST(GraphTest, MalformedAdjacency2) {
+  // Creating a graph with invalid sparse matrix data
+  // should throw an error.
+
+  // Create the incorrect data for the graph adjacency matrix.
+  // Notice that the last value of the rowStarts vector is larger than the length
+  // of the data vectors.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 9};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
+
+  // Attempt to create the graph object. Should throw an exception.
+  EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
+               std::invalid_argument);
+}
+
 
 TEST(GraphTest, LaplacianMatrix) {
   // Create the test graph object

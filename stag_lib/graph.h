@@ -182,8 +182,11 @@ namespace stag {
        * }
        * \endcode
        *
+       * The provided adjacency matrix must be symmetric.
+       *
        * @param adjacency_matrix the sparse eigen matrix representing the adjacency matrix
        *               of the graph.
+       * @throws domain_error if the adjacency matrix is not symmetric
        */
       explicit Graph(const SprsMat& adjacency_matrix);
 
@@ -354,6 +357,14 @@ namespace stag {
        * @throws std::domain_error if the graph is not formatted correctly
        */
       void self_test_();
+
+      /**
+       * Check the validity of a method argument which is supposed to refer
+       * to a vertex in the graph.
+       *
+       * @throws std::invalid_argument if the check does not pass
+       */
+       void check_vertex_argument_(stag_int v);
 
       // The number of vertices in the constructed graph.
       stag_int number_of_vertices_;
