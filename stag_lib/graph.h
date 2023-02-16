@@ -432,8 +432,9 @@ namespace stag {
    * Construct a barbell graph. The barbell graph consists of 2 cliques on n
    * vertices, connected by a single edge.
    *
-   * @param n the number of vertices in the constructed graph
-   * @return a stag::Graph object represengint the barbell graph
+   * @param n the number of vertices in each of the two cliques.
+   *          The returned graph will have \f$2n\f$ vertices.
+   * @return a stag::Graph object representing the barbell graph
    */
   stag::Graph barbell_graph(stag_int n);
 

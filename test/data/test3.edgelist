@@ -2,7 +2,8 @@
 0    1   1
 
 // Add blank lines and extra comments
-1   2 1
+// Miss the weight for this edge
+1   2
 
 // Notice that I've changed the comment character for this one.
 2 0  0.5

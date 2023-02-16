@@ -57,7 +57,7 @@ namespace stag {
     * For documentation on the format of the data vectors, please see the
     * documentation for the Eigen sparse matrix object.
     *
-    * For now, this method does not perform any error checking on the provided
+    * This method does not perform any error checking on the provided
     * vectors. The caller is responsible for ensuring that the provided data
     * vectors are well-formed.
     */
@@ -92,7 +92,7 @@ namespace stag {
 
   /**
    * \cond
-   * Do not document the stdErrVec or safeGetline method
+   * Do not document the stdErrVec or safeGetline methods
    */
 
   /**
