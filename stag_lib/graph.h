@@ -5,6 +5,12 @@
 // This file is provided as part of the STAG library and released under the MIT
 // license.
 //
+
+/**
+ * @file graph.h
+ * \brief Core graph class definitions and constructors.
+ */
+
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 
@@ -24,15 +30,25 @@ typedef long long stag_int;
  */
 typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
 
+/**
+ * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value
+ * of an entry in a graph adjacency matrix.
+ */
 typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 
+/**
+ * \cond
+ */
 // Redefine the eigen index type to be the same as stag_int
 #undef EIGEN_DEFAULT_DENSE_INDEX_TYPE
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE stag_int
+/**
+ * \endcond
+ */
 
 namespace stag {
   /**
-   * A structure representing a weighted edge in a graph.
+   * \brief A structure representing a weighted edge in a graph.
    */
   struct edge {
     /**
@@ -52,8 +68,8 @@ namespace stag {
   };
 
   /**
-   * LocalGraph is an abstract class which defines methods for exploring the
-   * local neighborhood of a graph.
+   * \brief An abstract class which defines methods for exploring the
+   * local neighborhood of vertices in a graph.
    *
    * To maximise the performance of the local algorithms using this class,
    * subclasses should cache the results of expensive queries. For example,
@@ -125,14 +141,46 @@ namespace stag {
   };
 
   /**
-   * The core object used to represent a graph for use with the library. Graphs
-   * are always constructed from sparse matrices, and this is the internal
+   * \brief The core object used to represent graphs for use with the library.
+   *
+   * Graphs are always constructed from sparse matrices, and this is the internal
    * representation used as well.
+   * Vertices of the graph are always referred to by their unique integer index.
+   * This index corresponds to the position of the vertex in the stored adjacency
+   * matrix of the graph.
    */
   class Graph : public LocalGraph {
     public:
       /**
        * Create a graph from an Eigen matrix.
+       *
+       * \par Example
+       *
+       * \code{cpp}
+       * #include <iostream>
+       * #include "graph.h"
+       *
+       * int main() {
+       *   // Construct a sparse matrix representing the
+       *   // triangle graph adjacency matrix.
+       *   stag_int n = 3;
+       *   SprsMat adj(n, n);
+       *   adj.coeffRef(0, 1) = 1;
+       *   adj.coeffRef(0, 2) = 1;
+       *   adj.coeffRef(1, 0) = 1;
+       *   adj.coeffRef(1, 2) = 1;
+       *   adj.coeffRef(2, 0) = 1;
+       *   adj.coeffRef(2, 1) = 1;
+       *
+       *   // Create a new STAG graph
+       *   stag::Graph myGraph(adj);
+       *
+       *   // Display the adjacency matrix of the graph
+       *   std::cout << *myGraph.adjacency() << std::endl;
+       *
+       *   return 0;
+       * }
+       * \endcode
        *
        * @param adjacency_matrix the sparse eigen matrix representing the adjacency matrix
        *               of the graph.
@@ -140,11 +188,13 @@ namespace stag {
       explicit Graph(const SprsMat& adjacency_matrix);
 
       /**
-       * Create a graph from raw arrays describing a CSR sparse matrix.
+       * Create a graph from raw arrays describing a CSC sparse matrix.
        *
-       * To use this constructor, you should understand the CSR sparse matrix
-       * format. Note that this library uses the RowMajor format from the Eigen
+       * To use this constructor, you should understand the CSC sparse matrix
+       * format. Note that this library uses the ColMajor format from the Eigen
        * library.
+       * For more information, refer to the
+       * [Eigen Documentation](https://eigen.tuxfamily.org/dox/group__TopicStorageOrders.html).
        *
        * @param outerStarts the indices of the start of each row in the CSR
        *                    matrix
@@ -156,14 +206,14 @@ namespace stag {
             std::vector<double> &values);
 
       /**
-       * Return the sparse adjacency matrix of the graph
+       * Return the sparse adjacency matrix of the graph.
        *
        * @return a sparse Eigen matrix representing the graph adjacency matrix.
        */
       const SprsMat* adjacency() const;
 
       /**
-       * Construct the Laplacian matrix of the graph.
+       * Return the Laplacian matrix of the graph.
        *
        * The Laplacian matrix is defined by
        *
@@ -171,20 +221,28 @@ namespace stag {
        *   L = D - A
        * \f]
        *
-       * where D is the diagonal matrix of vertex degrees and A is the adjacency
-       * matrix of the graph.
+       * where \f$D\f$ is the diagonal matrix of vertex degrees
+       * (stag::Graph::degree_matrix)
+       * and A is the adjacency matrix of the graph
+       * (stag::Graph::adjacency).
        *
        * @return a sparse Eigen matrix representing the graph Laplacian
        */
       const SprsMat* laplacian();
 
       /**
-       * Construct the normalised Laplacian matrix of the graph.
+       * Return the normalised Laplacian matrix of the graph.
        *
        * The normalised Laplacian matrix is defined by
-       *   Ln = D^{-1/2} L D^{-1/2}
-       * where D is the diagonal matrix of vertex degrees and L is the Laplacian
-       * matrix of the graph.
+       *
+       * \f[
+       *   \mathcal{L} = D^{-1/2} L D^{-1/2}
+       * \f]
+       *
+       * where \f$D\f$ is the diagonal matrix of vertex degrees
+       * (stag::Graph::degree_matrix)
+       * and \f$L\f$ is the Laplacian matrix of the graph
+       * (stag::Graph::laplacian).
        *
        * @return a sparse Eigen matrix representing the normalised Laplacian
        */
@@ -193,7 +251,7 @@ namespace stag {
       /**
        * The degree matrix of the graph.
        *
-       * The degree matrix is an n x n matrix such that each diagonal entry is
+       * The degree matrix is an \f$n \times n\f$ matrix such that each diagonal entry is
        * the degree of the corresponding node.
        *
        * @return a sparse Eigen matrix
@@ -203,7 +261,7 @@ namespace stag {
       /**
        * The inverse degree matrix of the graph.
        *
-       * The inverse degree matrix is an n x n matrix such that each diagonal entry is
+       * The inverse degree matrix is an \f$n \times n\f$ matrix such that each diagonal entry is
        * the inverse of the degree of the corresponding node, or 0 if the node
        * has degree 0.
        *
@@ -215,9 +273,13 @@ namespace stag {
        * The lazy random walk matrix of the graph.
        *
        * The lazy random walk matrix is defined to be
-       *    1/2 I + 1/2 A D^{-1}
-       * where I is the identity matrix, A is the graph adjacency matrix and
-       * D is the degree matrix of the graph.
+       *
+       * \f[
+       *    \frac{1}{2} I + \frac{1}{2} A D^{-1}
+       * \f]
+       *
+       * where \f$I\f$ is the identity matrix, \f$A\f$ is the graph adjacency matrix and
+       * \f$D\f$ is the degree matrix of the graph.
        *
        * @return a sparse Eigen matrix
        */
@@ -329,6 +391,11 @@ namespace stag {
   };
 
   /**
+   * \cond
+   * Do not generate documentation for operator definitions.
+   */
+
+  /**
    * Define equality for two graphs. Two graphs are equal iff their adjacency
    * matrices are equal
    */
@@ -342,38 +409,43 @@ namespace stag {
   bool operator!=(const edge& lhs, const edge& rhs);
 
   /**
+   * \endcond
+   */
+
+  /**
    * Construct a cycle graph on n vertices.
    *
-   * @param n
-   * @return a graph object representing the n-cycle
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing a cycle graph
    */
-  Graph cycle_graph(stag_int n);
+  stag::Graph cycle_graph(stag_int n);
 
   /**
    * Construct a complete graph on n vertices.
    *
-   * @param m
-   * @return a graph object
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing a complete graph
    */
-  Graph complete_graph(stag_int n);
+  stag::Graph complete_graph(stag_int n);
 
   /**
    * Construct a barbell graph. The barbell graph consists of 2 cliques on n
    * vertices, connected by a single edge.
    *
-   * @param n
-   * @return
+   * @param n the number of vertices in each of the two cliques.
+   *          The returned graph will have \f$2n\f$ vertices.
+   * @return a stag::Graph object representing the barbell graph
    */
-  Graph barbell_graph(stag_int n);
+  stag::Graph barbell_graph(stag_int n);
 
   /**
    * Construct a star graph. The star graph consists of one central vertex
    * connected by an edge to n-1 outer vertices.
    *
-   * @param n
-   * @return a graph object
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing the star graph
    */
-   Graph star_graph(stag_int n);
+   stag::Graph star_graph(stag_int n);
 
 }
 #endif //STAG_LIBRARY_H
