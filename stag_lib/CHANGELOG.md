@@ -16,11 +16,12 @@ returns a vector with the correct length.
 
 ### Added
 - [Issue #28](https://github.com/staglibrary/stag/issues/28): Add argument error checking
-- `vertex_exists` method to LocalGraph object
+- [Issue #50](https://github.com/staglibrary/stag/issues/50): Add stag::Graph::average_degree method on stag::Graph object.
+- Add stag::LocalGraph::vertex_exists method to stag::LocalGraph object
 
 ## [0.4.0] - 2023-01-16
 ### Fixed
-- [Issue #45](https://github.com/staglibrary/stag/issues/45): Make the LocalGraph class pure virtual
+- [Issue #45](https://github.com/staglibrary/stag/issues/45): Make the stag::LocalGraph class pure virtual
 
 ### Added
 - [Issue #51](https://github.com/staglibrary/stag/issues/51): Add a simple spectral clustering method

@@ -87,6 +87,11 @@ double stag::Graph::total_volume() {
   return degrees.sum();
 }
 
+double stag::Graph::average_degree() {
+  return total_volume() / number_of_vertices_;
+}
+
+
 stag_int stag::Graph::number_of_vertices() const {
   return number_of_vertices_;
 }

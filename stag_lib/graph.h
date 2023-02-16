@@ -307,6 +307,15 @@ namespace stag {
       double total_volume();
 
       /**
+       * The average degree of the graph.
+       *
+       * This is defined as the sum of the node degrees divided by the number of nodes.
+       *
+       * @return the graph's average degree.
+       */
+      double average_degree();
+
+      /**
        * The number of vertices in the graph.
        */
       stag_int number_of_vertices() const;
