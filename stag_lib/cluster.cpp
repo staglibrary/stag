@@ -191,6 +191,11 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
     // Skip any neighbors which are already in the queue.
     std::vector<stag_int> neighbors = graph->neighbors_unweighted(u);
     std::vector<double> neighbor_degrees = graph->degrees(neighbors);
+
+    // The length of neighbors and neighbor_degrees should always be equal.
+    // If they are not, there must be a bug in the implementation of graph->degrees.
+    assert(neighbors.size() == neighbor_degrees.size());
+
     degree_index = 0;
     stag_int v;
     for (stag::edge e : graph->neighbors(u)) {

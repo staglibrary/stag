@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Issue #56](https://github.com/staglibrary/stag/issues/56): Increase convergence speed of eigenvalue calculation
+- [Issue #49](https://github.com/staglibrary/stag/issues/49): Add assertion to pagerank calculation that LocalGraph.degrees
+returns a vector with the correct length.
 
 ## [0.4.0] - 2023-01-16
 ### Fixed
