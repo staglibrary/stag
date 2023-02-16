@@ -6,15 +6,16 @@ Getting Started {#getting-started}
 The STAG library is an easy-to-use C++ library providing several spectral
 algorithms for graphs.
 STAG is built on the Eigen library for representing sparse matrices and
-so it may be useful to also refer to the [Eigen documentation](https://eigen.tuxfamily.org/dox/>).
+so it may be useful to also refer to the [Eigen documentation](https://eigen.tuxfamily.org/index.php?title=Main_Page).
 
 Installation
 ------------
 To include the STAG library in your C++ project, you should first install the following
 dependencies.
 
-- Eigen (version >= 3.1)
-- Spectra (version >= 1.0.1)
+- [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 3.1)
+- [Spectra](https://spectralib.org/) (version >= 1.0.1)
+
 
 You should refer to their documentation for installation instructions,
 although the following should work on a standard linux system.
