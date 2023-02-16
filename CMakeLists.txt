@@ -17,7 +17,13 @@ FetchContent_Declare(
 
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+
+# Make google test available, and disable testing
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+    FetchContent_Populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 # Find and include the Eigen library
 find_package(Eigen3 3.1 REQUIRED)
@@ -28,7 +34,7 @@ enable_testing()
 
 # Add the test files to the test object
 add_executable(
-        stagt
+        stagt EXCLUDE_FROM_ALL
         test/graph_test.cpp
         test/stag_test.cpp
         test/utility_test.cpp

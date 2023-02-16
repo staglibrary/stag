@@ -1,0 +1,17 @@
+# We need to find the Eigen and Spectra libraries to link everything
+find_package(Eigen3 3.1 REQUIRED)
+message(STATUS "[stag] Found Eigen!")
+include_directories(${EIGEN3_INCLUDE_DIR})
+find_package(Spectra 1.0.1 REQUIRED)
+message(STATUS "[stag] Found Spectra!")
+include_directories(${SPECTRA_INCLUDE_DIR})
+
+# Set the include directory of the installed library
+set(STAG_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include/stag")
+
+# Create the imported target
+add_library(stag UNKNOWN IMPORTED)
+set_target_properties(stag PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${STAG_INCLUDE_DIRS}"
+  IMPORTED_LOCATION "@CMAKE_INSTALL_PREFIX@/lib/stag/stag.so"
+)

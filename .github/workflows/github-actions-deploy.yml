@@ -1,0 +1,38 @@
+
+name: Deploy
+on: [push]
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Eigen
+        run: sudo apt-get install -y libeigen3-dev
+      - name: Install Spectra
+        run: |
+          wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
+          tar xzvf v1.0.1.tar.gz
+          cd spectra-1.0.1/
+          mkdir build && cd build
+          cmake ..
+          sudo make all && sudo make install
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Build STAG
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          sudo make install
+          cd ~
+      - name: Clone example repository
+        uses: actions/checkout@v3
+        with:
+          repository: staglibrary/example-stag-project
+      - name: Build example project
+        run: |
+          cmake -B build -S .
+          cmake --build build
+      - name: Run example project
+        run: |
+          cd build
+          ./example_stag_project

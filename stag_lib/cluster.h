@@ -30,8 +30,8 @@ namespace stag {
    *
    * \code{.cpp}
    *     #include <iostream>
-   *     #include "graph.h"
-   *     #include "cluster.h"
+   *     #include <stag/graph.h>
+   *     #include <stag/cluster.h>
    *
    *     int main() {
    *       stag::Graph myGraph = stag::barbell_graph(10);

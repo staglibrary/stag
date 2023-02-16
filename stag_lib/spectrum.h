@@ -52,8 +52,8 @@ namespace stag {
    *
    * \code{.cpp}
    *     #include <Spectra/SymEigsSolver.h>
-   *     #include "graph.h"
-   *     #include "spectrum.h"
+   *     #include <stag/graph.h>
+   *     #include <stag/spectrum.h>
    *
    *     int main() {
    *       // Create a cycle graph

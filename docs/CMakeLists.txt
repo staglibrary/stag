@@ -29,4 +29,4 @@ add_custom_target(Doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
 #############################################################
 # Documentation target
 #############################################################
-add_custom_target(Documentation ALL DEPENDS ${DOXYGEN_INDEX_FILE})
+add_custom_target(Documentation DEPENDS ${DOXYGEN_INDEX_FILE})

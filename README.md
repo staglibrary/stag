@@ -66,21 +66,39 @@ The STAG library has the following dependencies.
 - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 3.1)
 - [Spectra](https://spectralib.org/) (version >= 1.0.1)
 
-In order to use STAG in your C++ project, clone the git repository and include the `stag_lib`
-directory in your project. Adding the following to your `CMakeLists.txt` will compile STAG
-and make it available to the code in your project.
+You should install these dependencies before installing STAG.
+
+To install STAG, clone the git repository or download the source code for the release you
+would like to use. Then you can install the library with the following commands from the
+root directory of the repository.
+
+```bash
+mkdir build_dir
+cd build_dir
+cmake ..
+make install
+```
+
+The final make command may require administrator privileges.
+
+Once STAG is installed, you can use it in your C++ project by including the following in
+your `CMakeLists.txt` file.
 
 ```cmake
 set(CMAKE_CXX_STANDARD 20) # STAG requires at least C++20.
  
-include_directories(stag_lib)
-add_subdirectory(stag_lib stag_lib)
+# Find and include the STAG library
+find_package(stag REQUIRED)
+message(STATUS "Found STAG!")
+include_directories(${STAG_INCLUDE_DIRS})
  
 target_link_libraries(
         YOUR_PROJECT
         stag
 )
 ```
+
+You may find it helpful to refer to the [example STAG project](https://github.com/staglibrary/example-stag-project).
 
 ## Contact
 
