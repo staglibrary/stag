@@ -35,4 +35,4 @@ jobs:
       - name: Run example project
         run: |
           cd build
-          ./example-stag-project
+          ./example_stag_project
