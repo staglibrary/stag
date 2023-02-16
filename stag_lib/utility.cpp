@@ -42,6 +42,8 @@ std::vector<double> stag::sprsMatToVec(const SprsMat* matrix) {
 }
 
 std::vector<double> stag::sprsMatToVec(const SprsMat* matrix, stag_int n) {
+  if (n < 1) throw std::invalid_argument("Dimension n must be at least 1.");
+
   // Initialise the solution vector.
   std::vector<double> dense_vec;
 

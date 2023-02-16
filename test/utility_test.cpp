@@ -35,7 +35,7 @@ TEST(UtilityTest, IsSymmetric) {
 }
 
 TEST(UtilityTest, SprsMatToVec) {
-  // Construct a sparse matrix vector.
+  // Construct a sparse matrix.
   std::vector<stag_int> colStarts = {0, 4};
   std::vector<stag_int> rowIndices = {0, 1, 2, 3};
   std::vector<double> values = {1, 2, 3, 4};
@@ -57,6 +57,24 @@ TEST(UtilityTest, SprsMatToVec) {
   // The expected vector
   std::vector<double> expected_vec = {1, 0, 2, 0, 3, 0, 4, 0, 0};
   EXPECT_EQ(stag::sprsMatToVec(&sparse_matrix, 9), expected_vec);
+}
+
+TEST(UtilityTest, SprsMatToVecArguments) {
+  // Construct a sparse matrix.
+  std::vector<stag_int> colStarts = {0, 4};
+  std::vector<stag_int> rowIndices = {0, 1, 2, 3};
+  std::vector<double> values = {1, 2, 3, 4};
+  SprsMat sparse_matrix = Eigen::Map<SprsMat>(4, 1, 4,
+                                              colStarts.data(),
+                                              rowIndices.data(),
+                                              values.data());
+
+  // Check the parameter checking of the sprsMatToVec method
+  stag_int n = -1;
+  EXPECT_THROW(stag::sprsMatToVec(&sparse_matrix, n), std::invalid_argument);
+
+  n = 0;
+  EXPECT_THROW(stag::sprsMatToVec(&sparse_matrix, n), std::invalid_argument);
 }
 
 TEST(UtilityTest, AddDoubleVectors) {
