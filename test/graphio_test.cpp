@@ -110,6 +110,12 @@ TEST(GraphioTest, EdgelistBadFilename) {
   std::string badFilename = "thisfiledoesntexist.edgelist";
   EXPECT_THROW({stag::Graph testGraph = stag::load_edgelist(badFilename);},
                std::runtime_error);
+
+  // Now try writing to a file which cannot be written to
+  stag::Graph testGraph = stag::complete_graph(5);
+  badFilename = "////cannotwritehere.edgelist";
+  EXPECT_THROW(stag::save_edgelist(testGraph, badFilename),
+               std::runtime_error);
 }
 
 TEST(GraphioTest, SaveEdgelist) {
