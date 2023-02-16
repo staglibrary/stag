@@ -55,9 +55,6 @@ TEST(GraphTest, UnweightedDegree) {
   EXPECT_EQ(testGraph.degree_unweighted(1), 2);
   EXPECT_EQ(testGraph.degree_unweighted(2), 3);
   EXPECT_EQ(testGraph.degree_unweighted(3), 1);
-
-  // The unweighted degree of a non-existent vertex is 0.
-  EXPECT_EQ(testGraph.degree_unweighted(100), 0);
 }
 
 TEST(GraphTest, Degree) {
@@ -66,9 +63,30 @@ TEST(GraphTest, Degree) {
   EXPECT_NEAR(testGraph.degree(1), 8, 0.000001);
   EXPECT_NEAR(testGraph.degree(2), 10.3333, 0.000001);
   EXPECT_NEAR(testGraph.degree(3), 1, 0.000001);
+}
 
-  // The degree of a non-existent vertex is 0.
-  EXPECT_EQ(testGraph.degree(100), 0);
+TEST(GraphTest, OutOfRangeVertices) {
+  // Check that we cannot request information for a vertex index that is out of range.
+  stag::Graph testGraph = createTestGraph();
+
+  EXPECT_THROW(testGraph.degree(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.degree(-1), std::invalid_argument);
+
+  EXPECT_THROW(testGraph.degree_unweighted(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.degree_unweighted(-1), std::invalid_argument);
+
+  EXPECT_THROW(testGraph.neighbors(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.neighbors(-1), std::invalid_argument);
+
+  EXPECT_THROW(testGraph.neighbors_unweighted(4), std::invalid_argument);
+  EXPECT_THROW(testGraph.neighbors_unweighted(-1), std::invalid_argument);
+
+  // The degrees and degrees_unweighted methods take vectors of degrees
+  std::vector<stag_int> vs1 = {0, 2, 4};
+  EXPECT_THROW(testGraph.degrees(vs1), std::invalid_argument);
+
+  std::vector<stag_int> vs2 = {0, -1, 3};
+  EXPECT_THROW(testGraph.degrees_unweighted(vs2), std::invalid_argument);
 }
 
 TEST(GraphTest, UnweightedNeighbors) {
@@ -135,6 +153,39 @@ TEST(GraphTest, AsymmetricAdjacency) {
   EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
                std::domain_error);
 }
+
+TEST(GraphTest, MalformedAdjacency1) {
+  // Creating a graph with invalid sparse matrix data
+  // should throw an error.
+
+  // Create the incorrect data for the graph adjacency matrix.
+  // Notice that there are not enough specified values for the length of the column
+  // vector.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 8};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6};
+
+  // Attempt to create the graph object. Should throw an exception.
+  EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
+               std::invalid_argument);
+}
+
+TEST(GraphTest, MalformedAdjacency2) {
+  // Creating a graph with invalid sparse matrix data
+  // should throw an error.
+
+  // Create the incorrect data for the graph adjacency matrix.
+  // Notice that the last value of the rowStarts vector is larger than the length
+  // of the data vectors.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 9};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
+
+  // Attempt to create the graph object. Should throw an exception.
+  EXPECT_THROW({stag::Graph testGraph(rowStarts, colIndices, values);},
+               std::invalid_argument);
+}
+
 
 TEST(GraphTest, LaplacianMatrix) {
   // Create the test graph object
@@ -401,4 +452,38 @@ TEST(GraphTest, Equality) {
   graph1 = createTestGraph();
   graph2 = stag::complete_graph(4);
   EXPECT_NE(graph1, graph2);
+}
+
+TEST(GraphTest, VertexExists) {
+  stag_int n = 4;
+  stag::Graph testGraph = stag::complete_graph(n);
+
+  EXPECT_TRUE(testGraph.vertex_exists(0));
+  EXPECT_TRUE(testGraph.vertex_exists(1));
+  EXPECT_TRUE(testGraph.vertex_exists(2));
+  EXPECT_TRUE(testGraph.vertex_exists(3));
+
+  EXPECT_FALSE(testGraph.vertex_exists(4));
+  EXPECT_FALSE(testGraph.vertex_exists(-1));
+  EXPECT_FALSE(testGraph.vertex_exists(100));
+}
+
+TEST(GraphTest, ArgumentChecking) {
+  stag_int n = -1;
+  EXPECT_THROW(stag::cycle_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::complete_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
+
+  n = 0;
+  EXPECT_THROW(stag::cycle_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::complete_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
+
+  n = 1;
+  EXPECT_THROW(stag::cycle_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::complete_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
+  EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
 }

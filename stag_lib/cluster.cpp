@@ -15,7 +15,10 @@
 #include <KMeansRex/KMeansRexCoreInterface.h>
 
 std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
-  assert(k < graph->number_of_vertices() / 2);
+  // Check that the number of clusters is valid.
+  if (k < 1 || k > graph->number_of_vertices() /2) {
+    throw std::invalid_argument("Number of clusters must be between 1 and n/2.");
+  }
 
   // Start by computing the 'first' k eigenvalues of the normalised graph
   // laplacian matrix.
@@ -42,6 +45,8 @@ std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
 }
 
 std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, double target_volume) {
+  if (target_volume <= 0) throw std::invalid_argument("Target volume must be positive.");
+
   // The 'locality' parameter should essentially be a constant if we expect the conductance
   // of the target cluster to be a constant. Set it to 0.01.
   // The error parameter should decrease as the inverse of the target volume.
@@ -64,6 +69,17 @@ std::vector<stag_int> stag::local_cluster_acl(stag::LocalGraph *graph,
                                               stag_int seed_vertex,
                                               double locality,
                                               double error) {
+  // Check that the arguments are valid.
+  if (!graph->vertex_exists(seed_vertex)) {
+    throw std::invalid_argument("Seed vertex does not exist.");
+  }
+  if (locality < 0 || locality > 1) {
+    throw std::invalid_argument("Locality parameter must be between 0 and 1.");
+  }
+  if (error <= 0) {
+    throw std::invalid_argument("Error parameter must be greater than 0.");
+  }
+
   // Compute the approximate pagerank vector
   SprsMat seedDist(seed_vertex + 1, 1);
   seedDist.coeffRef(seed_vertex, 0) = 1;
@@ -137,8 +153,17 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
                                                         SprsMat &seed_vector,
                                                         double alpha,
                                                         double epsilon) {
-  // Check that the provided seed vector is a column vector
+  // Check that the arguments are valid
   if (seed_vector.cols() > 1) throw std::invalid_argument("Seed vector must be a column vector.");
+  if (!graph->vertex_exists(seed_vector.rows() - 1)) {
+    throw std::invalid_argument("Seed vector dimension must be less than the number of vertices in the graph");
+  }
+  if (alpha < 0 || alpha > 1) {
+    throw std::invalid_argument("Alpha parameter must be between 0 and 1.");
+  }
+  if (epsilon <= 0) {
+    throw std::invalid_argument("Epsilon parameter must be greater than 0.");
+  }
 
   // Initialise p to be the all-zeros vector.
   SprsMat p(seed_vector.rows(), 1);

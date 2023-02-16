@@ -97,3 +97,21 @@ TEST(SpectrumTest, HugeGraph) {
   stag_int k = 3;
   stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
 }
+
+TEST(SpectrumTest, ArgumentChecking) {
+  stag_int n = 10;
+  stag::Graph testGraph = stag::complete_graph(n);
+  const SprsMat* lap = testGraph.laplacian();
+
+  stag_int k = -1;
+  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+
+  k = 0;
+  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+
+  k = n + 1;
+  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+
+  k = n;
+  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+}

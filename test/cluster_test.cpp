@@ -5,6 +5,7 @@
  * license.
  */
 #include <iostream>
+#include <stdexcept>
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <cluster.h>
@@ -38,6 +39,26 @@ TEST(ClusterTest, SpectralCluster) {
     if (c == 2) c2++;
   }
   EXPECT_NEAR(c1 / c2, 1, 0.01);
+}
+
+TEST(ClusterTest, SCArguments) {
+  // Construct a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+
+  // Passing an invalid number of clusters to the spectral clustering
+  // algorithm should return an error.
+  stag_int k = -1;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
+
+  k = 0;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
+
+  k = (n / 2) + 1;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
+
+  k = n + 1;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
 }
 
 TEST(ClusterTest, SpectralClusterSparse) {
@@ -160,6 +181,95 @@ TEST(ClusterTest, localSBM) {
   }
   EXPECT_GE(inside / cluster.size(), 0.5);
 }
+
+TEST(ClusterTest, LocalClusterArguments) {
+  // Create a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::cycle_graph(n);
+
+  // Check vertex is valid
+  stag_int v = -1;
+  double target_vol = 100;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  v = n;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  // Check volume is valid
+  v = 0;
+  target_vol = 0;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  target_vol = -1;
+  EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
+
+  // A very small (< 1) target_volume should work
+  target_vol = 0.1;
+  EXPECT_NO_THROW(stag::local_cluster(&testGraph, v, target_vol));
+}
+
+TEST(ClusterTest, ACLArguments) {
+  // Create a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::cycle_graph(n);
+
+  // Check vertex is valid
+  stag_int v = -1;
+  double alpha = 0.1;
+  double eps = 0.1;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  v = n;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  // Check alpha is valid
+  v = 0;
+  alpha = -0.1;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  alpha = 2;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  // Check epsilon is valid
+  alpha = 0.1;
+  eps = -0.1;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  eps = 0;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+}
+
+TEST(ClusterTest, PageRankArguments) {
+  // Create a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::cycle_graph(n);
+
+  // Check seed vector is valid
+  SprsMat v(101, 1);
+  v.coeffRef(0, 0) = 0.5;
+  v.coeffRef(100, 0) = 0.5;
+  double alpha = 0.1;
+  double eps = 0.1;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  // Check alpha is valid
+  SprsMat v2(100, 1);
+  v.coeffRef(0, 0) = 1;
+  alpha = -0.1;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+
+  alpha = 2;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+
+  // Check epsilon is valid
+  alpha = 0.1;
+  eps = -0.1;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+
+  eps = 0;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+}
+
 
 TEST(ClusterTest, sweepSet) {
   // Construct a test graph

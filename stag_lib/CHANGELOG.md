@@ -5,11 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- [Issue #28](https://github.com/staglibrary/stag/issues/28): Requesting the degree of a non-existant vertex now results
+in an error.
 
 ### Fixed
 - [Issue #56](https://github.com/staglibrary/stag/issues/56): Increase convergence speed of eigenvalue calculation
 - [Issue #49](https://github.com/staglibrary/stag/issues/49): Add assertion to pagerank calculation that LocalGraph.degrees
 returns a vector with the correct length.
+
+### Added
+- [Issue #28](https://github.com/staglibrary/stag/issues/28): Add argument error checking
+- `vertex_exists` method to LocalGraph object
 
 ## [0.4.0] - 2023-01-16
 ### Fixed

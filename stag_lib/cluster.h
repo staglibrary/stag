@@ -52,7 +52,7 @@ namespace stag {
    *   - Cluster the vertices into k clusters using a k-means clustering algorithm.
    *
    * @param graph the graph object to be clustered
-   * @param k the number of clusters to find
+   * @param k the number of clusters to find. Should be less than \f$n/2\f$.
    * @return a vector giving the cluster membership for each vertex in the graph
    *
    * \par References

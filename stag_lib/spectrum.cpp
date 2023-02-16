@@ -11,6 +11,10 @@
 
 stag::EigenSystem stag::compute_eigensystem(
     const SprsMat* mat, stag_int num, Spectra::SortRule sort) {
+  if (num < 1 || num >= mat->rows()) {
+    throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
+  }
+
   stag::SprsMatOp op(*mat);
 
   // Construct eigen solver object, requesting the smallest k eigenvalues

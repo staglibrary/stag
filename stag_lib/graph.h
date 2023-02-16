@@ -135,6 +135,15 @@ namespace stag {
       virtual std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) = 0;
 
       /**
+       * Given a vertex ID, returns true or false to indicate whether the vertex exists
+       * in the graph.
+       *
+       * @param v the vertex index to check
+       * @return a boolean indicating whether there exists a vertex with the given index
+       */
+       virtual bool vertex_exists(stag_int v) = 0;
+
+      /**
        * Destructor for the LocalGraph object.
        */
       virtual ~LocalGraph() = default;
@@ -182,8 +191,11 @@ namespace stag {
        * }
        * \endcode
        *
+       * The provided adjacency matrix must be symmetric.
+       *
        * @param adjacency_matrix the sparse eigen matrix representing the adjacency matrix
        *               of the graph.
+       * @throws domain_error if the adjacency matrix is not symmetric
        */
       explicit Graph(const SprsMat& adjacency_matrix);
 
@@ -314,6 +326,7 @@ namespace stag {
        std::vector<stag_int> neighbors_unweighted(stag_int v) override;
        std::vector<double> degrees(std::vector<stag_int> vertices) override;
        std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
+       bool vertex_exists(stag_int v) override;
        ~Graph() override = default;
 
     private:
@@ -354,6 +367,23 @@ namespace stag {
        * @throws std::domain_error if the graph is not formatted correctly
        */
       void self_test_();
+
+      /**
+       * \cond
+       * Do not document the check vertex argument method.
+       */
+
+      /**
+       * Check the validity of a method argument which is supposed to refer
+       * to a vertex in the graph.
+       *
+       * @throws std::invalid_argument if the check does not pass
+       */
+       void check_vertex_argument(stag_int v);
+
+       /**
+        * \endcond
+        */
 
       // The number of vertices in the constructed graph.
       stag_int number_of_vertices_;

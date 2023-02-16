@@ -95,6 +95,18 @@ stag_int stag::Graph::number_of_edges() const {
   return adjacency_matrix_.nonZeros() / 2;
 }
 
+void stag::Graph::check_vertex_argument(stag_int v) {
+  // Check that the value is smaller than the number of vertices
+  if (v >= number_of_vertices_) {
+    throw std::invalid_argument("Specified vertex index too large.");
+  }
+
+  // Check that the specified vertex is not negative
+  if (v < 0) {
+    throw std::invalid_argument("Vertex indices cannot be negative.");
+  }
+}
+
 //------------------------------------------------------------------------------
 // Local Graph Methods
 //------------------------------------------------------------------------------
@@ -122,25 +134,16 @@ std::vector<stag_int> stag::Graph::degrees_unweighted(
 
 
 double stag::Graph::degree(stag_int v) {
+  check_vertex_argument(v);
+
   // For now, we can be a little lazy and use the degree matrix. Once this is
   // initialised, then checking degree is constant time.
   initialise_degree_matrix_();
-
-  // If the vertex number is larger than the number of vertices in the graph,
-  // then we say that the degree is 0.
-  if (v < number_of_vertices_) {
-    return degree_matrix_.coeff(v, v);
-  } else {
-    return 0;
-  }
+  return degree_matrix_.coeff(v, v);
 }
 
 stag_int stag::Graph::degree_unweighted(stag_int v) {
-  // If the requested vertex number is greater than the number of vertices, then
-  // return a degree of 0.
-  if (v >= number_of_vertices_) {
-    return 0;
-  }
+  check_vertex_argument(v);
 
   // The combinatorical degree of a vertex is equal to the number of non-zero
   // entries in its adjacency matrix row.
@@ -151,12 +154,7 @@ stag_int stag::Graph::degree_unweighted(stag_int v) {
 }
 
 std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
-  // If the vertex v does not exist, return the empty vector.
-  if (v >= number_of_vertices_) {
-    return {};
-  }
-
-  std::vector<stag::edge> edges;
+  check_vertex_argument(v);
 
   // Iterate through the non-zero entries in the vth row of the adjacency matrix
   const double *weights = adjacency_matrix_.valuePtr();
@@ -165,6 +163,7 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
   stag_int vRowStart = *(rowStarts + v);
   stag_int degree_unw = degree_unweighted(v);
 
+  std::vector<stag::edge> edges;
   for (stag_int i = 0; i < degree_unw; i++) {
     if (*(weights + vRowStart + i) != 0) {
       edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
@@ -175,10 +174,7 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
 }
 
 std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
-  // If the vertex v does not exist, return the empty vector.
-  if (v >= number_of_vertices_) {
-    return {};
-  }
+  check_vertex_argument(v);
 
   // Return the non-zero indices in the vth row of the adjacency matrix
   const stag_int *innerIndices = adjacency_matrix_.innerIndexPtr();
@@ -186,6 +182,10 @@ std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
   stag_int vRowStart = *(rowStarts + v);
   stag_int degree = degree_unweighted(v);
   return {innerIndices + vRowStart, innerIndices + vRowStart + degree};
+}
+
+bool stag::Graph::vertex_exists(stag_int v) {
+  return v >= 0 && v < number_of_vertices_;
 }
 
 //------------------------------------------------------------------------------
@@ -320,6 +320,8 @@ bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
 // Standard Graph Constructors
 //------------------------------------------------------------------------------
 stag::Graph stag::cycle_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   SprsMat adj_mat(n, n);
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 0; i < n; i++) {
@@ -331,6 +333,8 @@ stag::Graph stag::cycle_graph(stag_int n) {
 }
 
 stag::Graph stag::complete_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   SprsMat adj_mat(n, n);
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 0; i < n; i++) {
@@ -345,6 +349,8 @@ stag::Graph stag::complete_graph(stag_int n) {
 }
 
 stag::Graph stag::barbell_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   // Construct the non-zero entries in the complete blocks of the adjacency
   // matrix
   std::vector<EdgeTriplet> non_zero_entries;
@@ -368,6 +374,8 @@ stag::Graph stag::barbell_graph(stag_int n) {
 }
 
 stag::Graph stag::star_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
   // Construct the non-zero entries in the adjacency matrix
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int i = 1; i < n; i++) {

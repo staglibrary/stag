@@ -40,7 +40,7 @@ namespace stag {
    *
    * @param filename the name of the edgelist file to be loaded
    * @return stag::Graph object
-   * @throws std::runtime_error if the file cannot be parsed as an edgelist
+   * @throws std::runtime_error if the file doesn't exist or cannot be parsed as an edgelist
    */
   stag::Graph load_edgelist(std::string &filename);
 
