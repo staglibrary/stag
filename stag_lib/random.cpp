@@ -108,11 +108,16 @@ stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q) {
 }
 
 stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q, bool exact) {
-  // All arguments must be positive
-  assert(n > 0);
-  assert(k > 0);
-  assert(p >= 0);
-  assert(q >= 0);
+  if (n < 1) throw std::invalid_argument("Number of vertices must be at least 1.");
+  if (k < 1 || k > n/2) {
+    throw std::invalid_argument("Number of clusters must be between 1 and n/2.");
+  }
+  if (p < 0 || p > 1) {
+    throw std::invalid_argument("p must be between 0 and 1.");
+  }
+  if (q < 0 || q > 1) {
+    throw std::invalid_argument("q must be between 0 and 1.");
+  }
 
   // Strictly speaking, we will generate a graph with k * floor(n/k) vertices
   stag_int verticesPerCluster = std::floor(n/k);

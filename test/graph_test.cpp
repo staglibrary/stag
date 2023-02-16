@@ -55,9 +55,6 @@ TEST(GraphTest, UnweightedDegree) {
   EXPECT_EQ(testGraph.degree_unweighted(1), 2);
   EXPECT_EQ(testGraph.degree_unweighted(2), 3);
   EXPECT_EQ(testGraph.degree_unweighted(3), 1);
-
-  // The unweighted degree of a non-existent vertex is 0.
-  EXPECT_EQ(testGraph.degree_unweighted(100), 0);
 }
 
 TEST(GraphTest, Degree) {
@@ -66,9 +63,6 @@ TEST(GraphTest, Degree) {
   EXPECT_NEAR(testGraph.degree(1), 8, 0.000001);
   EXPECT_NEAR(testGraph.degree(2), 10.3333, 0.000001);
   EXPECT_NEAR(testGraph.degree(3), 1, 0.000001);
-
-  // The degree of a non-existent vertex is 0.
-  EXPECT_EQ(testGraph.degree(100), 0);
 }
 
 TEST(GraphTest, OutOfRangeVertices) {
