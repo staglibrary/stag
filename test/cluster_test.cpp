@@ -5,6 +5,7 @@
  * license.
  */
 #include <iostream>
+#include <stdexcept>
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <cluster.h>
@@ -38,6 +39,26 @@ TEST(ClusterTest, SpectralCluster) {
     if (c == 2) c2++;
   }
   EXPECT_NEAR(c1 / c2, 1, 0.01);
+}
+
+TEST(ClusterTest, SCArguments) {
+  // Construct a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+
+  // Passing an invalid number of clusters to the spectral clustering
+  // algorithm should return an error.
+  stag_int k = -1;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
+
+  k = 0;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
+
+  k = (n / 2) + 1;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
+
+  k = n + 1;
+  EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
 }
 
 TEST(ClusterTest, SpectralClusterSparse) {

@@ -15,7 +15,10 @@
 #include <KMeansRex/KMeansRexCoreInterface.h>
 
 std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
-  assert(k < graph->number_of_vertices() / 2);
+  // Check that the number of clusters is valid.
+  if (k < 1 || k > graph->number_of_vertices() /2) {
+    throw std::invalid_argument("Number of clusters must be between 1 and n/2.");
+  }
 
   // Start by computing the 'first' k eigenvalues of the normalised graph
   // laplacian matrix.

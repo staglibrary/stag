@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - [Issue #56](https://github.com/staglibrary/stag/issues/56): Increase convergence speed of eigenvalue calculation
 
+### Added
+- [Issue #28](https://github.com/staglibrary/stag/issues/28): Add argument error checking
+
 ## [0.4.0] - 2023-01-16
 ### Fixed
 - [Issue #45](https://github.com/staglibrary/stag/issues/45): Make the LocalGraph class pure virtual
