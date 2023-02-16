@@ -151,8 +151,17 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
                                                         SprsMat &seed_vector,
                                                         double alpha,
                                                         double epsilon) {
-  // Check that the provided seed vector is a column vector
+  // Check that the arguments are valid
   if (seed_vector.cols() > 1) throw std::invalid_argument("Seed vector must be a column vector.");
+  if (!graph->vertex_exists(seed_vector.rows() - 1)) {
+    throw std::invalid_argument("Seed vector dimension must be less than the number of vertices in the graph");
+  }
+  if (alpha < 0 || alpha > 1) {
+    throw std::invalid_argument("Alpha parameter must be between 0 and 1.");
+  }
+  if (epsilon < 0 || epsilon > 1) {
+    throw std::invalid_argument("Epsilon parameter must be between 0 and 1.");
+  }
 
   // Initialise p to be the all-zeros vector.
   SprsMat p(seed_vector.rows(), 1);

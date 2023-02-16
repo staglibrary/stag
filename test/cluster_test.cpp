@@ -204,6 +204,69 @@ TEST(ClusterTest, LocalClusterArguments) {
   EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
 }
 
+TEST(ClusterTest, ACLArguments) {
+  // Create a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+
+  // Check vertex is valid
+  stag_int v = -1;
+  double alpha = 0.1;
+  double eps = 0.1;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  v = n;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  // Check alpha is valid
+  v = 0;
+  alpha = -0.1;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  alpha = 2;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  // Check epsilon is valid
+  alpha = 0.1;
+  eps = -0.1;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  eps = 2;
+  EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
+}
+
+TEST(ClusterTest, PageRankArguments) {
+  // Create a test graph
+  stag_int n = 100;
+  stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
+
+  // Check seed vector is valid
+  SprsMat v(101, 1);
+  v.coeffRef(0, 0) = 0.5;
+  v.coeffRef(100, 0) = 0.5;
+  double alpha = 0.1;
+  double eps = 0.1;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v, alpha, eps), std::invalid_argument);
+
+  // Check alpha is valid
+  SprsMat v2(100, 1);
+  v.coeffRef(0, 0) = 1;
+  alpha = -0.1;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+
+  alpha = 2;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+
+  // Check epsilon is valid
+  alpha = 0.1;
+  eps = -0.1;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+
+  eps = 2;
+  EXPECT_THROW(stag::approximate_pagerank(&testGraph, v2, alpha, eps), std::invalid_argument);
+}
+
+
 TEST(ClusterTest, sweepSet) {
   // Construct a test graph
   stag::Graph testGraph = stag::barbell_graph(4);
