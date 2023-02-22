@@ -71,6 +71,21 @@ namespace stag {
    * and the exact
    * method has running time \f$O(n^2)\f$.
    *
+   * \par Example
+   *
+   * \code{cpp}
+   * #include <stag/graph.h>
+   * #include <stag/random.h>
+   *
+   * int main() {
+   *   std::vector<stag_int> cluster_sizes = {100, 20, 10};
+   *   DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
+   *   stag::Graph myGraph = stag::general_sbm(cluster_sizes, prob_mat);
+   *   std::cout << *myGraph.adjacency() << std::endl;
+   *   return 0;
+   * }
+   * \endcode
+   *
    * @param cluster_sizes a vector of length \f$k\f$ with the number of vertices
    *                      in each cluster.
    * @param probabilities a \f$k \times k\f$ matrix with the inter-cluster
