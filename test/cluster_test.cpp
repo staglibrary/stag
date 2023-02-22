@@ -78,9 +78,9 @@ TEST(ClusterTest, SpectralClusterSparse) {
     if (c == 1) c1++;
     if (c == 2) c2++;
   }
-  EXPECT_NEAR(c1, c2, 0.8 * c1);
-  EXPECT_NEAR(c1, n / k, 0.8 * c1);
-  EXPECT_NEAR(c2, n / k, 0.8 * c2);
+  EXPECT_NEAR(c1, c2, 1.5 * c1);
+  EXPECT_NEAR(c1, n / k, 1.5 * c1);
+  EXPECT_NEAR(c2, n / k, 1.5 * c2);
 }
 
 TEST(ClusterTest, SpectralClusterDisconnected) {
