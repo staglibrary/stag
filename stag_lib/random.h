@@ -126,6 +126,67 @@ namespace stag {
    * \overload
    */
   Graph erdos_renyi(stag_int n, double p);
+
+  /**
+   * Construct a vector with the ground truth labels for a graph drawn from the
+   * symmetric stochastic block model.
+   *
+   * \par Example
+   *
+   * \code{cpp}
+   * #include <stag/graph.h>
+   * #include <stag/random.h>
+   *
+   * int main() {
+   *   stag_int n = 6;
+   *   stag_int k = 3;
+   *   stag::Graph myGraph = stag::sbm(n, k, 0.8, 0.1);
+   *
+   *   std::vector<stag_int> gt_labels = stag::sbm_gt_labels(n, k);
+   *
+   *   // gt_labels is the vector {0, 0, 1, 1, 2, 2}.
+   *
+   *   return 0;
+   * }
+   * \endcode
+   *
+   *
+   * @param n the number of vertices in the graph
+   * @param k the number of clusters
+   * @return a vector containing the ground truth labels for the vertices in the
+   *         graph.
+   */
+  std::vector<stag_int> sbm_gt_labels(stag_int n, stag_int k);
+
+  /**
+   * Construct a vector with the ground truth labels for a graph drawn from the
+   * general stochastic block model.
+   *
+   * \par Example
+   *
+   * \code{cpp}
+   * #include <stag/graph.h>
+   * #include <stag/random.h>
+   *
+   * int main() {
+   *   std::vector<stag_int> cluster_sizes = {4, 2};
+   *   DenseMat prob_mat {{0.4, 0.1}, {0.1, 0.7}};
+   *   stag::Graph myGraph = stag::general_sbm(cluster_sizes, prob_mat);
+   *
+   *   std::vector<stag_int> gt_labels = stag::general_sbm_gt_labels(cluster_sizes);
+   *
+   *   // gt_labels is the vector {0, 0, 0, 0, 1, 1}.
+   *
+   *   return 0;
+   * }
+   * \endcode
+   *
+   * @param cluster_sizes a vector of length \f$k\f$ with the number of vertices
+   *                      in each cluster.
+   * @return a vector containing the ground truth labels for the vertices in the
+   *         graph.
+   */
+  std::vector<stag_int> general_sbm_gt_labels(std::vector<stag_int>& cluster_sizes);
 }
 
 #endif //STAG_TEST_RANDOM_H

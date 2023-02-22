@@ -133,3 +133,53 @@ TEST(RandomTest, ErdosRenyiArguments) {
   p = 1.1;
   EXPECT_THROW(stag::erdos_renyi(n, p), std::invalid_argument);
 }
+
+TEST(RandomTest, SBMLabels) {
+  stag_int n = 6;
+  stag_int k = 3;
+  stag::Graph myGraph = stag::sbm(n, k, 0.8, 0.1);
+
+  std::vector<stag_int> gt_labels = stag::sbm_gt_labels(n, k);
+  std::vector<stag_int> expected_labels {0, 0, 1, 1, 2, 2};
+
+  EXPECT_EQ(gt_labels, expected_labels);
+}
+
+TEST(RandomTest, GeneralSBMLabels) {
+  std::vector<stag_int> cluster_sizes = {4, 2};
+  DenseMat prob_mat {{0.4, 0.1}, {0.1, 0.7}};
+  stag::Graph myGraph = stag::general_sbm(cluster_sizes, prob_mat);
+
+  std::vector<stag_int> gt_labels = stag::general_sbm_gt_labels(cluster_sizes);
+  std::vector<stag_int> expected_labels {0, 0, 0, 0, 1, 1};
+
+  EXPECT_EQ(gt_labels, expected_labels);
+}
+
+TEST(RandomTest, SBMLabelsArguments) {
+  stag_int n = -1;
+  stag_int k = 2;
+  EXPECT_THROW(stag::sbm_gt_labels(n, k), std::invalid_argument);
+
+  n = 0;
+  EXPECT_THROW(stag::sbm_gt_labels(n, k), std::invalid_argument);
+
+  n = 100;
+  k = -1;
+  EXPECT_THROW(stag::sbm_gt_labels(n, k), std::invalid_argument);
+
+  k = 0;
+  EXPECT_THROW(stag::sbm_gt_labels(n, k), std::invalid_argument);
+
+  k = 51;
+  EXPECT_THROW(stag::sbm_gt_labels(n, k), std::invalid_argument);
+}
+
+TEST(RandomTest, GeneralSBMLabelsArguments) {
+  std::vector<stag_int> cluster_sizes = {1000, 100, 0};
+  EXPECT_THROW(stag::general_sbm_gt_labels(cluster_sizes), std::invalid_argument);
+
+  cluster_sizes.at(2) = -10;
+  EXPECT_THROW(stag::general_sbm_gt_labels(cluster_sizes), std::invalid_argument);
+}
+
