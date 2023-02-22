@@ -17,16 +17,16 @@ jobs:
           sudo make all && sudo make install
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: cmake -S . -B cmake-build-debug
-      - run: cmake --build cmake-build-debug --target stagt
+      - run: cmake -S . -B cmake-build-release
+      - run: cmake --build cmake-build-release --target stagt
       - uses: actions/upload-artifact@master
         with:
           name: test-binary
-          path: cmake-build-debug/stagt
+          path: cmake-build-release/stagt
       - uses: actions/upload-artifact@master
         with:
           name: shared-library
-          path: cmake-build-debug/stag_lib/stag.so
+          path: cmake-build-release/stag_lib/stag.so
 
   Docs:
     runs-on: ubuntu-latest
@@ -51,8 +51,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Build Docs
         run: |
-          cmake -S . -B cmake-build-debug
-          cmake --build cmake-build-debug --target Documentation
+          cmake -S . -B cmake-build-release
+          cmake --build cmake-build-release --target Documentation
 
   Test:
     runs-on: ubuntu-latest
