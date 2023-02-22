@@ -13,6 +13,8 @@ request.
 
 1. The code is clean and well commented.
 2. You should add unit tests to test the newly developed code.
+    - Include tests for invalid inputs. Any new method should include checks for
+      invalid arguments and raise appropriate exceptions.
 3. You should add an entry to the CHANGELOG to document the new feature or fix.
 4. Make sure that any new methods are correctly documented in the doxygen-generated
 documentation.

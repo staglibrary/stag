@@ -51,6 +51,23 @@ TEST(RandomTest, GeneralSBM) {
   EXPECT_EQ(testGraph.number_of_vertices(), 1110);
 }
 
+TEST(RandomTest, GeneralSBMArguments) {
+  std::vector<stag_int> cluster_sizes = {1000, 100, 10};
+  DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 1.7, 0}, {0.1, 0, 1}};
+  EXPECT_THROW(stag::general_sbm(cluster_sizes, prob_mat), std::invalid_argument);
+
+  prob_mat(1, 1) = 0.7;
+  prob_mat(2, 0) = -0.1;
+  EXPECT_THROW(stag::general_sbm(cluster_sizes, prob_mat), std::invalid_argument);
+
+  prob_mat(2, 0) = 0.1;
+  cluster_sizes.at(2) = 0;
+  EXPECT_THROW(stag::general_sbm(cluster_sizes, prob_mat), std::invalid_argument);
+
+  cluster_sizes.at(2) = -10;
+  EXPECT_THROW(stag::general_sbm(cluster_sizes, prob_mat), std::invalid_argument);
+}
+
 TEST(RandomTest, SBMApprox) {
   stag::Graph testGraph = stag::sbm(1000, 2, 0.1, 0.01);
   EXPECT_EQ(testGraph.number_of_vertices(), 1000);
