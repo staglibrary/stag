@@ -17,7 +17,7 @@ jobs:
           sudo make all && sudo make install
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: cmake -S . -B cmake-build-release
+      - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build cmake-build-release --target stagt
       - uses: actions/upload-artifact@master
         with:
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Build Docs
         run: |
-          cmake -S . -B cmake-build-release
+          cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
           cmake --build cmake-build-release --target Documentation
 
   Test:
