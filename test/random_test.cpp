@@ -44,6 +44,13 @@ TEST(RandomTest, SBMComplete) {
   EXPECT_FLOATS_NEARLY_EQ(refValues, testValues, 0.000001);
 }
 
+TEST(RandomTest, GeneralSBM) {
+  std::vector<stag_int> cluster_sizes = {1000, 100, 10};
+  DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
+  stag::Graph testGraph = stag::general_sbm(cluster_sizes, prob_mat);
+  EXPECT_EQ(testGraph.number_of_vertices(), 1110);
+}
+
 TEST(RandomTest, SBMApprox) {
   stag::Graph testGraph = stag::sbm(1000, 2, 0.1, 0.01);
   EXPECT_EQ(testGraph.number_of_vertices(), 1000);
