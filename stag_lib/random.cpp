@@ -237,3 +237,36 @@ stag::Graph stag::erdos_renyi(stag_int n, double p) {
 stag::Graph stag::erdos_renyi(stag_int n, double p, bool exact) {
   return stag::sbm(n, 1, p, 0, exact);
 }
+
+std::vector<stag_int> stag::sbm_gt_labels(stag_int n, stag_int k) {
+  if (n < 1) throw std::invalid_argument("Number of vertices must be at least 1.");
+  if (k < 1 || k > n/2) {
+    throw std::invalid_argument("Number of clusters must be between 1 and n/2.");
+  }
+
+  // Create the cluster size vector
+  std::vector<stag_int> cluster_sizes;
+  for (auto i = 0; i < k; i++) {
+    cluster_sizes.push_back(floor(((double) n) / ((double) k)));
+  }
+
+  return general_sbm_gt_labels(cluster_sizes);
+}
+
+std::vector<stag_int> stag::general_sbm_gt_labels(std::vector<stag_int>& cluster_sizes) {
+  for (stag_int size : cluster_sizes) {
+    if (size < 1) throw std::invalid_argument("Number of vertices in each cluster must be at least 1.");
+  }
+
+  std::vector<stag_int> labels;
+
+  stag_int current_cluster = 0;
+  for (auto this_size : cluster_sizes) {
+    for (auto j = 0; j < this_size; j++) {
+      labels.push_back(current_cluster);
+    }
+    current_cluster++;
+  }
+
+  return labels;
+}
