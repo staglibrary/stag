@@ -24,11 +24,18 @@
 typedef long long stag_int;
 
 /**
- *
  * The fundamental datatype used in this library is the sparse matrix.
  * We use the `Eigen::SparseMatrix` class in column-major format.
  */
 typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
+
+/**
+ *  Occasionally, it is more efficient to use a dense matrix, such as when
+ *  the matrix is very small.
+ *
+ *  In this case, we use the `Eigen::MatrixXd` class.
+ */
+typedef Eigen::MatrixXd DenseMat;
 
 /**
  * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value
