@@ -9,6 +9,40 @@
 #include <gtest/gtest.h>
 #include <graph.h>
 #include <random.h>
+#include <utility.h>
+
+// Define some helper test assertions.
+#define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \
+        EXPECT_EQ(expected.size(), actual.size()) << "Array sizes differ.";\
+        for (size_t idx = 0; idx < std::min(expected.size(), actual.size()); ++idx) \
+        { \
+            EXPECT_NEAR(expected[idx], actual[idx], thresh) << "at index: " << idx;\
+        }
+
+TEST(RandomTest, SBMComplete) {
+  // Generate what should be a complete graph using the stochastic block model.
+  stag::Graph testGraph = stag::sbm(10, 1, 1, 0);
+
+  stag::Graph referenceGraph = stag::complete_graph(10);
+
+  std::vector<stag_int> refStarts = stag::sprsMatOuterStarts(
+      referenceGraph.laplacian());
+  std::vector<stag_int> testStarts = stag::sprsMatOuterStarts(
+      testGraph.laplacian());
+  EXPECT_EQ(refStarts, testStarts);
+
+  std::vector<stag_int> refIndices= stag::sprsMatInnerIndices(
+      referenceGraph.laplacian());
+  std::vector<stag_int> testIndices = stag::sprsMatInnerIndices(
+      testGraph.laplacian());
+  EXPECT_EQ(refIndices, testIndices);
+
+  std::vector<double> refValues = stag::sprsMatValues(
+      referenceGraph.laplacian());
+  std::vector<double> testValues = stag::sprsMatValues(
+      testGraph.laplacian());
+  EXPECT_FLOATS_NEARLY_EQ(refValues, testValues, 0.000001);
+}
 
 TEST(RandomTest, SBMApprox) {
   stag::Graph testGraph = stag::sbm(1000, 2, 0.1, 0.01);

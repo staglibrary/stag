@@ -53,6 +53,41 @@ namespace stag {
   Graph sbm(stag_int n, stag_int k, double p, double q);
 
   /**
+   * Generate a graph from the general stochastic block mode.
+   *
+   * The `cluster_sizes` vector specifies the number of vertices in each
+   * generated cluster.
+   * Let \f$k\f$ be the length of the cluster_sizes vector.
+   *
+   * Then, `probabilities` should be a \f$k \times k\f$ matrix which specifies
+   * the edge probability between every pair of vertices.
+   * That is, for each pair of vertices \f$u\f$ and \f$v\f$, the probability of
+   * including the edge \f$\{u, v\}\f$ in the graph is \f$P(u, v)\f$, where
+   * \f$P\f$ is the `probabilities` matrix.
+   *
+   * The approximate sampling method has running time \f$O(k^2 + \mathrm{nnz})\f$
+   * where \f$\mathrm{nnz}\f$ is the number of non-zeros in the generated
+   * graph's adjacency matrix,
+   * and the exact
+   * method has running time \f$O(n^2)\f$.
+   *
+   * @param cluster_sizes a vector of length \f$k\f$ with the number of vertices
+   *                      in each cluster.
+   * @param probabilities a \f$k \times k\f$ matrix with the inter-cluster
+   *                      probabilities.
+   * @param exact (optional) whether to use the exact probability distribution. Default: false.
+   * @return the randomly generated graph
+   */
+  Graph general_sbm(std::vector<stag_int>& cluster_sizes,
+                    DenseMat& probabilities, bool exact);
+
+  /**
+   * @overload
+   */
+  Graph general_sbm(std::vector<stag_int>& cluster_sizes,
+                    DenseMat& probabilities);
+
+  /**
    * Generate a graph from the Erdos-Renyi model.
    *
    * Generates a graph with \f$n\f$ vertices. For each pair of vertices \f$u\f$ and
