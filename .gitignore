@@ -9,3 +9,6 @@
 
 # Visual Studio Code
 .vs/
+
+# Mac-OS hidden files
+**/.DS_Store
