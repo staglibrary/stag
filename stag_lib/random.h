@@ -27,7 +27,7 @@ namespace stag {
    *  - \f$q\f$ otherwise.
    *
    * For large enough values of
-   * n, this method samples from an approximate stochastic block model by
+   * \f$n\f$, this method samples from an approximate stochastic block model by
    * default which significantly speeds up the execution time. To sample
    * exactly from the stochastic block model, pass the optional 'exact'
    * parameter to the method.
