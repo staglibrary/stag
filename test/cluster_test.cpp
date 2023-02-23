@@ -292,3 +292,28 @@ TEST(ClusterTest, sweepSet) {
   std::vector<stag_int> expected_sweep = {0, 1, 2, 3};
   EXPECT_EQ(sweep_set, expected_sweep);
 }
+
+TEST(ClusterTest, ARI) {
+  std::vector<stag_int> gt_labels {0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<stag_int> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
+
+  double expected_ari = 0.31257344;
+  double actual_ari = stag::adjusted_rand_index(gt_labels, labels);
+  EXPECT_NEAR(actual_ari, expected_ari, 0.0001);
+
+  std::vector<stag_int> labels2   {1, 1, 2, 2, 2, 2, 0, 0, 0, 0};
+  expected_ari = 1;
+  actual_ari = stag::adjusted_rand_index(gt_labels, labels2);
+  EXPECT_NEAR(actual_ari, expected_ari, 0.0001);
+}
+
+TEST(ClusterTest, ARIArguments) {
+  std::vector<stag_int> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<stag_int> labels    { 0,  1, 0, 1, 1, 2, 2, 2, 2, 2};
+  EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
+
+  gt_labels.at(0) = 0;
+  gt_labels.at(1) = 0;
+  labels.at(3) = -1;
+  EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
+}
