@@ -10,7 +10,7 @@
 namespace stag {
   // Provide metadata about the library version
   static const unsigned VERSION_MAJOR = 1;
-  static const unsigned VERSION_MINOR = 0;
+  static const unsigned VERSION_MINOR = 1;
   static const unsigned VERSION_PATCH = 0;
 
 }
