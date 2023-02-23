@@ -84,7 +84,7 @@ namespace stag {
 
   /**
    * The ACL local clustering algorithm. Given a graph and starting vertex,
-   * returns a cluster close to the starting vertex, constructed in a local way.
+   * return a cluster close to the starting vertex, constructed in a local way.
    *
    * The locality parameter is passed as the alpha parameter in the personalised
    * Pagerank calculation.
@@ -92,7 +92,7 @@ namespace stag {
    * @param graph a graph object implementing the LocalGraph interface
    * @param seed_vertex the starting vertex in the graph
    * @param locality a value in \f$[0, 1]\f$ indicating how 'local' the cluster should
-   *                 be. A value of \f$1\f$ will return only the seed vertex
+   *                 be. A value of \f$1\f$ will return only the seed vertex,
    *                 and a value of \f$0\f$ will explore the whole graph.
    * @param error (optional) - the acceptable error in the calculation of the approximate
    *                           pagerank. Default \f$0.001\f$.
@@ -115,7 +115,7 @@ namespace stag {
    *
    * The parameters seed_vector, alpha, and epsilon are used as described in the ACL paper.
    *
-   * Note that the dimension of the returned vectors may not match the true
+   * Note that the dimension of the returned vectors may not match the correct
    * number of vertices in the graph provided since the approximate
    * pagerank is computed locally.
    *
