@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [Issue #70](https://github.com/staglibrary/stag/issues/70): Add general stochastic block model method
 - [Issue #69](https://github.com/staglibrary/stag/issues/69): Add methods to get the ground truth labels for SBM graphs
+- [Issue #71](https://github.com/staglibrary/stag/issues/71): Add stag::adjusted_rand_index method
 
 ## [1.0.0] - 2023-02-16
 ### Changed

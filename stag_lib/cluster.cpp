@@ -293,3 +293,78 @@ std::vector<stag_int> stag::sweep_set_conductance(stag::LocalGraph* graph,
   // Return the best cut
   return {sorted_indices.begin(), sorted_indices.begin() + best_idx};
 }
+
+//------------------------------------------------------------------------------
+// Clustering metrics
+//------------------------------------------------------------------------------
+stag_int nChoose2(stag_int n)
+{
+  if (n < 0) throw std::invalid_argument("n must be non-negative.");
+  if (n < 2) return 0;
+
+  return n * (n-1) / 2;
+}
+
+double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
+                                 std::vector<stag_int>& labels) {
+  stag_int n = gt_labels.size();
+  if (labels.size() != n) {
+    throw std::invalid_argument("Label vectors must be the same size.");
+  }
+
+  // Find the number of clusters
+  stag_int k = 1;
+  for (auto label : gt_labels) {
+    if (label < 0) throw std::invalid_argument("Cluster labels must be non-negative.");
+    if (label > k - 1) {
+      k = label + 1;
+    }
+  }
+  for (auto label: labels) {
+    if (label < 0) throw std::invalid_argument("Cluster labels must be non-negative.");
+    if (label > k - 1) {
+      k = label + 1;
+    }
+  }
+
+  // Start by constructing the k by k contingency table
+  // and the sizes of every cluster
+  Eigen::VectorXi gt_sizes(k);
+  Eigen::VectorXi label_sizes(k);
+  Eigen::MatrixXi contingency(k, k);
+
+  // Initialize everything to 0
+  for (auto i = 0; i < k; i++) {
+    gt_sizes(i) = 0;
+    label_sizes(i) = 0;
+    for (auto j = 0; j < k; j++) {
+      contingency(i, j) = 0;
+    }
+  }
+
+  for (auto i = 0; i < n; i++) {
+    contingency(gt_labels.at(i), labels.at(i))++;
+    gt_sizes(gt_labels.at(i))++;
+    label_sizes(labels.at(i))++;
+  }
+
+  // Now compute three components of the ARI
+  // See https://stats.stackexchange.com/questions/207366/calculating-the-adjusted-rand-index.
+  stag_int c1 = 0;
+  for (auto i = 0; i < k; i++) {
+    for (auto j = 0; j < k; j++) {
+      c1 += nChoose2(contingency(i, j));
+    }
+  }
+
+  stag_int c2 = 0;
+  stag_int c3 = 0;
+  for (auto i = 0; i < k; i++) {
+    c2 += nChoose2(gt_sizes(i));
+    c3 += nChoose2(label_sizes(i));
+  }
+
+  stag_int nC2 = nChoose2(n);
+
+  return (c1 - ((double) (c2 * c3) / nC2)) / (((double) (c2 + c3)/2) - ((double) (c2 * c3)/nC2));
+}

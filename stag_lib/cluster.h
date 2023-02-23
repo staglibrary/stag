@@ -174,6 +174,21 @@ namespace stag {
    */
   std::vector<stag_int> sweep_set_conductance(stag::LocalGraph* graph,
                                               SprsMat& vec);
+
+  /**
+   * Compute the Adjusted Rand Index between two label vectors.
+   *
+   * @param gt_labels the ground truth labels for the dataset
+   * @param labels the candidate labels whose ARI should be calculated
+   * @return the ARI between the two labels vectors
+   *
+   * \par References
+   * W. M. Rand.
+   * Objective criteria for the evaluation of clustering methods.
+   * Journal of the American Statistical Association. 66 (336): 846–850. 1971.
+   */
+  double adjusted_rand_index(std::vector<stag_int>& gt_labels,
+                             std::vector<stag_int>& labels);
 }
 
 #endif //STAG_TEST_CLUSTER_H
