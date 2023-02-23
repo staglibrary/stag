@@ -45,11 +45,11 @@ namespace stag {
    *       return 0;
    *     }
    * \endcode
-   *
+   * 
    * The spectral clustering algorithm has the following steps.
    *   - Compute the \f$k\f$ smallest eigenvectors of the normalised Laplacian matrix.
    *   - Embed the vertices into \f$\mathbb{R}^k\f$ according to the eigenvectors.
-   *   - Cluster the vertices into k clusters using a k-means clustering algorithm.
+   *   - Cluster the vertices into \f$k\f$ clusters using a \f$k\f$-means clustering algorithm.
    *
    * @param graph the graph object to be clustered
    * @param k the number of clusters to find. Should be less than \f$n/2\f$.
@@ -84,15 +84,15 @@ namespace stag {
 
   /**
    * The ACL local clustering algorithm. Given a graph and starting vertex,
-   * returns a cluster close to the starting vertex, constructed in a local way.
+   * return a cluster close to the starting vertex, constructed in a local way.
    *
    * The locality parameter is passed as the alpha parameter in the personalised
-   * pagerank calculation.
+   * Pagerank calculation.
    *
    * @param graph a graph object implementing the LocalGraph interface
    * @param seed_vertex the starting vertex in the graph
    * @param locality a value in \f$[0, 1]\f$ indicating how 'local' the cluster should
-   *                 be. A value of \f$1\f$ will return the return only the seed vertex
+   *                 be. A value of \f$1\f$ will return only the seed vertex,
    *                 and a value of \f$0\f$ will explore the whole graph.
    * @param error (optional) - the acceptable error in the calculation of the approximate
    *                           pagerank. Default \f$0.001\f$.
@@ -111,23 +111,23 @@ namespace stag {
   std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
 
   /**
-   * Compute the approximate pagerank vector.
+   * Compute the approximate Pagerank vector.
    *
-   * The parameters s, alpha, and epsilon are used as described in the ACL paper.
+   * The parameters seed_vector, alpha, and epsilon are used as described in the ACL paper.
    *
-   * Note that the dimension of the returned vectors may not match the true
+   * Note that the dimension of the returned vectors may not match the correct
    * number of vertices in the graph provided since the approximate
-   * pagerank is computed locally.
+   * Pagerank is computed locally.
    *
    * @param graph a stag::LocalGraph object
-   * @param seed_vector the seed vector of the personalised pagerank
-   * @param alpha the locality parameter of the personalised pagerank
-   * @param epsilon the error parameter of the personalised pagerank
+   * @param seed_vector the seed vector of the personalised Pagerank
+   * @param alpha the locality parameter of the personalised Pagerank
+   * @param epsilon the error parameter of the personalised Pagerank
    * @return A tuple of sparse column vectors corresponding to
-   *          - p: the approximate pagerank vector
+   *          - p: the approximate Pagerank vector
    *          - r: the residual vector
    *
-   *         By the definition of approximate pagerank, it is the case that
+   *         By the definition of approximate Pagerank, it holds that
    *            p + ppr(r, alpha) = ppr(s, alpha).
    *
    * @throws std::invalid_argument if the provided seed_vector is not a column vector.
@@ -144,7 +144,7 @@ namespace stag {
   /**
    * Find the sweep set of the given vector with the minimum conductance.
    *
-   * First, sort the vector such that \f$v_1, \ldots, v_n\f$. Then let
+   * First, sort the vector such that \f$v_1<= \ldots <= v_n\f$. Then let
    *
    * \f[
    *     S_i = \{v_j : j <= i\}
@@ -160,7 +160,7 @@ namespace stag {
    *
    * This method is expected to be run on vectors whose support is much less
    * than the total size of the graph. If the total volume of the support of vec
-   * is larger than half of the volume of the total graph, then this method may
+   * is larger than half of the volume of an entire graph, then this method may
    * return unexpected results.
    *
    * Note that the caller is responsible for any required normalisation of the
