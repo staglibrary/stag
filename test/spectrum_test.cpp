@@ -115,3 +115,91 @@ TEST(SpectrumTest, ArgumentChecking) {
   k = n;
   EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
 }
+
+TEST(SpectrumTest, RayleighQuotient) {
+  stag::Graph testGraph = stag::complete_graph(3);
+  const SprsMat* adj = testGraph.adjacency();
+  Eigen::VectorXd vec(3);
+  vec(0) = 1.0;
+  vec(1) = 1.0;
+  vec(2) = 1.0;
+
+  double expected_rq = 2;
+  double actual_rq = stag::rayleigh_quotient(adj, vec);
+  EXPECT_NEAR(actual_rq, expected_rq, 0.00001);
+
+  vec(1) = 0;
+  vec(2) = -1;
+  expected_rq = -1;
+  actual_rq = stag::rayleigh_quotient(adj, vec);
+  EXPECT_NEAR(actual_rq, expected_rq, 0.00001);
+
+  vec(2) = 0;
+  expected_rq = 0;
+  actual_rq = stag::rayleigh_quotient(adj, vec);
+  EXPECT_NEAR(actual_rq, expected_rq, 0.00001);
+}
+
+TEST(SpectrumTest, RayleighQuotientArguments) {
+  stag::Graph testGraph = stag::complete_graph(4);
+  const SprsMat* adj = testGraph.adjacency();
+  Eigen::VectorXd vec(3);
+  EXPECT_THROW(stag::rayleigh_quotient(adj, vec), std::invalid_argument);
+
+  testGraph = stag::complete_graph(3);
+  adj = testGraph.adjacency();
+  vec(0) = 0;
+  vec(1) = 0;
+  vec(2) = 0;
+  EXPECT_THROW(stag::rayleigh_quotient(adj, vec), std::invalid_argument);
+}
+
+TEST(SpectrumTest, PowerMethod) {
+  stag::Graph testGraph = stag::complete_graph(3);
+  const SprsMat* lap = testGraph.laplacian();
+  Eigen::VectorXd vec(3);
+  vec(0) = 0;
+  vec(1) = 1.0;
+  vec(2) = 0;
+
+  Eigen::VectorXd expected_result(3);
+  expected_result(0) = -1.0 / sqrt(6);
+  expected_result(1) = 2.0 / sqrt(6);
+  expected_result(2) = -1.0 / sqrt(6);
+
+  Eigen::VectorXd actual_result = stag::power_method(lap, 2, vec);
+  for (auto i = 0; i < 3; i++) {
+    EXPECT_NEAR(actual_result(i), expected_result(i), 0.0001);
+  }
+
+  // Run the power method with no initial vector
+  actual_result = stag::power_method(lap);
+
+  // The rayleigh quotient should be close to 3
+  EXPECT_NEAR(stag::rayleigh_quotient(lap, actual_result), 3, 0.5);
+
+  // The power method with 0 iterations should return the same vector as the
+  // input.
+  actual_result = stag::power_method(lap, 0, vec);
+  for (auto i = 0; i < 3; i++) {
+    EXPECT_NEAR(actual_result(i), vec(i), 0.0001);
+  }
+}
+
+TEST(SpectrumTest, PowerMethodArguments) {
+  // The dimensions of the input vector needs to be close to correct.
+  stag::Graph testGraph = stag::complete_graph(3);
+  const SprsMat* lap = testGraph.laplacian();
+  Eigen::VectorXd vec(4);
+  vec(0) = 0;
+  vec(1) = 1.0;
+  vec(2) = 0;
+  vec(3) = 0;
+  EXPECT_THROW(stag::power_method(lap, vec), std::invalid_argument);
+
+  // The number of iterations must be non-negative.
+  testGraph = stag::complete_graph(4);
+  lap = testGraph.laplacian();
+  stag_int t = -1;
+  EXPECT_THROW(stag::power_method(lap, t), std::invalid_argument);
+}

@@ -42,8 +42,8 @@ namespace stag {
    * Compute the eigenvalues and eigenvectors of a given matrix.
    *
    * By default, this will compute the eigenvalues of smallest magnitude.
-   * This default can be overridden by the sort parameter which takes a Spectra::SortRule
-   * object. This is likely to be one of the following.
+   * This default can be overridden by the sort parameter which takes a
+   * `Spectra::SortRule` object. This is likely to be one of the following.
    *   - `Spectra::SortRule::SmallestMagn` will return the eigenvalues with smallest magnitude
    *   - `Spectra::SortRule::LargestMagn` will return the eigenvalues with largest magnitude
    *
@@ -92,7 +92,7 @@ namespace stag {
    * Compute the eigenvalues of a given matrix.
    *
    * By default, this will compute the eigenvalues of smallest magnitude.
-   * This default can be overridden by the sort parameter which takes a Spectra::SortRule
+   * This default can be overridden by the sort parameter which takes a `Spectra::SortRule`
    * object. This is likely to be one of the following.
    *   - `Spectra::SortRule::SmallestMagn` will return the eigenvalues with smallest magnitude
    *   - `Spectra::SortRule::LargestMagn` will return the eigenvalues with largest magnitude
@@ -119,7 +119,7 @@ namespace stag {
    *
    * By default, this will compute the eigenvectors corresponding to the
    * eigenvalues of smallest magnitude.
-   * This default can be overridden by the sort parameter which takes a Spectra::SortRule
+   * This default can be overridden by the sort parameter which takes a `Spectra::SortRule`
    * object. This is likely to be one of the following.
    *   - `Spectra::SortRule::SmallestMagn` will return the eigenvalues with smallest magnitude
    *   - `Spectra::SortRule::LargestMagn` will return the eigenvalues with largest magnitude
@@ -140,6 +140,66 @@ namespace stag {
    * \overload
    */
   Eigen::MatrixXd compute_eigenvectors(const SprsMat* mat, stag_int num);
+
+  /**
+   * Apply the power method to compute the dominant eigenvector of a matrix.
+   *
+   * Given a matrix \f$M\f$, an initial vector \f$v_0\f$, and a number of
+   * iterations \f$t\f$, the power method calculates the vector
+   *
+   * \f[
+   *    v_t = M^t v_0,
+   * \f]
+   *
+   * which is close to the eigenvector of \f$M\f$ with largest eigenvalue.
+   *
+   * The running time of the power method is \f$O(t \cdot \mathrm{nnz}(M))\f$, where
+   * \f$\mathrm{nnz}(M)\f$ is the number of non-zero elements in the matrix \f$M\f$.
+   *
+   * @param mat the matrix \f$M\f$ on which to operate.
+   * @param num_iterations (optional) the number of iterations of the power
+   *                       method to apply. It this argument is omitted,
+   *                       \f$O(\log(n))\f$ iterations are used which results
+   *                       in a vector whose Rayleigh quotient is a \f$(1 - \epsilon)\f$
+   *                       approximation of the dominant eigenvalue.
+   * @param initial_vector (optional) the initial vector to use for the power
+   *                       iteration. If this argument is omitted, a random unit
+   *                       vector will be used.
+   * @return the vector \f$v_t\f$ computed by repeated multiplication with \f$M\f$.
+   */
+  Eigen::VectorXd power_method(const SprsMat* mat, stag_int num_iterations,
+                               Eigen::VectorXd initial_vector);
+
+  /**
+   * \overload
+   */
+  Eigen::VectorXd power_method(const SprsMat* mat, stag_int num_iterations);
+
+  /**
+   * \overload
+   */
+  Eigen::VectorXd power_method(const SprsMat* mat,
+                               Eigen::VectorXd initial_vector);
+
+  /**
+   * \overload
+   */
+  Eigen::VectorXd power_method(const SprsMat* mat);
+
+  /**
+   * Compute the Rayleigh quotient of the given vector and matrix.
+   *
+   * Given a matrix \f$M\f$, the Rayleigh quotient of vector \f$v\f$ is
+   *
+   * \f[
+   *    R(M, v) = \frac{v^\top M v}{v^\top v}.
+   * \f]
+   *
+   * @param mat a sparse matrix \f$M \in \mathbb{R}^{n \times n}\f$.
+   * @param vec a vector \f$v \in \mathbb{R}^n\f$.
+   * @return the Rayleigh quotient \f$R(M, v)\f$.
+   */
+  double rayleigh_quotient(const SprsMat* mat, Eigen::VectorXd& vec);
 }
 
 
