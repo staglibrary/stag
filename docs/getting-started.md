@@ -51,9 +51,9 @@ cd ../..
 You should download the latest version of the STAG library. For example:
 
 ```bash
-wget https://github.com/staglibrary/stag/archive/refs/tags/v1.0.0.tar.gz
-tar xzvf v1.0.0.tar.gz
-cd stag-1.0.0
+wget https://github.com/staglibrary/stag/archive/refs/tags/v1.1.0.tar.gz
+tar xzvf v1.1.0.tar.gz
+cd stag-1.1.0
 ```
 
 Then, you can build and install STAG with cmake.
