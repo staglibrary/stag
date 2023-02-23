@@ -92,7 +92,7 @@ namespace stag {
    * @param graph a graph object implementing the LocalGraph interface
    * @param seed_vertex the starting vertex in the graph
    * @param locality a value in \f$[0, 1]\f$ indicating how 'local' the cluster should
-   *                 be. A value of \f$1\f$ will return the return only the seed vertex
+   *                 be. A value of \f$1\f$ will return only the seed vertex
    *                 and a value of \f$0\f$ will explore the whole graph.
    * @param error (optional) - the acceptable error in the calculation of the approximate
    *                           pagerank. Default \f$0.001\f$.
