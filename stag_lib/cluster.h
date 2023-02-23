@@ -87,7 +87,7 @@ namespace stag {
    * returns a cluster close to the starting vertex, constructed in a local way.
    *
    * The locality parameter is passed as the alpha parameter in the personalised
-   * pagerank calculation.
+   * Pagerank calculation.
    *
    * @param graph a graph object implementing the LocalGraph interface
    * @param seed_vertex the starting vertex in the graph
@@ -113,7 +113,7 @@ namespace stag {
   /**
    * Compute the approximate Pagerank vector.
    *
-   * The parameters s, alpha, and epsilon are used as described in the ACL paper.
+   * The parameters seed_vector, alpha, and epsilon are used as described in the ACL paper.
    *
    * Note that the dimension of the returned vectors may not match the true
    * number of vertices in the graph provided since the approximate
