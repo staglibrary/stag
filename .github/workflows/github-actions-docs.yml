@@ -36,7 +36,7 @@ jobs:
         env:
           SSH_DEPLOY_KEY: ${{ secrets.WEBSITE_SSH_DEPLOY_KEY }}
         with:
-          source-directory: 'cmake-build-debug/docs/docs/doxygen/html'
+          source-directory: 'cmake-build-release/docs/docs/doxygen/html'
           destination-github-username: 'staglibrary'
           destination-repository-name: 'stagorg.github.io'
           user-email: macgregor.pr@gmail.com
