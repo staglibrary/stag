@@ -111,7 +111,7 @@ namespace stag {
   std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
 
   /**
-   * Compute the approximate pagerank vector.
+   * Compute the approximate Pagerank vector.
    *
    * The parameters s, alpha, and epsilon are used as described in the ACL paper.
    *
