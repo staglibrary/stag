@@ -176,7 +176,7 @@ namespace stag {
                                               SprsMat& vec);
 
   /**
-   * Compute the adjusted rand index between two label vectors.
+   * Compute the Adjusted Rand Index between two label vectors.
    *
    * @param gt_labels the ground truth labels for the dataset
    * @param labels the candidate labels whose ARI should be calculated
