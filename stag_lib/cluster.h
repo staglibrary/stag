@@ -45,7 +45,7 @@ namespace stag {
    *       return 0;
    *     }
    * \endcode
-   *
+   * 
    * The spectral clustering algorithm has the following steps.
    *   - Compute the \f$k\f$ smallest eigenvectors of the normalised Laplacian matrix.
    *   - Embed the vertices into \f$\mathbb{R}^k\f$ according to the eigenvectors.
@@ -117,17 +117,17 @@ namespace stag {
    *
    * Note that the dimension of the returned vectors may not match the correct
    * number of vertices in the graph provided since the approximate
-   * pagerank is computed locally.
+   * Pagerank is computed locally.
    *
    * @param graph a stag::LocalGraph object
-   * @param seed_vector the seed vector of the personalised pagerank
-   * @param alpha the locality parameter of the personalised pagerank
-   * @param epsilon the error parameter of the personalised pagerank
+   * @param seed_vector the seed vector of the personalised Pagerank
+   * @param alpha the locality parameter of the personalised Pagerank
+   * @param epsilon the error parameter of the personalised Pagerank
    * @return A tuple of sparse column vectors corresponding to
-   *          - p: the approximate pagerank vector
+   *          - p: the approximate Pagerank vector
    *          - r: the residual vector
    *
-   *         By the definition of approximate pagerank, it is the case that
+   *         By the definition of approximate Pagerank, it holds that
    *            p + ppr(r, alpha) = ppr(s, alpha).
    *
    * @throws std::invalid_argument if the provided seed_vector is not a column vector.
@@ -144,7 +144,7 @@ namespace stag {
   /**
    * Find the sweep set of the given vector with the minimum conductance.
    *
-   * First, sort the vector such that \f$v_1, \ldots, v_n\f$. Then let
+   * First, sort the vector such that \f$v_1<= \ldots <= v_n\f$. Then let
    *
    * \f[
    *     S_i = \{v_j : j <= i\}
@@ -160,7 +160,7 @@ namespace stag {
    *
    * This method is expected to be run on vectors whose support is much less
    * than the total size of the graph. If the total volume of the support of vec
-   * is larger than half of the volume of the total graph, then this method may
+   * is larger than half of the volume of an entire graph, then this method may
    * return unexpected results.
    *
    * Note that the caller is responsible for any required normalisation of the
