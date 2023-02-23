@@ -48,7 +48,7 @@ cd ../..
 
 ### Installing STAG
 
-Then, you should download the latest version of the STAG library. For example:
+You should download the latest version of the STAG library. For example:
 
 ```bash
 wget https://github.com/staglibrary/stag/archive/refs/tags/v1.0.0.tar.gz
