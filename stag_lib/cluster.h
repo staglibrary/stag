@@ -49,7 +49,7 @@ namespace stag {
    * The spectral clustering algorithm has the following steps.
    *   - Compute the \f$k\f$ smallest eigenvectors of the normalised Laplacian matrix.
    *   - Embed the vertices into \f$\mathbb{R}^k\f$ according to the eigenvectors.
-   *   - Cluster the vertices into k clusters using a k-means clustering algorithm.
+   *   - Cluster the vertices into \f$k\f$ clusters using a \f$k\f$-means clustering algorithm.
    *
    * @param graph the graph object to be clustered
    * @param k the number of clusters to find. Should be less than \f$n/2\f$.
