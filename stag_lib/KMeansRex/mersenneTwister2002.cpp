@@ -40,6 +40,9 @@
    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
+#ifndef MERSENNE_H
+#define MERSENNE_H
+
 
 #include <stdio.h>
 
@@ -237,3 +240,5 @@ int main(void)
     return 0;
 }
 */
+
+#endif //MERSENNE_H
