@@ -2,7 +2,7 @@
    A C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.
 
-   Before using, initialize the state by using init_genrand(seed)  
+   Before using, initialize the state by using my_init_genrand(seed)
    or init_by_array(init_key, key_length).
 
    Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
@@ -57,7 +57,7 @@ static unsigned long mt[N_N]; /* the array for the state vector  */
 static int mti=N_N+1; /* mti==N_N+1 means mt[N_N] is not initialized */
 
 /* initializes mt[N_N] with a seed */
-void init_genrand(unsigned long s)
+void my_init_genrand(unsigned long s)
 {
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N_N; mti++) {
@@ -79,7 +79,7 @@ void init_genrand(unsigned long s)
 void init_by_array(unsigned long init_key[], int key_length)
 {
     int i, j, k;
-    init_genrand(19650218UL);
+  my_init_genrand(19650218UL);
     i=1; j=0;
     k = (N_N>key_length ? N_N : key_length);
     for (; k; k--) {
@@ -102,7 +102,7 @@ void init_by_array(unsigned long init_key[], int key_length)
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
-unsigned long genrand_int32(void)
+unsigned long my_genrand_int32(void)
 {
     unsigned long y;
     static unsigned long mag01[2]={0x0UL, MATRIX_A};
@@ -111,8 +111,8 @@ unsigned long genrand_int32(void)
     if (mti >= N_N) { /* generate N_N words at one time */
         int kk;
 
-        if (mti == N_N+1)   /* if init_genrand() has not been called, */
-            init_genrand(5489UL); /* a default initial seed is used */
+        if (mti == N_N+1)   /* if my_init_genrand() has not been called, */
+          my_init_genrand(5489UL); /* a default initial seed is used */
 
         for (kk=0;kk<N_N-M_M;kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
@@ -145,11 +145,11 @@ Generates double in interval [0,1]
 Based on this note found in the README:
 Note: the last five functions call the first one. 
 if you need more speed for these five functions, you may
-suppress the function call by copying genrand_int32() and
+suppress the function call by copying my_genrand_int32() and
 replacing the last return(), following to these five functions.
  *  =====================================================================
  */
-double genrand_double(void)
+double my_genrand_double(void)
 {
     unsigned long y;
     static unsigned long mag01[2]={0x0UL, MATRIX_A};
@@ -158,8 +158,8 @@ double genrand_double(void)
     if (mti >= N_N) { /* generate N_N words at one time */
         int kk;
 
-        if (mti == N_N+1)   /* if init_genrand() has not been called, */
-            init_genrand(5489UL); /* a default initial seed is used */
+        if (mti == N_N+1)   /* if my_init_genrand() has not been called, */
+          my_init_genrand(5489UL); /* a default initial seed is used */
 
         for (kk=0;kk<N_N-M_M;kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
@@ -187,36 +187,36 @@ double genrand_double(void)
 
 
 /* generates a random number on [0,0x7fffffff]-interval */
-long genrand_int31(void)
+long my_genrand_int31(void)
 {
-    return (long)(genrand_int32()>>1);
+    return (long)(my_genrand_int32() >> 1);
 }
 
 /* generates a random number on [0,1]-real-interval */
-double genrand_real1(void)
+double my_genrand_real1(void)
 {
-    return genrand_int32()*(1.0/4294967295.0); 
+    return my_genrand_int32() * (1.0 / 4294967295.0);
     /* divided by 2^32-1 */ 
 }
 
 /* generates a random number on [0,1)-real-interval */
-double genrand_real2(void)
+double my_genrand_real2(void)
 {
-    return genrand_int32()*(1.0/4294967296.0); 
+    return my_genrand_int32() * (1.0 / 4294967296.0);
     /* divided by 2^32 */
 }
 
 /* generates a random number on (0,1)-real-interval */
-double genrand_real3(void)
+double my_genrand_real3(void)
 {
-    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
+    return (((double) my_genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
     /* divided by 2^32 */
 }
 
 /* generates a random number on [0,1) with 53-bit resolution*/
-double genrand_res53(void) 
+double my_genrand_res53(void)
 { 
-    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
+    unsigned long a= my_genrand_int32() >> 5, b= my_genrand_int32() >> 6;
     return(a*67108864.0+b)*(1.0/9007199254740992.0); 
 } 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
@@ -229,12 +229,12 @@ int main(void)
     init_by_array(init, length);
     printf("1000 outputs of genrand_int32()\n");
     for (i=0; i<1000; i++) {
-      printf("%10lu ", genrand_int32());
+      printf("%10lu ", my_genrand_int32());
       if (i%5==4) printf("\n");
     }
     printf("\n1000 outputs of genrand_real2()\n");
     for (i=0; i<1000; i++) {
-      printf("%10.8f ", genrand_real2());
+      printf("%10.8f ", my_genrand_real2());
       if (i%5==4) printf("\n");
     }
     return 0;

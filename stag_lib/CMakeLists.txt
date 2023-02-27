@@ -14,6 +14,7 @@ set(HEADER_FILES
         ${STAG_PUBLIC_HEADERS}
         KMeansRex/KMeansRexCore.h
         KMeansRex/KMeansRexCoreInterface.h
+        KMeansRex/mersenneTwister2002.h
         )
 
 set(SOURCE_FILES
@@ -24,7 +25,6 @@ set(SOURCE_FILES
         cluster.cpp
         spectrum.cpp
         KMeansRex/KMeansRexCore.cpp
-        KMeansRex/mersenneTwister2002.c
         )
 
 # Find and include the Eigen library

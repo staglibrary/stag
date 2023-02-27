@@ -34,7 +34,7 @@ Date:   2 April 2013
 
 #include <iostream>
 #include "KMeansRexCoreInterface.h"
-#include "mersenneTwister2002.cpp"
+#include "mersenneTwister2002.h"
 #include "Eigen/Dense"
 
 using namespace Eigen;
@@ -49,14 +49,14 @@ typedef ArrayXd Vec;
 
 // ====================================================== Utility Functions
 void set_seed( int seed ) {
-  init_genrand( seed );
+  my_init_genrand(seed);
 }
 
 /*
  * Return random integers from `low` (inclusive) to `high` (exclusive).
  */
 int randint(int low, int high) {
-    double r = ((high - low)) * genrand_double();
+    double r = ((high - low)) * my_genrand_double();
     int rint = (int) r; // [0,1) -> 0, [1,2) -> 1, etc
     return rint + low;
 }
@@ -65,7 +65,7 @@ int discrete_rand( Vec &p ) {
     double total = p.sum();
     int K = (int) p.size();
     
-    double r = total*genrand_double();
+    double r = total * my_genrand_double();
     double cursum = p(0);
     int newk = 0;
     while ( r >= cursum && newk < K-1) {
