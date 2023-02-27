@@ -53,7 +53,7 @@ namespace stag {
   Graph sbm(stag_int n, stag_int k, double p, double q);
 
   /**
-   * Generate a graph from the general stochastic block mode.
+   * Generate a graph from the general stochastic block model.
    *
    * The `cluster_sizes` vector specifies the number of vertices in each
    * generated cluster.
