@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduced the memory usage of the SBM methods
 
 ### Added
-- Added the signless Laplacian methods to the graph object
+- Added signless Laplacian methods to the graph object
 
 ## [1.1.0] - 2023-02-23
 ### Added

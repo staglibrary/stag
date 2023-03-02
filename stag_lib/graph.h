@@ -286,7 +286,7 @@ namespace stag {
       const SprsMat* signless_laplacian();
 
       /**
-       * Return the normalised signleess Laplacian matrix of the graph.
+       * Return the normalised signless Laplacian matrix of the graph.
        *
        * The normalised signless Laplacian matrix is defined by
        *
