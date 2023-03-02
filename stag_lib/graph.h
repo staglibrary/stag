@@ -265,7 +265,43 @@ namespace stag {
        *
        * @return a sparse Eigen matrix representing the normalised Laplacian
        */
-       const SprsMat* normalised_laplacian();
+      const SprsMat* normalised_laplacian();
+
+      /**
+       * Return the signless Laplacian matrix of the graph.
+       *
+       * The signless Laplacian matrix is defined by
+       *
+       * \f[
+       *   J = D + A
+       * \f]
+       *
+       * where \f$D\f$ is the diagonal matrix of vertex degrees
+       * (stag::Graph::degree_matrix)
+       * and A is the adjacency matrix of the graph
+       * (stag::Graph::adjacency).
+       *
+       * @return a sparse Eigen matrix representing the signless graph Laplacian
+       */
+      const SprsMat* signless_laplacian();
+
+      /**
+       * Return the normalised signless Laplacian matrix of the graph.
+       *
+       * The normalised signless Laplacian matrix is defined by
+       *
+       * \f[
+       *   \mathcal{J} = D^{-1/2} J D^{-1/2}
+       * \f]
+       *
+       * where \f$D\f$ is the diagonal matrix of vertex degrees
+       * (stag::Graph::degree_matrix)
+       * and \f$J\f$ is the signless Laplacian matrix of the graph
+       * (stag::Graph::signless_laplacian).
+       *
+       * @return a sparse Eigen matrix representing the normalised Laplacian
+       */
+      const SprsMat* normalised_signless_laplacian();
 
       /**
        * The degree matrix of the graph.
@@ -353,10 +389,22 @@ namespace stag {
       void initialise_laplacian_();
 
       /**
+       * Initialise the signless Laplacian matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_signless_laplacian_();
+
+    /**
        * Initialise the normalised Laplacian matrix of the graph is it has not
        * been initialised yet.
        */
       void initialise_normalised_laplacian_();
+
+      /**
+       * Initialise the signless Laplacian matrix of the graph if it has not been
+       * initialised yet.
+       */
+      void initialise_normalised_signless_laplacian_();
 
       /**
        * Initialise the degree matrix of the graph if it has not been
@@ -414,11 +462,19 @@ namespace stag {
       bool lap_init_;
       SprsMat laplacian_matrix_;
 
+      // The signless Laplacian matrix of the graph.
+      bool signless_lap_init_;
+      SprsMat signless_laplacian_matrix_;
+
       // The normalised Laplacian matrix of the graph. The norm_lap_init_
       // variable is used to indicate whether the matrix has been initialised
       // yet.
       bool norm_lap_init_;
       SprsMat normalised_laplacian_matrix_;
+
+      // The normalised signless Laplacian matrix of the graph.
+      bool signless_norm_lap_init_;
+      SprsMat normalised_signless_laplacian_matrix_;
 
       // The degree matrix of the graph. The deg_init_ variable is used to
       // indicate whether the matrix has been initialised yet.

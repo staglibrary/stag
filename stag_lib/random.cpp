@@ -9,10 +9,59 @@
 #include "graph.h"
 
 /**
+ * Get an upper estimate on the number of neighbours of each node in a
+ * graph generated from the stochastic block model.
+ *
+ * This will be used to pre-allocate the memory of the adjacency matrix as we
+ * construct the graph.
+ *
+ * @param cluster_sizes a vector of length \f$k\f$ with the number of vertices
+ *                      in each cluster.
+ * @param probabilities a \f$k \times k\f$ matrix with the inter-cluster
+ *                      probabilities.
+ * @return an Eigen vector with the neighbour estimates.
+ */
+Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
+                                        DenseMat probabilities) {
+  // Get the total number of vertices in the graph
+  auto k = cluster_sizes.size();
+  stag_int n = 0;
+  for (stag_int s : cluster_sizes) n += s;
+
+  // Create the vector which we'll return
+  Eigen::VectorXi neighbours(n);
+
+  // Compute the expected number of neighbours for a node in each cluster
+  // This is basically the matrix product of probabilities with cluster_sizes
+  Eigen::VectorXi cluster_neighbours(k);
+  for (auto i = 0; i < k; i++) {
+    stag_int this_cluster_neighbours = 0;
+    for (auto j = 0; j < k; j++) {
+      this_cluster_neighbours += cluster_sizes.at(j) * probabilities(i, j);
+    }
+
+    // Add a safety factor of 2
+    cluster_neighbours.coeffRef(i) = 2 * this_cluster_neighbours;
+  }
+
+  // Now add the neighbour estimates for each actual node
+  stag_int current_idx = 0;
+  for (stag_int i = 0; i < k; i++) {
+    for (stag_int j = 0; j < cluster_sizes.at(i); j++) {
+      neighbours.coeffRef(current_idx) = cluster_neighbours(i);
+      current_idx++;
+    }
+  }
+
+  return neighbours;
+}
+
+/**
  * Sample edges between SBM clusters by directly iterating through each
  * edge and 'tossing a coin'. This technique should be used for 'large' values
  * of p.
  *
+ * @param adj_mat the adjacency matrix to be updated
  * @param cluster_idx the index of the 'source' cluster
  * @param other_cluster_idx the index of the 'target' cluster
  * @param this_cluster_vertices the number of vertices in the 'source' cluster
@@ -20,22 +69,19 @@
  * @param this_cluster_start_idx the index of the first vertex in the 'source' cluster
  * @param other_cluster_start_idx the index of the first vertex in the 'target' cluster
  * @param p the probability of including each edge.
- * @return a list of the sampled edges
  */
-std::vector<EdgeTriplet> sample_edges_directly(stag_int cluster_idx,
-                                               stag_int other_cluster_idx,
-                                               stag_int this_cluster_vertices,
-                                               stag_int other_cluster_vertices,
-                                               stag_int this_cluster_start_idx,
-                                               stag_int other_cluster_start_idx,
-                                               double p) {
+void sample_edges_directly(SprsMat& adj_mat,
+                           stag_int cluster_idx,
+                           stag_int other_cluster_idx,
+                           stag_int this_cluster_vertices,
+                           stag_int other_cluster_vertices,
+                           stag_int this_cluster_start_idx,
+                           stag_int other_cluster_start_idx,
+                           double p) {
   // Prepare the random number generator
   std::random_device dev;
   std::mt19937 prng(dev());
   std::bernoulli_distribution sampleDist(p);
-
-  // Store the sampled edges
-  std::vector<EdgeTriplet> sampledEdges;
 
   for (stag_int i = this_cluster_start_idx;
       i < this_cluster_start_idx + this_cluster_vertices; i++) {
@@ -46,36 +92,36 @@ std::vector<EdgeTriplet> sample_edges_directly(stag_int cluster_idx,
 
       // Toss a coin
       if (sampleDist(prng)) {
-        sampledEdges.emplace_back(i, j, 1);
-        sampledEdges.emplace_back(j, i, 1);
+        adj_mat.insert(i, j) = 1;
+        adj_mat.insert(j, i) = 1;
       }
     }
   }
-
-  return sampledEdges;
 }
 
 /**
  * Sample edges between SBM clusters using the 'binomial trick'. This technique
  * should be used for 'small' values of p.
  *
+ * @param adj_mat the adjacency matrix to be updated
  * @param this_cluster_vertices the number of vertices in the 'source' cluster
  * @param other_cluster_vertices the number of vertices in the 'target' cluster
  * @param this_cluster_start_idx the index of the first vertex in the 'source' cluster
  * @param other_cluster_start_idx the index of the first vertex in the 'target' cluster
  * @param p
- * @return a list of the sampled edges
  */
-std::vector<EdgeTriplet> sample_edges_binomial(stag_int this_cluster_vertices,
-                                               stag_int other_cluster_vertices,
-                                               stag_int this_cluster_start_idx,
-                                               stag_int other_cluster_start_idx,
-                                               double p) {
+void sample_edges_binomial(SprsMat& adj_mat,
+                           stag_int this_cluster_vertices,
+                           stag_int other_cluster_vertices,
+                           stag_int this_cluster_start_idx,
+                           stag_int other_cluster_start_idx,
+                           double p) {
   // Validate the function inputs
   assert(0 <= p <= 1);
 
   // Get the total number of possible edges and the expected number of edges
   stag_int max_edges = this_cluster_vertices * other_cluster_vertices;
+  if (this_cluster_start_idx == other_cluster_start_idx) max_edges /= 2;
   double expected_num_edges = p * ((double) max_edges);
 
   // Prepare the random number generator. We will approximate the binomial
@@ -83,16 +129,13 @@ std::vector<EdgeTriplet> sample_edges_binomial(stag_int this_cluster_vertices,
   std::random_device dev;
   std::mt19937 prng(dev());
   std::normal_distribution<double> numEdgesDist(expected_num_edges,
-                                                (1 - p) * expected_num_edges);
+                                                sqrt((1 - p) * expected_num_edges));
   std::uniform_int_distribution<stag_int> thisVertexDist(0, this_cluster_vertices - 1);
   std::uniform_int_distribution<stag_int> otherVertexDist(0, other_cluster_vertices - 1);
 
   // Decide how many edges to sample based on the 'binomial' distribution
   auto raw_sample = (stag_int) floor(numEdgesDist(prng));
   stag_int numEdges = std::max((stag_int) 0, std::min(max_edges, raw_sample));
-
-  // Store the sampled edges
-  std::vector<EdgeTriplet> sampledEdges(numEdges);
 
   // Sample the specific vertices
   stag_int randU = 0;
@@ -107,12 +150,10 @@ std::vector<EdgeTriplet> sample_edges_binomial(stag_int this_cluster_vertices,
       randV = other_cluster_start_idx + otherVertexDist(prng);
     }
 
-    // Add this vertex to the sampled edges
-    sampledEdges.emplace_back(randU, randV, 1);
-    sampledEdges.emplace_back(randV, randU, 1);
+    // Add this vertex to the adjacency matrix
+    adj_mat.coeffRef(randU, randV)++;
+    adj_mat.coeffRef(randV, randU)++;
   }
-
-  return sampledEdges;
 }
 
 stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q) {
@@ -167,8 +208,16 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
     }
   }
 
-  // We will build the adjacency matrix as we go along.
-  std::vector<EdgeTriplet> allEdges;
+  // Initialise the adjacency matrix
+  stag_int n = 0;
+  for (auto s : cluster_sizes) n += s;
+  SprsMat adj_mat(n, n);
+
+  // Estimate the number of neighbours of each node and reserve
+  // memory for the adjacency matrix.
+  Eigen::VectorXi neighbour_estimates = estimate_sbm_neighbours(cluster_sizes,
+                                                                probabilities);
+  adj_mat.reserve(neighbour_estimates);
 
   // Iterate through the clusters
   stag_int this_cluster_start_idx = 0;
@@ -186,27 +235,26 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
       double prob = probabilities(cluster_idx, other_cluster_idx);
 
       // Sample the edges between this cluster and the other cluster
-      std::vector<EdgeTriplet> sampledEdges;
       if (this_cluster_vertices * other_cluster_vertices >= 10000 &&
             prob < 0.5 && !exact) {
         // For small probabilities, use the 'binomial trick' for sampling
-        sampledEdges = sample_edges_binomial(this_cluster_vertices,
-                                             other_cluster_vertices,
-                                             this_cluster_start_idx,
-                                             other_cluster_start_idx,
-                                             prob);
+        sample_edges_binomial(adj_mat,
+                              this_cluster_vertices,
+                              other_cluster_vertices,
+                              this_cluster_start_idx,
+                              other_cluster_start_idx,
+                              prob);
       } else {
         // For large probabilities, we just iterate over every pair of vertices
-        sampledEdges = sample_edges_directly(cluster_idx,
-                                             other_cluster_idx,
-                                             this_cluster_vertices,
-                                             other_cluster_vertices,
-                                             this_cluster_start_idx,
-                                             other_cluster_start_idx,
-                                             prob);
+        sample_edges_directly(adj_mat,
+                              cluster_idx,
+                              other_cluster_idx,
+                              this_cluster_vertices,
+                              other_cluster_vertices,
+                              this_cluster_start_idx,
+                              other_cluster_start_idx,
+                              prob);
       }
-      // Add the new edges to the full list
-      allEdges.insert(allEdges.end(), sampledEdges.begin(), sampledEdges.end());
 
       // Update the starting index for the other cluster
       other_cluster_start_idx += other_cluster_vertices;
@@ -216,11 +264,8 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
     this_cluster_start_idx += this_cluster_vertices;
   }
 
-  // Finally, construct the graph. Notice that after the previous loop,
-  // this_cluster_start_idx is equal to the number of vertices in the whole
-  // graph.
-  SprsMat adj_mat(this_cluster_start_idx, this_cluster_start_idx);
-  adj_mat.setFromTriplets(allEdges.begin(), allEdges.end());
+  // Finally, construct and return the graph.
+  adj_mat.makeCompressed();
   return stag::Graph(adj_mat);
 }
 

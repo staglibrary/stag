@@ -228,6 +228,47 @@ TEST(GraphTest, NormalisedLaplacianMatrix) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, SignlessLaplacianMatrix) {
+  // Create the test graph object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the signless graph laplacian matrix.
+  std::vector<stag_int> rowStarts = {0, 3, 6, 10, 12};
+  std::vector<stag_int> colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> values = {5.3333, 2, 3.3333, 2, 8, 6, 3.3333, 6, 10.3333, 1, 1, 1};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.signless_laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.signless_laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.signless_laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, NormalisedSignlessLaplacianMatrix) {
+  // Create the test graph object
+  stag::Graph testGraph = createTestGraph();
+
+  // Create the expected data for the normalised graph laplacian matrix.
+  std::vector<stag_int> rowStarts = {0, 3, 6, 10, 12};
+  std::vector<stag_int> colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> values = {1, 2/(sqrt(5.3333) * sqrt(8)), 3.3333/(sqrt(5.3333) * sqrt(10.3333)),
+                                2/(sqrt(8) * sqrt(5.3333)), 1, 6/(sqrt(8) * sqrt(10.3333)),
+                                3.3333/(sqrt(10.3333) * sqrt(5.3333)), 6/(sqrt(10.3333) * sqrt(8)), 1, 1/sqrt(10.3333),
+                                1/sqrt(10.3333), 1};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.normalised_signless_laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.normalised_signless_laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.normalised_signless_laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, DegreeMatrix) {
   // Create the test graph object
   stag::Graph testGraph = createTestGraph();
