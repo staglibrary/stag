@@ -43,6 +43,12 @@ add_executable(
         test/cluster_test.cpp
         test/spectrum_test.cpp)
 
+# Create a performance test target
+add_executable(
+        stagperf EXCLUDE_FROM_ALL
+        test/performance_test.cpp
+)
+
 # Add the test data files - these need to be copied to the binary directory for the testing application to work
 # correctly
 configure_file(test/data/test1.edgelist test/data/test1.edgelist COPYONLY)
@@ -59,6 +65,11 @@ add_subdirectory(stag_lib stag_lib)
 target_link_libraries(
         stagt
         GTest::gtest_main
+        stag
+)
+
+target_link_libraries(
+        stagperf
         stag
 )
 
