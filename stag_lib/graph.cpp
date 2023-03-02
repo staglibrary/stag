@@ -21,6 +21,8 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
 
   // Set the flags to indicate which matrices have been initialised.
   lap_init_ = false;
+  signless_lap_init_ = false;
+  signless_norm_lap_init_ = false;
   deg_init_ = false;
   inv_deg_init_ = false;
   norm_lap_init_ = false;
@@ -40,6 +42,8 @@ stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &in
 
   // Set the flags to indicate which matrices have been initialised.
   lap_init_ = false;
+  signless_lap_init_ = false;
+  signless_norm_lap_init_ = false;
   deg_init_ = false;
   inv_deg_init_ = false;
   norm_lap_init_ = false;
@@ -65,6 +69,16 @@ const SprsMat* stag::Graph::laplacian() {
 const SprsMat* stag::Graph::normalised_laplacian() {
   initialise_normalised_laplacian_();
   return &normalised_laplacian_matrix_;
+}
+
+const SprsMat* stag::Graph::signless_laplacian() {
+  initialise_signless_laplacian_();
+  return &signless_laplacian_matrix_;
+}
+
+const SprsMat* stag::Graph::normalised_signless_laplacian() {
+  initialise_normalised_signless_laplacian_();
+  return &normalised_signless_laplacian_matrix_;
 }
 
 const SprsMat* stag::Graph::degree_matrix() {
@@ -219,6 +233,22 @@ void stag::Graph::initialise_laplacian_() {
   lap_init_ = true;
 }
 
+void stag::Graph::initialise_signless_laplacian_() {
+  // If the signless laplacian matrix has already been initialised, then we do not
+  // initialise it again.
+  if (signless_lap_init_) return;
+
+  // Ensure that the degree matrix is initialised
+  initialise_degree_matrix_();
+
+  // Construct and return the signless Laplacian matrix.
+  signless_laplacian_matrix_ = degree_matrix_ + adjacency_matrix_;
+  signless_laplacian_matrix_.makeCompressed();
+
+  // We have now initialised the signless laplacian.
+  signless_lap_init_ = true;
+}
+
 void stag::Graph::initialise_normalised_laplacian_() {
   // If the normalised laplacian matrix has already been initialised, then we
   // do not initialise it again.
@@ -243,6 +273,32 @@ void stag::Graph::initialise_normalised_laplacian_() {
 
   // We have now initialised the normalised laplacian matrix.
   norm_lap_init_ = true;
+}
+
+void stag::Graph::initialise_normalised_signless_laplacian_() {
+  // If the normalised signless laplacian matrix has already been initialised, then we
+  // do not initialise it again.
+  if (signless_norm_lap_init_) return;
+
+  // Ensure that the degree matrix is initialised
+  initialise_degree_matrix_();
+
+  // Construct the inverse degree matrix
+  SprsMat sqrt_inv_deg_mat(number_of_vertices_, number_of_vertices_);
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < number_of_vertices_; i++) {
+    non_zero_entries.emplace_back(i, i, 1 / sqrt(degree_matrix_.coeff(i, i)));
+  }
+  sqrt_inv_deg_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+
+  // The normalised signless laplacian is defined by I + D^{-1/2} A D^{-1/2}
+  SprsMat identity_matrix(number_of_vertices_, number_of_vertices_);
+  identity_matrix.setIdentity();
+  normalised_signless_laplacian_matrix_ = identity_matrix + sqrt_inv_deg_mat * adjacency_matrix_ * sqrt_inv_deg_mat;
+  normalised_signless_laplacian_matrix_.makeCompressed();
+
+  // We have now initialised the normalised laplacian matrix.
+  signless_norm_lap_init_ = true;
 }
 
 void stag::Graph::initialise_degree_matrix_() {

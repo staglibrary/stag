@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <graph.h>
 #include <utility.h>
+#include <spectrum.h>
 #include <random.h>
 
 int main() {
@@ -14,7 +15,9 @@ int main() {
   stag_int k = 10;
   stag::Graph testGraph = stag::sbm(n * k, k, 0.3, 0.01);
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-  const SprsMat* lap_mat = testGraph.normalised_laplacian();
+  auto lap = testGraph.normalised_laplacian();
+  std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+  auto vec = stag::power_method(lap);
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
   return 0;
 }
