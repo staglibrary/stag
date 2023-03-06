@@ -245,4 +245,18 @@ TEST(GraphioTest, Conversions) {
   stag::adjacencylist_to_edgelist(adjacencylist_filename, edgelist_filename);
   newGraph = stag::load_edgelist(edgelist_filename);
   EXPECT_EQ(testGraph, newGraph);
+
+  edgelist_filename = "test/data/test5.edgelist";
+  stag::stream_edgelist_to_adjacencylist(edgelist_filename, adjacencylist_filename);
+  testGraph = stag::load_edgelist(edgelist_filename);
+  newGraph = stag::load_adjacencylist(adjacencylist_filename);
+  EXPECT_EQ(testGraph, newGraph);
+
+  edgelist_filename = "output.edgelist";
+  testGraph = stag::erdos_renyi(10000, 0.001);
+  stag::save_edgelist(testGraph, edgelist_filename);
+  stag::stream_edgelist_to_adjacencylist(edgelist_filename,
+                                         adjacencylist_filename);
+  newGraph = stag::load_adjacencylist(adjacencylist_filename);
+  EXPECT_EQ(testGraph, newGraph);
 }

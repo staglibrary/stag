@@ -89,6 +89,19 @@ namespace stag {
                                  std::string& adjacencylist_fname);
 
   /**
+   * Convert an edgelist in the specified file to an adjacencylist.
+   *
+   * This method uses $O(d)$ memory, where $d$ is the maximum degree of the
+   * graph. The low memory use comes at the cost of higher time complexity:
+   * this method requires $O(n)$ passes through the edgelist data.
+   *
+   * @param edgelist_fname the name of the file containing the edgelist.
+   * @param adjacencylist_fname the name of the file to write the adjacencylist.
+   */
+  void stream_edgelist_to_adjacencylist(std::string& edgelist_fname,
+                                        std::string& adjacencylist_fname);
+
+  /**
    * Convert an adjacencylist in the specified file to an edgelist.
    *
    * @param adjacencylist_fname the name of the file containing the adjacencylist.
