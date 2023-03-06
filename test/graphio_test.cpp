@@ -136,3 +136,70 @@ TEST(GraphioTest, SaveEdgelist) {
   newGraph = stag::load_edgelist(filename);
   EXPECT_EQ(testGraph, newGraph);
 }
+
+TEST(GraphioTest, LoadAdjacencylistSimple) {
+  std::string filename = "test/data/test1.adjacencylist";
+  stag::Graph testGraph = stag::load_adjacencylist(filename);
+
+  // Create the expected data for the graph adjacency matrix.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 6};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1};
+  std::vector<double> values = {1, 1, 1, 1, 1, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_EQ(values, newValues);
+}
+
+TEST(GraphioTest, LoadAdjacencylistWeights) {
+  std::string filename = "test/data/test2.adjacencylist";
+  stag::Graph testGraph = stag::load_adjacencylist(filename);
+
+  // Create the expected data for the graph adjacency matrix.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 6};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1};
+  std::vector<double> values = {0.5, 0.5, 0.5, 1, 0.5, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_EQ(values, newValues);
+}
+
+TEST(GraphioTest, LoadAdjacencylistExtraSpace) {
+  std::string filename = "test/data/test3.adjacencylist";
+  stag::Graph testGraph = stag::load_adjacencylist(filename);
+
+  // Create the expected data for the graph adjacency matrix.
+  std::vector<stag_int> rowStarts = {0, 2, 4, 6};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1};
+  std::vector<double> values = {1, 0.5, 1, 1, 0.5, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_EQ(values, newValues);
+}
+
+TEST(GraphioTest, AdjacencyListErrors) {
+  std::string badFilename = "thisfiledoesntexist.adjacencylist";
+  EXPECT_THROW({stag::Graph testGraph = stag::load_adjacencylist(badFilename);},
+               std::runtime_error);
+
+  std::string filename = "test/data/badgraph.adjacencylist";
+  EXPECT_THROW({stag::Graph testGraph = stag::load_adjacencylist(filename);},
+               std::domain_error);
+}

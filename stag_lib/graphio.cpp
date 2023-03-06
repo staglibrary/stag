@@ -163,3 +163,110 @@ void stag::save_edgelist(stag::Graph &graph, std::string &filename) {
   // Close the output file stream
   os.close();
 }
+
+//------------------------------------------------------------------------------
+// Adjacency List processing
+//------------------------------------------------------------------------------
+
+EdgeTriplet parse_adjacencylist_edge(std::string token, stag_int source_node) {
+  stag_int neighbour;
+  double weight;
+
+  // Try to split on ':' to get a weight
+  size_t split_pos = token.find(':');
+  if (split_pos == std::string::npos) {
+    // There is no colon, so the entire token should be parseable as an integer
+    // and this is an edge with weight 1.
+    neighbour = std::stoi(token);
+    weight = 1;
+  } else {
+    // There is a colon. Split the token to get the neighbour and the weight.
+    neighbour = std::stoi(token.substr(0, split_pos));
+    token.erase(0, split_pos + 1);
+    weight = std::stod(token);
+  }
+
+  return {source_node, neighbour, weight};
+}
+
+
+std::vector<EdgeTriplet> parse_adjacencylist_content_line(std::string line) {
+  std::vector<EdgeTriplet> edges;
+
+  // Begin by finding the ID of the node at the start of the line
+  size_t split_pos = line.find(':');
+  if (split_pos == std::string::npos) throw std::invalid_argument("Couldn't extract ID on adjacencylist line.");
+  std::string token = line.substr(0, split_pos);
+  stag_int source_node_id = std::stoi(token);
+  line.erase(0, split_pos + 1);
+
+  // Now, repeatedly split the rest of the line on spaces to find the neighbours.
+  while ((split_pos = line.find(' ')) != std::string::npos) {
+    token = line.substr(0, split_pos);
+    line.erase(0, split_pos + 1);
+    if (token.length() == 0) continue;
+
+    // We have found a token representing some edge. Parse it
+    edges.push_back(parse_adjacencylist_edge(token, source_node_id));
+  }
+
+  // Check for another neighbour at the end of the line
+  try {
+    edges.push_back(parse_adjacencylist_edge(line, source_node_id));
+  } catch (std::exception& e) {
+    // Ignore any exceptions - there may not be a neighbour to parse.
+  }
+
+  return edges;
+}
+
+stag::Graph stag::load_adjacencylist(std::string &filename) {
+  // Attempt to open the provided file
+  std::ifstream is(filename);
+
+  // If the file could not be opened, throw an exception
+  if (!is.is_open()) {
+    throw std::runtime_error(std::strerror(errno));
+  }
+
+  // We will construct a vector of triples in order to construct the final
+  // adjacency matrix
+  std::vector<EdgeTriplet> non_zero_entries;
+
+  // Read the file in one line at a time
+  stag_int number_of_vertices = 0;
+  std::string line;
+  std::vector<EdgeTriplet> neighbours;
+  while (stag::safeGetline(is, line)) {
+    if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
+      try {
+        // This line of the input file isn't a comment, parse it.
+        neighbours = parse_adjacencylist_content_line(line);
+
+        // Add the edges to the adjacency matrix
+        for (auto this_edge : neighbours) {
+          non_zero_entries.emplace_back(this_edge);
+
+          // Update the number of vertices to be the maximum of the column and row
+          // indices.
+          number_of_vertices = std::max(number_of_vertices, this_edge.col() + 1);
+          number_of_vertices = std::max(number_of_vertices, this_edge.row() + 1);
+        }
+      } catch (std::invalid_argument &e) {
+        // Re-throw any parsing errors
+        throw(std::runtime_error(e.what()));
+      }
+    }
+  }
+
+  // Close the input file stream
+  is.close();
+
+  // Update the adjacency matrix from the triples constructed from the input file.
+  SprsMat adj_mat(number_of_vertices, number_of_vertices);
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+
+  // Construct and return the graph object
+  return stag::Graph(adj_mat);
+}
+

@@ -57,6 +57,10 @@ configure_file(test/data/test3.edgelist test/data/test3.edgelist COPYONLY)
 configure_file(test/data/test4.edgelist test/data/test4.edgelist COPYONLY)
 configure_file(test/data/test5.edgelist test/data/test5.edgelist COPYONLY)
 configure_file(test/data/test6.edgelist test/data/test6.edgelist COPYONLY)
+configure_file(test/data/test1.adjacencylist test/data/test1.adjacencylist COPYONLY)
+configure_file(test/data/test2.adjacencylist test/data/test2.adjacencylist COPYONLY)
+configure_file(test/data/test3.adjacencylist test/data/test3.adjacencylist COPYONLY)
+configure_file(test/data/badgraph.adjacencylist test/data/badgraph.adjacencylist COPYONLY)
 
 # Add libraries
 include_directories(stag_lib)

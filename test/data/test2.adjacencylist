@@ -1,0 +1,4 @@
+# This is a basic adjacencylist file with weights
+0: 1:0.5 2:0.5
+1: 0:0.5 2:1
+2: 0:0.5 1:1

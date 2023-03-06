@@ -51,6 +51,16 @@ namespace stag {
    * @param filename the name of the file to save the edgelist data to
    */
   void save_edgelist(stag::Graph &graph, std::string &filename);
+
+  /**
+   * Load a graph from an adjacencylist file.
+   *
+   * This method loads the entire graph into memory.
+   *
+   * @param filename
+   * @return stag::Graph object
+   */
+  stag::Graph load_adjacencylist(std::string& filename);
 }
 
 #endif //STAG_TEST_GRAPHIO_H
