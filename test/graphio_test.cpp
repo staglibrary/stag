@@ -230,3 +230,19 @@ TEST(GraphioTest, SaveAdjacencylist) {
   EXPECT_EQ(testGraph, newGraph);
 }
 
+TEST(GraphioTest, Conversions) {
+  std::string edgelist_filename = "output.edgelist";
+  std::string adjacencylist_filename = "output.adjacencylist";
+  stag::Graph testGraph = stag::erdos_renyi(100, 0.05);
+  stag::save_edgelist(testGraph, edgelist_filename);
+  stag::edgelist_to_adjacencylist(edgelist_filename, adjacencylist_filename);
+  stag::Graph newGraph = stag::load_adjacencylist(adjacencylist_filename);
+  EXPECT_EQ(testGraph, newGraph);
+
+  // Now convert back
+  testGraph = stag::erdos_renyi(100, 0.05);
+  stag::save_adjacencylist(testGraph, adjacencylist_filename);
+  stag::adjacencylist_to_edgelist(adjacencylist_filename, edgelist_filename);
+  newGraph = stag::load_edgelist(edgelist_filename);
+  EXPECT_EQ(testGraph, newGraph);
+}

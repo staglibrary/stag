@@ -16,6 +16,7 @@
 
 #include <Eigen/Sparse>
 #include <vector>
+#include <fstream>
 
 
 /**
@@ -513,6 +514,62 @@ namespace stag {
   /**
    * \endcond
    */
+
+  class AdjacencyListLocalGraph : public LocalGraph {
+  public:
+    /**
+     * A local graph backed by an adjacency list file.
+     *
+     * The graph is loaded into memory in a local way only. That is, the adjacency
+     * list is constructed as node neighbours are queried. If a node is not found
+     * in the cached adjacency list, then the neighbours of a node are queried from
+     * the adjacency list on disk.
+     *
+     * It is very important that the adjacency list on disk is stored with sorted
+     * node indices. This allows us to query the neighbours of a given node in
+     * O(log(n)) time using binary search.
+     *
+     * The adjacencylist file used by this class must not be externally modified.
+     *
+     * @param filename the name of the adjacencylist file which defines the graph
+     */
+    AdjacencyListLocalGraph(const std::string& filename);
+
+    // Override the abstract methods in the LocalGraph base class.
+    double degree(stag_int v) override;
+    stag_int degree_unweighted(stag_int v) override;
+    std::vector<edge> neighbors(stag_int v) override;
+    std::vector<stag_int> neighbors_unweighted(stag_int v) override;
+    std::vector<double> degrees(std::vector<stag_int> vertices) override;
+    std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
+    bool vertex_exists(stag_int v) override;
+    ~AdjacencyListLocalGraph() override;
+
+  private:
+    /**
+     * Move the ifstream head to the start of the next content line, and return
+     * the ID of the corresponding node.
+     *
+     * @return the node ID of the next content line
+     */
+    stag_int goto_next_content_line();
+
+    /**
+     * Perform a binary search to find the given vertex in the adjacencylist
+     * file.
+     *
+     * If the vertex v is defined, the input stream pointer will be pointing
+     * at the start of the corresponding content line.
+     *
+     * If the vertex does not exist, will throw a runtime exception.
+     *
+     * @param v the vertex to search for
+     */
+    void find_vertex(stag_int v);
+
+    std::ifstream is_;
+    std::streampos end_of_file_;
+  };
 
   /**
    * Construct a cycle graph on n vertices.

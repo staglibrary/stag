@@ -53,6 +53,15 @@ namespace stag {
   void save_edgelist(stag::Graph &graph, std::string &filename);
 
   /**
+   * \cond
+   * Parse a single content line of a STAG adjacency list file.
+   */
+  std::vector<EdgeTriplet> parse_adjacencylist_content_line(std::string line);
+  /**
+   * \endcond
+   */
+
+  /**
    * Load a graph from an adjacencylist file.
    *
    * This method loads the entire graph into memory.
@@ -69,6 +78,24 @@ namespace stag {
    * @param filename the name of the file to save the adjacencylist data to
    */
   void save_adjacencylist(stag::Graph &graph, std::string& filename);
+
+  /**
+   * Convert an edgelist in the specified file to an adjacencylist.
+   *
+   * @param edgelist_fname the name of the file containing the edgelist.
+   * @param adjacencylist_fname the name of the file to write the adjacencylist.
+   */
+  void edgelist_to_adjacencylist(std::string& edgelist_fname,
+                                 std::string& adjacencylist_fname);
+
+  /**
+   * Convert an adjacencylist in the specified file to an edgelist.
+   *
+   * @param adjacencylist_fname the name of the file containing the adjacencylist.
+   * @param edgelist_fname the name of the file to write the edgelist.
+   */
+  void adjacencylist_to_edgelist(std::string& adjacencylist_fname,
+                                 std::string& edgelist_fname);
 }
 
 #endif //STAG_TEST_GRAPHIO_H

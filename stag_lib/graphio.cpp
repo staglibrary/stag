@@ -190,7 +190,7 @@ EdgeTriplet parse_adjacencylist_edge(std::string token, stag_int source_node) {
 }
 
 
-std::vector<EdgeTriplet> parse_adjacencylist_content_line(std::string line) {
+std::vector<EdgeTriplet> stag::parse_adjacencylist_content_line(std::string line) {
   std::vector<EdgeTriplet> edges;
 
   // Begin by finding the ID of the node at the start of the line
@@ -241,7 +241,7 @@ stag::Graph stag::load_adjacencylist(std::string &filename) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
         // This line of the input file isn't a comment, parse it.
-        neighbours = parse_adjacencylist_content_line(line);
+        neighbours = stag::parse_adjacencylist_content_line(line);
 
         // Add the edges to the adjacency matrix
         for (auto this_edge : neighbours) {
@@ -302,4 +302,14 @@ void stag::save_adjacencylist(stag::Graph &graph, std::string &filename) {
 
   // Close the output file stream
   os.close();
+}
+
+void stag::edgelist_to_adjacencylist(std::string &edgelist_fname, std::string &adjacencylist_fname) {
+  auto g = load_edgelist(edgelist_fname);
+  save_adjacencylist(g, adjacencylist_fname);
+}
+
+void stag::adjacencylist_to_edgelist(std::string &adjacencylist_fname, std::string &edgelist_fname) {
+  auto g = load_adjacencylist(adjacencylist_fname);
+  save_edgelist(g, edgelist_fname);
 }
