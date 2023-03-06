@@ -386,16 +386,15 @@ stag_int stag::AdjacencyListLocalGraph::goto_next_content_line() {
 
   // Read the current line, discarding it. This leaves the file pointer at the
   // beginning of a line.
-  stag::safeGetline(is_, current_line);
-
-  stag_int wrapped = 0;
   std::streampos current_loc = is_.tellg();
-  while (wrapped < 2) {
-    // If the current position is the end of the file, move it to the start
-    // We do this at most once. The second time, we fail.
+  if (current_loc != 0) stag::safeGetline(is_, current_line);
+
+  current_loc = is_.tellg();
+  while (true) {
+    // If the current position is the end of the file, we have failed to find
+    // a content line. Return -1.
     if (current_loc == end_of_file_) {
-      is_.seekg(0);
-      wrapped++;
+      return -1;
     }
 
     // Read the next line and check if it's a content line
@@ -445,14 +444,30 @@ void stag::AdjacencyListLocalGraph::find_vertex(stag_int v) {
     if (range_min > range_max) throw std::runtime_error("Couldn't find node in adjacencylist file.");
 
     // Search half-way between the search points.
-    std::streampos search_point = floor((range_max + range_min) / 2);
-    is_.seekg(search_point);
-    current_id = goto_next_content_line();
+    stag_int search_point = floor((range_max + range_min) / 2);
 
+    // Check whether this point has been searched before
+    if (fileloc_to_node_id_.find(search_point) != fileloc_to_node_id_.end()) {
+      // We have searched this point before
+      current_id = fileloc_to_node_id_[search_point];
+
+      // If this is the point we're looking for, make sure that the file pointer
+      // is pointing to the right place.
+      if (current_id == v) {
+        is_.seekg((std::streampos) search_point);
+        goto_next_content_line();
+      }
+    } else {
+      // We have never searched this point before - we need to check the
+      // file on disk.
+      is_.seekg((std::streampos) search_point);
+      t current_id = goto_next_content_line();
+      fileloc_to_node_id_[search_point] = current_id;
+    }
 
     if (current_id == v) {
       found_target = true;
-    } else if (current_id == 0 || current_id > v) {
+    } else if (current_id == -1 || current_id > v) {
       range_max = search_point - std::streamoff(1);
     } else {
       range_min = search_point + std::streamoff(1);
@@ -461,6 +476,11 @@ void stag::AdjacencyListLocalGraph::find_vertex(stag_int v) {
 }
 
 std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
+  // If we have searched for this vertex before, just returned the cached copy.
+  if (node_id_to_edgelist_.find(v) != node_id_to_edgelist_.end()) {
+    return node_id_to_edgelist_[v];
+  }
+
   // First, find the target vertex in the adjacencylist file.
   find_vertex(v);
 
@@ -473,6 +493,9 @@ std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
   for (auto edge : edges) {
     neighbors.push_back({edge.col(), edge.row(), edge.value()});
   }
+
+  // Update our internal edgelist.
+  node_id_to_edgelist_[v] = neighbors;
 
   return neighbors;
 }

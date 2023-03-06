@@ -550,6 +550,9 @@ namespace stag {
      * Move the ifstream head to the start of the next content line, and return
      * the ID of the corresponding node.
      *
+     * If there is no content line before the end of the file, return -1 and
+     * set the ifstream head to the end of the file.
+     *
      * @return the node ID of the next content line
      */
     stag_int goto_next_content_line();
@@ -567,8 +570,20 @@ namespace stag {
      */
     void find_vertex(stag_int v);
 
+    // The input file stream corresponding to the adjacencylist file backing
+    // this graph. The implementation makes random access to this file to
+    // read the vertex adjacency information.
     std::ifstream is_;
     std::streampos end_of_file_;
+
+    // In order to increase the efficiency of looking up neighbourhood
+    // information in the graph, we cache the node ids corresponding to certain
+    // locations in the file. The cached locations will correspond to the binary
+    // search locations for the nodes we've queried.
+    std::unordered_map<stag_int, stag_int> fileloc_to_node_id_;
+
+    // We also store the full adjacency list of the graph queried so far.
+    std::unordered_map<stag_int, std::vector<edge>> node_id_to_edgelist_;
   };
 
   /**
