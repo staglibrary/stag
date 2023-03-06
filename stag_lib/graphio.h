@@ -61,6 +61,14 @@ namespace stag {
    * @return stag::Graph object
    */
   stag::Graph load_adjacencylist(std::string& filename);
+
+  /**
+   * Save the given graph as an adjacencylist file.
+   *
+   * @param graph the graph object to be saved
+   * @param filename the name of the file to save the adjacencylist data to
+   */
+  void save_adjacencylist(stag::Graph &graph, std::string& filename);
 }
 
 #endif //STAG_TEST_GRAPHIO_H

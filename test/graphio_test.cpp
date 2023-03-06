@@ -10,6 +10,7 @@
 #include "graphio.h"
 #include "utility.h"
 #include "graph.h"
+#include "random.h"
 
 TEST(GraphioTest, FromEdgelistSimple) {
   std::string filename = "test/data/test1.edgelist";
@@ -203,3 +204,29 @@ TEST(GraphioTest, AdjacencyListErrors) {
   EXPECT_THROW({stag::Graph testGraph = stag::load_adjacencylist(filename);},
                std::domain_error);
 }
+
+TEST(GraphioTest, SaveAdjacencylist) {
+  // Save an edgelist file
+  std::string filename = "output.adjacencylist";
+  stag::Graph testGraph = stag::cycle_graph(10);
+  stag::save_adjacencylist(testGraph, filename);
+
+  // Reading the adjacencylist file back in should result in the same graph
+  stag::Graph newGraph = stag::load_adjacencylist(filename);
+  EXPECT_EQ(testGraph, newGraph);
+
+  // Save another adjacencylist file
+  testGraph = stag::complete_graph(10);
+  stag::save_adjacencylist(testGraph, filename);
+
+  // Reading the adjacencylist file back in should result in the same graph
+  newGraph = stag::load_adjacencylist(filename);
+  EXPECT_EQ(testGraph, newGraph);
+
+  // Finally, try a random graph
+  testGraph = stag::erdos_renyi(100, 0.05);
+  stag::save_adjacencylist(testGraph, filename);
+  newGraph = stag::load_adjacencylist(filename);
+  EXPECT_EQ(testGraph, newGraph);
+}
+
