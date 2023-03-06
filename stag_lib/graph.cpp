@@ -461,7 +461,7 @@ void stag::AdjacencyListLocalGraph::find_vertex(stag_int v) {
       // We have never searched this point before - we need to check the
       // file on disk.
       is_.seekg((std::streampos) search_point);
-      t current_id = goto_next_content_line();
+      current_id = goto_next_content_line();
       fileloc_to_node_id_[search_point] = current_id;
     }
 
