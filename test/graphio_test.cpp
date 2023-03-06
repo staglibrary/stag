@@ -253,7 +253,7 @@ TEST(GraphioTest, Conversions) {
   EXPECT_EQ(testGraph, newGraph);
 
   edgelist_filename = "output.edgelist";
-  testGraph = stag::erdos_renyi(10000, 0.001);
+  testGraph = stag::erdos_renyi(3000, 0.01);
   stag::save_edgelist(testGraph, edgelist_filename);
   stag::stream_edgelist_to_adjacencylist(edgelist_filename,
                                          adjacencylist_filename);

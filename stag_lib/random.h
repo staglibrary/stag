@@ -103,6 +103,31 @@ namespace stag {
                     DenseMat& probabilities);
 
   /**
+   * Generate a graph from the general stochastic block model and save the
+   * resulting graph as an edgelist file.
+   *
+   * This method uses only constant memory since the graph can be streamed to
+   * disk while it is being generated.
+   *
+   * @param filename the edgelist file to save the graph to
+   * @param cluster_sizes a vector of length \f$k\f$ with the number of vertices
+   *                      in each cluster.
+   * @param probabilities a \f$k \times k\f$ matrix with the inter-cluster
+   *                      probabilities.
+   * @param exact (optional) whether to use the exact probability distribution. Default: false.
+   */
+  void general_sbm_edgelist(std::string& filename,
+                            std::vector<stag_int>& cluster_sizes,
+                            DenseMat& probabilities, bool exact);
+
+  /**
+   * @overload
+   */
+  void general_sbm_edgelist(std::string& filename,
+                            std::vector<stag_int>& cluster_sizes,
+                            DenseMat& probabilities);
+
+  /**
    * Generate a graph from the Erdos-Renyi model.
    *
    * Generates a graph with \f$n\f$ vertices. For each pair of vertices \f$u\f$ and
