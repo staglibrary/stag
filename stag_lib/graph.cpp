@@ -488,16 +488,13 @@ std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
   std::string content_line;
   stag::safeGetline(is_, content_line);
   std::vector<stag::edge> neighbors;
-  std::vector<EdgeTriplet> edges = stag::parse_adjacencylist_content_line(
+  std::vector<stag::edge> edges = stag::parse_adjacencylist_content_line(
       content_line);
-  for (auto edge : edges) {
-    neighbors.push_back({edge.row(), edge.col(), edge.value()});
-  }
 
   // Update our internal edgelist.
-  node_id_to_edgelist_[v] = neighbors;
+  node_id_to_edgelist_[v] = edges;
 
-  return neighbors;
+  return edges;
 }
 
 std::vector<stag_int> stag::AdjacencyListLocalGraph::neighbors_unweighted(stag_int v) {

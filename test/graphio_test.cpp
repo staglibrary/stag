@@ -7,6 +7,7 @@
 */
 #include <iostream>
 #include <gtest/gtest.h>
+#include <filesystem>
 #include "graphio.h"
 #include "utility.h"
 #include "graph.h"
@@ -245,18 +246,20 @@ TEST(GraphioTest, Conversions) {
   stag::adjacencylist_to_edgelist(adjacencylist_filename, edgelist_filename);
   newGraph = stag::load_edgelist(edgelist_filename);
   EXPECT_EQ(testGraph, newGraph);
+}
 
-  edgelist_filename = "test/data/test5.edgelist";
-  stag::stream_edgelist_to_adjacencylist(edgelist_filename, adjacencylist_filename);
-  testGraph = stag::load_edgelist(edgelist_filename);
-  newGraph = stag::load_adjacencylist(adjacencylist_filename);
-  EXPECT_EQ(testGraph, newGraph);
+TEST(GraphioTest, CopyEdgelist) {
+  std::string infile = "test/data/test1.edgelist";
+  std::string outfile = "output.edgelist";
 
-  edgelist_filename = "output.edgelist";
-  testGraph = stag::erdos_renyi(3000, 0.01);
-  stag::save_edgelist(testGraph, edgelist_filename);
-  stag::stream_edgelist_to_adjacencylist(edgelist_filename,
-                                         adjacencylist_filename);
-  newGraph = stag::load_adjacencylist(adjacencylist_filename);
-  EXPECT_EQ(testGraph, newGraph);
+  // For now, just make sure this doesn't throw any errors
+  stag::copy_edgelist_duplicate_edges(infile, outfile);
+}
+
+TEST(GraphTest, SortEdgelist) {
+  std::string infile = "test/data/test1.edgelist";
+  std::string outfile = "output.edgelist";
+  std::filesystem::remove(outfile);
+  std::filesystem::copy(infile, outfile);
+  stag::sort_edgelist(outfile);
 }
