@@ -515,21 +515,24 @@ namespace stag {
    * \endcond
    */
 
+  /**
+   * A local graph backed by an adjacency list file.
+   *
+   * The graph is loaded into memory in a local way only. That is, the adjacency
+   * list is constructed as node neighbours are queried. If a node is not found
+   * in the cached adjacency list, then the neighbours of a node are queried from
+   * the adjacency list on disk.
+   *
+   * It is very important that the adjacency list on disk is stored with sorted
+   * node indices. This allows us to query the neighbours of a given node in
+   * O(log(n)) time using binary search.
+   *
+   * The adjacencylist file used by this class must not be externally modified.
+   */
   class AdjacencyListLocalGraph : public LocalGraph {
   public:
     /**
-     * A local graph backed by an adjacency list file.
-     *
-     * The graph is loaded into memory in a local way only. That is, the adjacency
-     * list is constructed as node neighbours are queried. If a node is not found
-     * in the cached adjacency list, then the neighbours of a node are queried from
-     * the adjacency list on disk.
-     *
-     * It is very important that the adjacency list on disk is stored with sorted
-     * node indices. This allows us to query the neighbours of a given node in
-     * O(log(n)) time using binary search.
-     *
-     * The adjacencylist file used by this class must not be externally modified.
+     * Construct a local graph backed by an adjacency list file.
      *
      * @param filename the name of the adjacencylist file which defines the graph
      */
