@@ -397,9 +397,15 @@ stag_int stag::AdjacencyListLocalGraph::goto_next_content_line() {
       return -1;
     }
 
-    // Read the next line and check if it's a content line
+    // Read until we find a non-empty line.
+    // Make sure to set current_loc to the position just before calling getline.
     current_line.clear();
-    stag::safeGetline(is_, current_line);
+    while (current_line.empty()) {
+      current_loc = is_.tellg();
+      stag::safeGetline(is_, current_line);
+    }
+
+    // Check if this line is a valid content line.
     size_t split_pos = current_line.find(':');
     if (split_pos != std::string::npos) {
       std::string token = current_line.substr(0, split_pos);

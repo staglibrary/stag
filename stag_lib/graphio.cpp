@@ -430,13 +430,22 @@ stag::edge parse_adjacencylist_edge(std::string token, stag_int source_node) {
   return {source_node, neighbour, weight};
 }
 
+/**
+ * Comparison function for sorting edges.
+ */
+bool cmp_neighbors(const stag::edge& a, const stag::edge& b) {
+  return a.v2 < b.v2;
+}
+
 
 std::vector<stag::edge> stag::parse_adjacencylist_content_line(std::string line) {
   std::vector<stag::edge> edges;
 
   // Begin by finding the ID of the node at the start of the line
   size_t split_pos = line.find(':');
-  if (split_pos == std::string::npos) throw std::invalid_argument("Couldn't extract ID on adjacencylist line.");
+  if (split_pos == std::string::npos) {
+    throw std::invalid_argument("Couldn't extract ID on adjacencylist line.");
+  }
   std::string token = line.substr(0, split_pos);
   stag_int source_node_id = std::stoi(token);
   line.erase(0, split_pos + 1);
@@ -457,6 +466,11 @@ std::vector<stag::edge> stag::parse_adjacencylist_content_line(std::string line)
   } catch (std::exception& e) {
     // Ignore any exceptions - there may not be a neighbour to parse.
   }
+
+  // Sort the neighbours. This is not strictly necessary, but will ensure
+  // that different methods of accessing the adjacencylist graph will behave
+  // as similarly as possible.
+  std::stable_sort(edges.begin(), edges.end(), cmp_neighbors);
 
   return edges;
 }
