@@ -317,3 +317,18 @@ TEST(ClusterTest, ARIArguments) {
   labels.at(3) = -1;
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
 }
+
+TEST(ClusterTest, ALLGLocalClustering) {
+  std::string filename = "test/data/hugegraph.adjacencylist";
+  stag::AdjacencyListLocalGraph testGraph(filename);
+
+  // Find a cluster using the default local clustering algorithm
+  std::vector<stag_int> cluster = stag::local_cluster(&testGraph,
+                                                      500000,
+                                                      10000);
+  std::stable_sort(cluster.begin(), cluster.end());
+
+  // Check the number of returned vertices
+  EXPECT_GE(cluster.size(), 100);
+  EXPECT_LE(cluster.size(), 10000);
+}

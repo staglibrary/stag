@@ -491,7 +491,7 @@ std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
   std::vector<EdgeTriplet> edges = stag::parse_adjacencylist_content_line(
       content_line);
   for (auto edge : edges) {
-    neighbors.push_back({edge.col(), edge.row(), edge.value()});
+    neighbors.push_back({edge.row(), edge.col(), edge.value()});
   }
 
   // Update our internal edgelist.

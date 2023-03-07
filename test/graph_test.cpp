@@ -576,3 +576,12 @@ TEST(GraphTest, ALLGHugeGraph) {
   // cached adjacency matrix for this.
   EXPECT_NEAR(testGraph.degree(18950), 20.088781, 0.0001);
 }
+
+TEST(GraphTest, ALLGNeighboursOrder) {
+  stag::AdjacencyListLocalGraph testGraph("test/data/test1.adjacencylist");
+  stag_int node = 0;
+  std::vector<stag_int> ns = testGraph.neighbors_unweighted(node);
+  for (stag_int n : ns) {
+    EXPECT_NE(n, node);
+  }
+}
