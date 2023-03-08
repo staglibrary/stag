@@ -101,6 +101,16 @@ target_link_libraries(
         stag_static
 )
 
+add_executable(
+        stag_sbm
+        stagtools/sbm.cpp
+)
+
+target_link_libraries(
+        stag_sbm
+        stag_static
+)
+
 # Do the googletest magic
 include(GoogleTest)
 gtest_discover_tests(stagt)
@@ -113,4 +123,7 @@ install(TARGETS stag_edge2adj
         RUNTIME DESTINATION bin)
 
 install(TARGETS stag_adj2edge
+        RUNTIME DESTINATION bin)
+
+install(TARGETS stag_sbm
         RUNTIME DESTINATION bin)
