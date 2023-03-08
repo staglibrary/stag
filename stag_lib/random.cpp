@@ -317,8 +317,36 @@ void stag::general_sbm_edgelist(std::string &filename,
     throw std::runtime_error(std::strerror(errno));
   }
 
+  // Write a header to the output stream giving the parameters of the
+  // SBM model.
+  stag_int k = cluster_sizes.size();
+  stag_int n = 0;
+  for (auto size: cluster_sizes) n += size;
+  os << "# This graph was generated from a stochastic block model with the ";
+  os << "following parameters." << std::endl;
+  os << "#    n = " << n << std::endl;
+  os << "#    k = " << k << std::endl;
+
+  if (k <= 20) {
+    os << "#    cluster sizes = ";
+    for (stag_int size : cluster_sizes) os << size << " ";
+    os << std::endl;
+    os << "#    probability matrix = " << std::endl;
+    for (auto i = 0; i < k; i++) {
+      os << "#        ";
+      for (auto j = 0; j < k; j++) {
+        os << probabilities.coeffRef(i, j) << " ";
+      }
+      os << std::endl;
+    }
+  } else {
+    os << "# (Probability matrix omitted as it is too large.)" << std::endl;
+  }
+
+  // Generate the graph.
   general_sbm_internal(adj_mat, &os, cluster_sizes, probabilities, exact);
 
+  // Close the file output stream.
   os.close();
 }
 

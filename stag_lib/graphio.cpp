@@ -290,6 +290,10 @@ void stag::sort_edgelist(std::string &filename) {
     stag_int current_input_line = 0;
     stag_int current_output_line = 0;
 
+    // For each pass through the input file, output any header comment lines
+    // verbatim
+    bool written_content = false;
+
     // For each interval, we will iterate over that portion of the input file
     // twice.
     std::string line;
@@ -321,6 +325,7 @@ void stag::sort_edgelist(std::string &filename) {
           try {
             // This line of the input file isn't a comment, parse it.
             this_edge = parse_edgelist_content_line(line);
+            written_content = true;
 
             if (this_edge.v1 < pivot) {
               os << line << std::endl;
@@ -333,6 +338,11 @@ void stag::sort_edgelist(std::string &filename) {
           } catch (std::invalid_argument &e) {
             // Re-throw any parsing errors
             throw(std::runtime_error(e.what()));
+          }
+        } else {
+          if (!written_content) {
+            os << line << std::endl;
+            current_output_line++;
           }
         }
       }
@@ -567,8 +577,9 @@ void stag::adjacencylist_to_edgelist(std::string &adjacencylist_fname, std::stri
   if (!is.is_open()) throw std::runtime_error(std::strerror(errno));
   if (!os.is_open()) throw std::runtime_error(std::strerror(errno));
 
-  // Write a simple extra header to the file.
-  os << "# This file was converted from an adjacencylist to an edgelist by the STAG library." << std::endl;
+  // We will include any comments up until the first content line.
+  // This preserves 'header' information as a comment.
+  bool written_content = false;
 
   // Read the file in one line at a time
   std::string line;
@@ -578,6 +589,7 @@ void stag::adjacencylist_to_edgelist(std::string &adjacencylist_fname, std::stri
       try {
         // This line of the input file isn't a comment, parse it.
         neighbours = stag::parse_adjacencylist_content_line(line);
+        written_content = true;
 
         // Add the edges to the edgelist file
         for (auto this_edge : neighbours) {
@@ -590,6 +602,10 @@ void stag::adjacencylist_to_edgelist(std::string &adjacencylist_fname, std::stri
       } catch (std::invalid_argument &e) {
         // Re-throw any parsing errors
         throw(std::runtime_error(e.what()));
+      }
+    } else {
+      if (!written_content) {
+        os << line << std::endl;
       }
     }
   }
@@ -610,8 +626,9 @@ void stag::edgelist_to_adjacencylist(std::string &edgelist_fname,
   std::ifstream is(temp_edgelist_filename);
   std::ofstream os(adjacencylist_fname);
 
-  // Write a simple extra header to the file.
-  os << "# This file was converted from an edgelist to an adjacencylist by the STAG library." << std::endl;
+  // We will include any comments up until the first content line.
+  // This preserves 'header' information as a comment.
+  bool written_content = false;
 
   // Iterate through the edgelist file
   stag_int current_node = -1;
@@ -621,6 +638,7 @@ void stag::edgelist_to_adjacencylist(std::string &edgelist_fname,
       try {
         // This line of the input file isn't a comment, parse it.
         stag::edge this_edge = parse_edgelist_content_line(line);
+        written_content = true;
 
         // If this is a larger node than we've seen so far, begin a new
         // line of the adjacency list file.
@@ -636,6 +654,10 @@ void stag::edgelist_to_adjacencylist(std::string &edgelist_fname,
       } catch (std::invalid_argument &e) {
         // Re-throw any parsing errors
         throw (std::runtime_error(e.what()));
+      }
+    } else {
+      if (!written_content) {
+        os << line << std::endl;
       }
     }
   }
