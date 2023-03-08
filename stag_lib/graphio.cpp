@@ -301,13 +301,16 @@ void stag::sort_edgelist(std::string &filename) {
     std::vector<EdgelistSortInterval> new_intervals;
     for (EdgelistSortInterval interval : intervals) {
       // The pivot index is half-way between the max and min.
-      double pivot = interval.min_id + ((double) interval.max_id - interval.min_id) / 2;
+      stag_int double_pivot = interval.min_id + interval.max_id;
+      assert(double_pivot > 2 * interval.min_id);
+      assert(double_pivot < 2 * interval.max_id);
 
       // First iteration: looking for edges with node_ids less than the pivot
       while (current_input_line < interval.start_line) {
         // Write out every line up to the start point.
         stag::safeGetline(ifs, line);
         os << line << std::endl;
+        current_output_line++;
         current_input_line++;
       }
       std::streampos start_loc = ifs.tellg();
@@ -327,7 +330,7 @@ void stag::sort_edgelist(std::string &filename) {
             this_edge = parse_edgelist_content_line(line);
             written_content = true;
 
-            if (this_edge.v1 < pivot) {
+            if (2 * this_edge.v1 < double_pivot) {
               os << line << std::endl;
               current_output_line++;
 
@@ -374,7 +377,7 @@ void stag::sort_edgelist(std::string &filename) {
             // This line of the input file isn't a comment, parse it.
             this_edge = parse_edgelist_content_line(line);
 
-            if (this_edge.v1 >= pivot) {
+            if (2 * this_edge.v1 >= double_pivot) {
               os << line << std::endl;
               current_output_line++;
 
