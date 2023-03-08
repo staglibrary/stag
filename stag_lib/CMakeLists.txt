@@ -42,7 +42,10 @@ add_library(stag SHARED ${SOURCE_FILES} ${HEADER_FILES})
 set_target_properties(stag PROPERTIES PREFIX "")
 set_target_properties(stag PROPERTIES PUBLIC_HEADER "${STAG_PUBLIC_HEADERS}")
 
-# Configure the install target
+# Define a static version of the STAG library for the stagtools
+add_library(stag_static STATIC ${SOURCE_FILES} ${HEADER_FILES})
+
+# Configure the install target for the STAG library
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file("${CMAKE_CURRENT_LIST_DIR}/stagConfig.cmake.in"
