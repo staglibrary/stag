@@ -4,7 +4,7 @@
  */
 #include <iostream>
 #include <cerrno>
-#include <stag/graphio.h>
+#include "graphio.h"
 
 int main(int argc, char** args) {
   // This program takes two arguments: the edgelist file and the adjacencylist
