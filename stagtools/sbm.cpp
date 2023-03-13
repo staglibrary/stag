@@ -26,7 +26,7 @@ int main(int argc, char** args) {
     return EINVAL;
   }
 
-  // Extract the command lien arguments.
+  // Extract the command line arguments.
   std::string edge_fname(args[1]);
   stag_int n = std::stoi(args[2]);
   stag_int k = std::stoi(args[3]);
