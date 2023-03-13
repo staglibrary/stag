@@ -15,3 +15,20 @@ html {
 
     --side-nav-background: #eaddcf;
 }
+
+html.dark-mode {
+    /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
+    --primary-color: #7f5af0;
+    --primary-dark-color: #72757e;
+    --primary-light-color: #2cb67d;
+
+    /* page base colors */
+    --page-background-color: #16161a;
+    --page-foreground-color: #94a1b2;
+    --page-secondary-foreground-color: #fffffe;
+
+    /* color for all separators on the website: hr, borders, ... */
+    --separator-color: #010101;
+
+    --side-nav-background: #242629;
+}
