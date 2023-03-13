@@ -1322,7 +1322,8 @@ HTML_STYLESHEET        =
 
 HTML_EXTRA_STYLESHEET  = "@DOXYGEN_DOCS_DIR@/doxygen-awesome-css/doxygen-awesome.css" \
                          "@DOXYGEN_DOCS_DIR@/doxygen-awesome-css/doxygen-awesome-sidebar-only.css" \
-                         "@DOXYGEN_DOCS_DIR@/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+                         "@DOXYGEN_DOCS_DIR@/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css" \
+                         "@DOXYGEN_DOCS_DIR@/_static/css/custom.css"
 
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
