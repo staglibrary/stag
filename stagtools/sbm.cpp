@@ -4,8 +4,8 @@
  */
 #include <iostream>
 #include <cerrno>
-#include <stag/graphio.h>
-#include <stag/random.h>
+#include "graphio.h"
+#include "random.h"
 
 int main(int argc, char** args) {
   // This program takes 5 arguments:
