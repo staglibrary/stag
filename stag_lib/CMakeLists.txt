@@ -39,11 +39,13 @@ include_directories(${SPECTRA_INCLUDE_DIR})
 
 # Define the STAG library
 add_library(stag SHARED ${SOURCE_FILES} ${HEADER_FILES})
+target_compile_options(stag PRIVATE -Werror -Wall -Wextra)
 set_target_properties(stag PROPERTIES PREFIX "")
 set_target_properties(stag PROPERTIES PUBLIC_HEADER "${STAG_PUBLIC_HEADERS}")
 
 # Define a static version of the STAG library for the stagtools
 add_library(stag_static STATIC ${SOURCE_FILES} ${HEADER_FILES})
+target_compile_options(stag_static PRIVATE -Werror -Wall -Wextra)
 
 # Configure the install target for the STAG library
 include(CMakePackageConfigHelpers)

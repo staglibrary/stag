@@ -69,7 +69,7 @@ SprsMat stag::sprsMatFromVectors(std::vector<stag_int>& column_starts,
 
   // The last value in the column_starts vector should be equal to the length
   // of the data vectors.
-  if (column_starts.back() != row_indices.size()) {
+  if (column_starts.back() != (stag_int) row_indices.size()) {
     throw std::invalid_argument("Final column starts entry should equal size of data vectors.");
   }
 
@@ -83,8 +83,6 @@ SprsMat stag::sprsMatFromVectors(std::vector<stag_int>& column_starts,
   return constructed_mat;
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ArgumentSelectionDefects"
 bool stag::isSymmetric(const SprsMat *matrix) {
   // Iterate through the non-zero elements in the matrix
   for (int k = 0; k < matrix->outerSize(); ++k) {
@@ -101,8 +99,6 @@ bool stag::isSymmetric(const SprsMat *matrix) {
   // values, and so this matrix is symmetric.
   return true;
 }
-#pragma clang diagnostic pop
-
 
 std::istream& stag::safeGetline(std::istream& is, std::string& t)
 {

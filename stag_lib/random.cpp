@@ -24,7 +24,7 @@
 Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
                                         DenseMat probabilities) {
   // Get the total number of vertices in the graph
-  auto k = cluster_sizes.size();
+  auto k = (stag_int) cluster_sizes.size();
   stag_int n = 0;
   for (stag_int s : cluster_sizes) n += s;
 

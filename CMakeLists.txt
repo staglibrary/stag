@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 # Default to release build if CMAKE_BUILD_TYPE is not configured
 if (CMAKE_BUILD_TYPE STREQUAL "")
-    message(STATUS "[stag] Defaulting to release build.")
+    message(STATUS "[stag] Defaulting to release build")
     set(CMAKE_BUILD_TYPE "Release")
 else()
     message(STATUS "[stag] Build type: ${CMAKE_BUILD_TYPE}")
@@ -93,7 +93,6 @@ add_executable(
         stag_edge2adj
         stagtools/edge2adj.cpp
 )
-
 target_link_libraries(
         stag_edge2adj
         stag_static

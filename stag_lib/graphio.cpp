@@ -24,10 +24,12 @@ stag::edge parse_edgelist_content_line(std::string line) {
   std::vector<std::string> delimiters{",", " ", "\t"};
 
   // Split the line to extract the edge information
+  // The weight defaults to 1 if it is not otherwise updated by the information
+  // in the line.
   int num_tokens_found = 0;
-  int u;
-  int v;
-  double weight;
+  int u = -1;
+  int v = -1;
+  double weight = 1;
 
   // Try splitting by each delimiter in turn
   size_t split_pos = 0;
@@ -76,9 +78,9 @@ stag::edge parse_edgelist_content_line(std::string line) {
     throw std::invalid_argument("Wrong number of tokens on edgelist line.");
   }
 
-  // If we have exactly two elements on the line, then add the weight 1.
-  if (num_tokens_found == 2) {
-    weight = 1;
+  // Make sure that the vertices u and v have been updated successfully
+  if (u < 0 || v < 0) {
+    throw std::invalid_argument("Parse error on edgelist line.");
   }
 
   // Return the triple
