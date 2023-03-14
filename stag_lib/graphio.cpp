@@ -279,8 +279,8 @@ void stag::sort_edgelist(std::string &filename) {
   // Iterate the quicksort algorithm until there are no intervals left.
   while (!intervals.empty()) {
     // Create a temporary file for this iteration.
-    std::string temp_fname = std::tmpnam(nullptr);
-    std::ofstream os(temp_fname);
+    std::ofstream os;
+    std::string temp_fname = stag::openTempFile(&os);
     if (!os.is_open()) throw std::runtime_error(std::strerror(errno));
 
     // Open the edgelist file as input
@@ -623,7 +623,7 @@ void stag::adjacencylist_to_edgelist(std::string &adjacencylist_fname, std::stri
 void stag::edgelist_to_adjacencylist(std::string &edgelist_fname,
                                      std::string &adjacencylist_fname) {
   // Begin by copying and sorting the edgelist file
-  std::string temp_edgelist_filename = std::tmpnam(nullptr);
+  std::string temp_edgelist_filename = stag::getTempFilename();
   stag::copy_edgelist_duplicate_edges(edgelist_fname, temp_edgelist_filename);
   stag::sort_edgelist(temp_edgelist_filename);
 

@@ -126,7 +126,7 @@ void sample_edges_binomial(SprsMat* adj_mat,
                            stag_int other_cluster_start_idx,
                            double p) {
   // Validate the function inputs
-  assert(0 <= p <= 1);
+  assert(0 <= p && p <= 1);
 
   // Get the total number of possible edges and the expected number of edges
   stag_int max_edges = this_cluster_vertices * other_cluster_vertices;

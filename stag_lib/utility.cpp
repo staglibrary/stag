@@ -3,6 +3,7 @@
 // license.
 //
 #include <iterator>
+#include <filesystem>
 #include "utility.h"
 
 std::vector<stag_int> stag::sprsMatInnerIndices(const SprsMat *matrix) {
@@ -131,4 +132,42 @@ std::istream& stag::safeGetline(std::istream& is, std::string& t)
                 t += (char)c;
         }
     }
+}
+
+std::string random_string( size_t length )
+{
+  auto randchar = []() -> char
+  {
+    const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    const size_t max_index = (sizeof(charset) - 1);
+    return charset[ std::rand() % max_index ];
+  };
+  std::string str(length,0);
+  std::generate_n( str.begin(), length, randchar );
+  return str;
+}
+
+std::string stag::getTempFilename() {
+  // Get the name of the temporary directory on this filesystem
+  std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
+
+  // Create the random filename
+  std::filesystem::path fname("stag_temp_file." + random_string(20));
+
+  // Create the full path
+  std::filesystem::path full_path = temp_dir / fname;
+  return full_path.string();
+}
+
+std::string stag::openTempFile(std::ofstream* os) {
+  std::string temp_fname = stag::getTempFilename();
+
+  // Open the ofstream
+  *os = std::ofstream(temp_fname);
+
+  // Return the name of the file
+  return temp_fname;
 }

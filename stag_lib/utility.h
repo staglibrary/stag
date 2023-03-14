@@ -116,6 +116,26 @@ namespace stag {
   std::istream& safeGetline(std::istream& is, std::string& t);
 
   /**
+   * Get a temporary filename.
+   */
+  std::string getTempFilename();
+
+  /**
+   * Create and open a temporary file.
+   *
+   * The calling code is responsible for calling close() on the returned
+   * output file stream.
+   *
+   * If the file creation fails, then this method still returns an output file
+   * stream and so the calling code should check that the returned stream is
+   * open.
+   *
+   * @param os the output file stream object to open
+   * @return the name of the created file
+   */
+  std::string openTempFile(std::ofstream* os);
+
+  /**
    * \endcond
    */
 }
