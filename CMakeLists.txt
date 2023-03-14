@@ -7,6 +7,14 @@ set(CMAKE_CXX_STANDARD 20)
 # Add the cmake folder
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+# Default to release build if CMAKE_BUILD_TYPE is not configured
+if (CMAKE_BUILD_TYPE STREQUAL "")
+    message(STATUS "[stag] Defaulting to release build.")
+    set(CMAKE_BUILD_TYPE "Release")
+else()
+    message(STATUS "[stag] Build type: ${CMAKE_BUILD_TYPE}")
+endif()
+
 # Download googletest
 include(FetchContent)
 FetchContent_Declare(
