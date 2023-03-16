@@ -166,6 +166,8 @@ For example, here is a simple edgelist file.
 This represents a graph on three vertices with three edges.
 For example, the first row corresponds to an edge between vertices 0 and 1 with weight
 0.5.
+For more information on the file formats supported by STAG, see
+[Graph File Formats](@ref file-formats).
 
 To load a STAG graph from an edgelist file, you can use the following code.
 
@@ -317,3 +319,6 @@ This parameter does *not* impose a hard constraint on the algorithm and so an ap
 
 The stag::local_cluster method returns a vector containing the ID of each vertex in the local cluster.
 
+For working with very large graphs, consider using the stag::AdjacencyListLocalGraph
+object for local clustering.
+This will read the graph from disk in a local way and reduces the memory requirement.
