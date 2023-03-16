@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - STAG Tools for creating graphs and converting between file formats
 - [Issue #82](https://github.com/staglibrary/stag/issues/82): Methods for using AdjacencyList files
 - The `AdjacencyListLocalGraph` class for using local access to a graph stored on disk
+- [Issue #79](https://github.com/staglibrary/stag/issues/79): Conductance method
 
 ## [1.1.1] - 2023-03-02
 ### Fixed
