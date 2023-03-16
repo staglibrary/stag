@@ -226,9 +226,11 @@ void general_sbm_internal(SprsMat* adj_mat,
 
   // Estimate the number of neighbours of each node and reserve
   // memory for the adjacency matrix.
-  Eigen::VectorXi neighbour_estimates = estimate_sbm_neighbours(cluster_sizes,
-                                                                probabilities);
-  if (adj_mat != nullptr) adj_mat->reserve(neighbour_estimates);
+  if (adj_mat != nullptr) {
+    Eigen::VectorXi neighbour_estimates = estimate_sbm_neighbours(cluster_sizes,
+                                                                  probabilities);
+    adj_mat->reserve(neighbour_estimates);
+  }
 
   // Iterate through the clusters
   stag_int this_cluster_start_idx = 0;
