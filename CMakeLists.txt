@@ -77,17 +77,6 @@ configure_file(test/data/test7.adjacencylist test/data/test7.adjacencylist COPYO
 configure_file(test/data/badgraph.adjacencylist test/data/badgraph.adjacencylist COPYONLY)
 configure_file(test/data/hugegraph.adjacencylist test/data/hugegraph.adjacencylist COPYONLY)
 
-# Create a performance test target
-add_executable(
-        stagperf EXCLUDE_FROM_ALL
-        test/performance_test.cpp
-)
-
-target_link_libraries(
-        stagperf
-        stag
-)
-
 # Create the STAG tools
 add_executable(
         stag_edge2adj
