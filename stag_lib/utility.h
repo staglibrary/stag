@@ -7,7 +7,7 @@
 
 /**
  * @file utility.h
- * \brief Helper methods for processing sparse matrices
+ * \brief Various helper methods for working with the STAG library.
  */
 
 #ifndef STAG_TEST_UTILITY_H
@@ -117,6 +117,12 @@ namespace stag {
 
   /**
    * Get a temporary filename.
+   *
+   * This is expected to be used to create a file, do some processing on it
+   * and then delete the file.
+   *
+   * On a linux system the filename will have the format
+   * /tmp/stag_temp_file.<random>.
    */
   std::string getTempFilename();
 
