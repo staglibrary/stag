@@ -66,8 +66,6 @@ namespace stag {
    * Sort the edgelist file by the first vertex in each edge.
    *
    * All sorting happens on disk, keeping memory requirements low.
-   *
-   * Note that this method will remove all comments in the file.
    */
   void sort_edgelist(std::string& filename);
 
