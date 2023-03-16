@@ -10,6 +10,7 @@
 #include <graph.h>
 #include <random.h>
 #include <utility.h>
+#include <graphio.h>
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \
@@ -49,6 +50,15 @@ TEST(RandomTest, GeneralSBM) {
   DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
   stag::Graph testGraph = stag::general_sbm(cluster_sizes, prob_mat);
   EXPECT_EQ(testGraph.number_of_vertices(), 1110);
+}
+
+TEST(RandomTest, GeneralSBMEdgelist) {
+  std::string filename = "output.edgelist";
+  std::vector<stag_int> cluster_sizes = {100, 100, 10};
+  DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
+  stag::general_sbm_edgelist(filename, cluster_sizes, prob_mat);
+  stag::Graph testGraph = stag::load_edgelist(filename);
+  EXPECT_EQ(testGraph.number_of_vertices(), 210);
 }
 
 TEST(RandomTest, GeneralSBMArguments) {

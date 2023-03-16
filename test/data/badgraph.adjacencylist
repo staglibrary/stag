@@ -1,0 +1,5 @@
+# This file does not correctly define an adjacency list - it is not
+# an undirected graph.
+0: 1 2
+1: 2
+2: 0 1

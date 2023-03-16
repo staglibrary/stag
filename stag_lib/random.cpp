@@ -24,7 +24,7 @@
 Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
                                         DenseMat probabilities) {
   // Get the total number of vertices in the graph
-  auto k = cluster_sizes.size();
+  auto k = (stag_int) cluster_sizes.size();
   stag_int n = 0;
   for (stag_int s : cluster_sizes) n += s;
 
@@ -61,7 +61,8 @@ Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
  * edge and 'tossing a coin'. This technique should be used for 'large' values
  * of p.
  *
- * @param adj_mat the adjacency matrix to be updated
+ * @param adj_mat the adjacency matrix to be updated - can pass null to not update anything
+ * @param edgelist_os the edgelist file stream to be updated - can pass null to not update anything
  * @param cluster_idx the index of the 'source' cluster
  * @param other_cluster_idx the index of the 'target' cluster
  * @param this_cluster_vertices the number of vertices in the 'source' cluster
@@ -70,7 +71,8 @@ Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
  * @param other_cluster_start_idx the index of the first vertex in the 'target' cluster
  * @param p the probability of including each edge.
  */
-void sample_edges_directly(SprsMat& adj_mat,
+void sample_edges_directly(SprsMat* adj_mat,
+                           std::ostream* edgelist_os,
                            stag_int cluster_idx,
                            stag_int other_cluster_idx,
                            stag_int this_cluster_vertices,
@@ -92,8 +94,13 @@ void sample_edges_directly(SprsMat& adj_mat,
 
       // Toss a coin
       if (sampleDist(prng)) {
-        adj_mat.insert(i, j) = 1;
-        adj_mat.insert(j, i) = 1;
+        if (adj_mat != nullptr) {
+          adj_mat->insert(i, j) = 1;
+          adj_mat->insert(j, i) = 1;
+        }
+        if (edgelist_os != nullptr) {
+          *edgelist_os << i << " " << j << " " << 1 << std::endl;
+        }
       }
     }
   }
@@ -103,21 +110,23 @@ void sample_edges_directly(SprsMat& adj_mat,
  * Sample edges between SBM clusters using the 'binomial trick'. This technique
  * should be used for 'small' values of p.
  *
- * @param adj_mat the adjacency matrix to be updated
+ * @param adj_mat the adjacency matrix to be updated - can pass null to not update anything
+ * @param edgelist_os the edgelist file stream to be updated - can pass null to not update anything
  * @param this_cluster_vertices the number of vertices in the 'source' cluster
  * @param other_cluster_vertices the number of vertices in the 'target' cluster
  * @param this_cluster_start_idx the index of the first vertex in the 'source' cluster
  * @param other_cluster_start_idx the index of the first vertex in the 'target' cluster
  * @param p
  */
-void sample_edges_binomial(SprsMat& adj_mat,
+void sample_edges_binomial(SprsMat* adj_mat,
+                           std::ostream* edgelist_os,
                            stag_int this_cluster_vertices,
                            stag_int other_cluster_vertices,
                            stag_int this_cluster_start_idx,
                            stag_int other_cluster_start_idx,
                            double p) {
   // Validate the function inputs
-  assert(0 <= p <= 1);
+  assert(0 <= p && p <= 1);
 
   // Get the total number of possible edges and the expected number of edges
   stag_int max_edges = this_cluster_vertices * other_cluster_vertices;
@@ -151,8 +160,13 @@ void sample_edges_binomial(SprsMat& adj_mat,
     }
 
     // Add this vertex to the adjacency matrix
-    adj_mat.coeffRef(randU, randV)++;
-    adj_mat.coeffRef(randV, randU)++;
+    if (adj_mat != nullptr) {
+      adj_mat->coeffRef(randU, randV)++;
+      adj_mat->coeffRef(randV, randU)++;
+    }
+    if (edgelist_os != nullptr) {
+      *edgelist_os << randU << " " << randV << " " << 1 << std::endl;
+    }
   }
 }
 
@@ -188,8 +202,10 @@ stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q, bool exact) {
   return general_sbm(cluster_sizes, probabilities, exact);
 }
 
-stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
-                              DenseMat& probabilities, bool exact) {
+void general_sbm_internal(SprsMat* adj_mat,
+                          std::ostream* edgelist_os,
+                          std::vector<stag_int>& cluster_sizes,
+                          DenseMat& probabilities, bool exact) {
   // The number of clusters is the length of the cluster_sizes vector
   stag_int k = cluster_sizes.size();
 
@@ -208,16 +224,13 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
     }
   }
 
-  // Initialise the adjacency matrix
-  stag_int n = 0;
-  for (auto s : cluster_sizes) n += s;
-  SprsMat adj_mat(n, n);
-
   // Estimate the number of neighbours of each node and reserve
   // memory for the adjacency matrix.
-  Eigen::VectorXi neighbour_estimates = estimate_sbm_neighbours(cluster_sizes,
-                                                                probabilities);
-  adj_mat.reserve(neighbour_estimates);
+  if (adj_mat != nullptr) {
+    Eigen::VectorXi neighbour_estimates = estimate_sbm_neighbours(cluster_sizes,
+                                                                  probabilities);
+    adj_mat->reserve(neighbour_estimates);
+  }
 
   // Iterate through the clusters
   stag_int this_cluster_start_idx = 0;
@@ -239,6 +252,7 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
             prob < 0.5 && !exact) {
         // For small probabilities, use the 'binomial trick' for sampling
         sample_edges_binomial(adj_mat,
+                              edgelist_os,
                               this_cluster_vertices,
                               other_cluster_vertices,
                               this_cluster_start_idx,
@@ -247,6 +261,7 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
       } else {
         // For large probabilities, we just iterate over every pair of vertices
         sample_edges_directly(adj_mat,
+                              edgelist_os,
                               cluster_idx,
                               other_cluster_idx,
                               this_cluster_vertices,
@@ -265,10 +280,25 @@ stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
   }
 
   // Finally, construct and return the graph.
-  adj_mat.makeCompressed();
-  return stag::Graph(adj_mat);
+  if (adj_mat != nullptr) adj_mat->makeCompressed();
 }
 
+stag::Graph stag::general_sbm(std::vector<stag_int> &cluster_sizes,
+                              DenseMat &probabilities, bool exact) {
+  stag_int n = 0;
+  for (auto s : cluster_sizes) n += s;
+
+  // Initialise a sparse adjacency matrix, and use a null pointer for the
+  // edgelist file. This ensures that the general_sbm_internal method
+  // writes the generated graph to the adjacency matrix and does not write
+  // the graph to disk.
+  SprsMat adj_mat(n, n);
+  std::ostream* edgelist_os = nullptr;
+
+  general_sbm_internal(&adj_mat, edgelist_os, cluster_sizes,
+                       probabilities, exact);
+  return stag::Graph(adj_mat);
+}
 
 stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
                               DenseMat& probabilities) {
@@ -281,6 +311,57 @@ stag::Graph stag::erdos_renyi(stag_int n, double p) {
 
 stag::Graph stag::erdos_renyi(stag_int n, double p, bool exact) {
   return stag::sbm(n, 1, p, 0, exact);
+}
+
+void stag::general_sbm_edgelist(std::string &filename,
+                                std::vector<stag_int> &cluster_sizes,
+                                DenseMat &probabilities,
+                                bool exact) {
+  SprsMat* adj_mat = nullptr;
+  std::ofstream os(filename);
+
+  // If the file could not be opened, throw an exception
+  if (!os.is_open()) {
+    throw std::runtime_error(std::strerror(errno));
+  }
+
+  // Write a header to the output stream giving the parameters of the
+  // SBM model.
+  stag_int k = cluster_sizes.size();
+  stag_int n = 0;
+  for (auto size: cluster_sizes) n += size;
+  os << "# This graph was generated from a stochastic block model with the ";
+  os << "following parameters." << std::endl;
+  os << "#    n = " << n << std::endl;
+  os << "#    k = " << k << std::endl;
+
+  if (k <= 20) {
+    os << "#    cluster sizes = ";
+    for (stag_int size : cluster_sizes) os << size << " ";
+    os << std::endl;
+    os << "#    probability matrix = " << std::endl;
+    for (auto i = 0; i < k; i++) {
+      os << "#        ";
+      for (auto j = 0; j < k; j++) {
+        os << probabilities.coeffRef(i, j) << " ";
+      }
+      os << std::endl;
+    }
+  } else {
+    os << "# (Probability matrix omitted as it is too large.)" << std::endl;
+  }
+
+  // Generate the graph.
+  general_sbm_internal(adj_mat, &os, cluster_sizes, probabilities, exact);
+
+  // Close the file output stream.
+  os.close();
+}
+
+void stag::general_sbm_edgelist(std::string &filename,
+                                std::vector<stag_int> &cluster_sizes,
+                                DenseMat &probabilities) {
+  stag::general_sbm_edgelist(filename, cluster_sizes, probabilities, false);
 }
 
 std::vector<stag_int> stag::sbm_gt_labels(stag_int n, stag_int k) {

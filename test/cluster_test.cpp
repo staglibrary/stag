@@ -12,6 +12,7 @@
 #include <graph.h>
 #include <random.h>
 #include <utility.h>
+#include <graphio.h>
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \
@@ -316,4 +317,62 @@ TEST(ClusterTest, ARIArguments) {
   gt_labels.at(1) = 0;
   labels.at(3) = -1;
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
+}
+
+TEST(ClusterTest, ALLGLocalClustering) {
+  std::string filename = "test/data/hugegraph.adjacencylist";
+  stag::AdjacencyListLocalGraph testGraph(filename);
+
+  // Find a cluster using the default local clustering algorithm
+  std::vector<stag_int> cluster = stag::local_cluster(&testGraph,
+                                                      500000,
+                                                      10000);
+
+  // Check the number of returned vertices
+  EXPECT_GE(cluster.size(), 100);
+  EXPECT_LE(cluster.size(), 10000);
+}
+
+TEST(ClusterTest, ALLGLocalClusteringConsistent) {
+  std::string adj_filename = "output.adjacencylist";
+  std::string edge_filename = "output.edgelist";
+
+  // Create a graph from the SBM
+  stag_int n = 500;
+  stag_int k = 5;
+  double p = 0.1;
+  double q = 0.01;
+
+  // Create the general sbm parameters
+  std::vector<stag_int> cluster_sizes;
+  DenseMat probabilities(k, k);
+  for (auto i = 0; i < k; i++) {
+    cluster_sizes.push_back(floor(((double) n) / ((double) k)));
+    probabilities(i, i) = p;
+
+    for (auto j = i + 1; j < k; j++) {
+      probabilities(i, j) = q;
+      probabilities(j, i) = q;
+    }
+  }
+  stag::general_sbm_edgelist(edge_filename, cluster_sizes, probabilities);
+
+  // Convert it to an adjacencylist
+  stag::edgelist_to_adjacencylist(edge_filename, adj_filename);
+
+  // Get the clusters two ways: Graph and AdjacencyListLocalGraph
+  stag::Graph fullGraph = stag::load_adjacencylist(adj_filename);
+  stag::AdjacencyListLocalGraph adjGraph(adj_filename);
+
+  // Clustering on the graph loaded into memory should give the same result.
+  std::vector<stag_int> adj_cluster = stag::local_cluster(&adjGraph,
+                                                          0,
+                                                          1500);
+  std::vector<stag_int> full_cluster = stag::local_cluster(&fullGraph,
+                                                           0,
+                                                           1500);
+  std::stable_sort(adj_cluster.begin(), adj_cluster.end());
+  std::stable_sort(full_cluster.begin(), full_cluster.end());
+
+  EXPECT_EQ(adj_cluster, full_cluster);
 }

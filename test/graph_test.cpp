@@ -543,3 +543,45 @@ TEST(GraphTest, ArgumentChecking) {
   EXPECT_THROW(stag::barbell_graph(n), std::invalid_argument);
   EXPECT_THROW(stag::star_graph(n), std::invalid_argument);
 }
+
+//------------------------------------------------------------------------------
+// AdjacencyListLocalGraph tests
+//------------------------------------------------------------------------------
+TEST(GraphTest, ALLGVertexExists) {
+  stag::AdjacencyListLocalGraph testGraph("test/data/test1.adjacencylist");
+  EXPECT_TRUE(testGraph.vertex_exists(0));
+  EXPECT_TRUE(testGraph.vertex_exists(1));
+  EXPECT_TRUE(testGraph.vertex_exists(2));
+
+  EXPECT_FALSE(testGraph.vertex_exists(3));
+  EXPECT_FALSE(testGraph.vertex_exists(-1));
+  EXPECT_FALSE(testGraph.vertex_exists(100));
+
+  stag::AdjacencyListLocalGraph graph2("test/data/test7.adjacencylist");
+  EXPECT_TRUE(graph2.vertex_exists(1));
+  EXPECT_TRUE(graph2.vertex_exists(2));
+  EXPECT_TRUE(graph2.vertex_exists(3));
+
+  EXPECT_FALSE(graph2.vertex_exists(0));
+  EXPECT_FALSE(graph2.vertex_exists(-1));
+  EXPECT_FALSE(graph2.vertex_exists(100));
+}
+
+TEST(GraphTest, ALLGHugeGraph) {
+  stag::AdjacencyListLocalGraph testGraph("test/data/test6.adjacencylist");
+  EXPECT_NEAR(testGraph.degree(18950), 20.088781, 0.0001);
+  EXPECT_EQ(testGraph.degree_unweighted(32107), 26);
+
+  // Check the degree of the same node again. We should use the
+  // cached adjacency matrix for this.
+  EXPECT_NEAR(testGraph.degree(18950), 20.088781, 0.0001);
+}
+
+TEST(GraphTest, ALLGNeighboursOrder) {
+  stag::AdjacencyListLocalGraph testGraph("test/data/test1.adjacencylist");
+  stag_int node = 0;
+  std::vector<stag_int> ns = testGraph.neighbors_unweighted(node);
+  for (stag_int n : ns) {
+    EXPECT_NE(n, node);
+  }
+}

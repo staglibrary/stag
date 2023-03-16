@@ -7,7 +7,7 @@
 
 /**
  * @file utility.h
- * \brief Helper methods for processing sparse matrices
+ * \brief Various helper methods for working with the STAG library.
  */
 
 #ifndef STAG_TEST_UTILITY_H
@@ -114,6 +114,32 @@ namespace stag {
    * @param t the string variable in which to store the returned line
    */
   std::istream& safeGetline(std::istream& is, std::string& t);
+
+  /**
+   * Get a temporary filename.
+   *
+   * This is expected to be used to create a file, do some processing on it
+   * and then delete the file.
+   *
+   * On a linux system the filename will have the format
+   * /tmp/stag_temp_file.<random>.
+   */
+  std::string getTempFilename();
+
+  /**
+   * Create and open a temporary file.
+   *
+   * The calling code is responsible for calling close() on the returned
+   * output file stream.
+   *
+   * If the file creation fails, then this method still returns an output file
+   * stream and so the calling code should check that the returned stream is
+   * open.
+   *
+   * @param os the output file stream object to open
+   * @return the name of the created file
+   */
+  std::string openTempFile(std::ofstream* os);
 
   /**
    * \endcond

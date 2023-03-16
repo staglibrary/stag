@@ -308,7 +308,7 @@ stag_int nChoose2(stag_int n)
 double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
                                  std::vector<stag_int>& labels) {
   stag_int n = gt_labels.size();
-  if (labels.size() != n) {
+  if ((stag_int) labels.size() != n) {
     throw std::invalid_argument("Label vectors must be the same size.");
   }
 

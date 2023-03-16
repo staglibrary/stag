@@ -911,6 +911,8 @@ WARN_LOGFILE           =
 
 INPUT = "@DOXYGEN_DOCS_DIR@/index.md" \
         "@DOXYGEN_DOCS_DIR@/getting-started.md" \
+        "@DOXYGEN_DOCS_DIR@/file-formats.md" \
+        "@DOXYGEN_DOCS_DIR@/stag-tools.md" \
         "@DOXYGEN_INPUT_DIR@"
 
 # This tag can be used to specify the character encoding of the source files
@@ -2177,7 +2179,7 @@ MAN_LINKS              = NO
 # captures the structure of the code including all documentation.
 # The default value is: NO.
 
-GENERATE_XML           = YES
+GENERATE_XML           = NO
 
 # The XML_OUTPUT tag is used to specify where the XML pages will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of

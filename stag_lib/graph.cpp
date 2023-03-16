@@ -3,8 +3,10 @@
 // license.
 //
 #include <stdexcept>
+#include <fstream>
 #include "graph.h"
 #include "utility.h"
+#include "graphio.h"
 
 
 //------------------------------------------------------------------------------
@@ -374,6 +376,183 @@ bool stag::operator==(const stag::edge &lhs, const stag::edge &rhs) {
 
 bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
   return !(lhs == rhs);
+}
+
+//------------------------------------------------------------------------------
+// Adjacency List Local Graph
+//------------------------------------------------------------------------------
+stag_int stag::AdjacencyListLocalGraph::goto_next_content_line() {
+  std::string current_line;
+
+  // Read the current line, discarding it. This leaves the file pointer at the
+  // beginning of a line.
+  std::streampos current_loc = is_.tellg();
+  if (current_loc != 0) stag::safeGetline(is_, current_line);
+
+  current_loc = is_.tellg();
+  while (true) {
+    // If the current position is the end of the file, we have failed to find
+    // a content line. Return -1.
+    if (current_loc == end_of_file_) {
+      return -1;
+    }
+
+    // Read until we find a non-empty line.
+    // Make sure to set current_loc to the position just before calling getline.
+    current_line.clear();
+    while (current_line.empty()) {
+      current_loc = is_.tellg();
+      stag::safeGetline(is_, current_line);
+    }
+
+    // Check if this line is a valid content line.
+    size_t split_pos = current_line.find(':');
+    if (split_pos != std::string::npos) {
+      std::string token = current_line.substr(0, split_pos);
+      stag_int source_node_id = std::stoi(token);
+
+      // We found a content line, reset the position of the reader to the start
+      // of the line and return the node id.
+      is_.seekg(current_loc);
+      return source_node_id;
+    }
+  }
+
+  // If we couldn't find a content line, then the adjacencylist is badly formed.
+  throw std::runtime_error("Malformed adjacencylist file.");
+}
+
+stag::AdjacencyListLocalGraph::AdjacencyListLocalGraph(const std::string &filename) {
+  // Open the file handle to the graph on disk, and get the maximum length of the
+  // file.
+  is_ = std::ifstream(filename);
+
+  // If the file could not be opened, throw an exception
+  if (!is_.is_open()) {
+    throw std::runtime_error(std::strerror(errno));
+  }
+
+  // Get the length of the file in bytes.
+  is_.seekg(0, std::ios::end);
+  end_of_file_ = is_.tellg();
+}
+
+void stag::AdjacencyListLocalGraph::find_vertex(stag_int v) {
+  // Set the maximum and minimum ranges of the file to search
+  std::streampos range_min = 0;
+  std::streampos range_max = end_of_file_;
+
+  // Perform a binary search for the target node
+  stag_int current_id;
+  bool found_target = false;
+  while (!found_target) {
+    // If min is greater than max, then we have failed to find our target point
+    if (range_min > range_max) throw std::runtime_error("Couldn't find node in adjacencylist file.");
+
+    // Search half-way between the search points.
+    stag_int search_point = floor((range_max + range_min) / 2);
+
+    // Check whether this point has been searched before
+    if (fileloc_to_node_id_.find(search_point) != fileloc_to_node_id_.end()) {
+      // We have searched this point before
+      current_id = fileloc_to_node_id_[search_point];
+
+      // If this is the point we're looking for, make sure that the file pointer
+      // is pointing to the right place.
+      if (current_id == v) {
+        is_.seekg((std::streampos) search_point);
+        goto_next_content_line();
+      }
+    } else {
+      // We have never searched this point before - we need to check the
+      // file on disk.
+      is_.seekg((std::streampos) search_point);
+      current_id = goto_next_content_line();
+      fileloc_to_node_id_[search_point] = current_id;
+    }
+
+    if (current_id == v) {
+      found_target = true;
+    } else if (current_id == -1 || current_id > v) {
+      range_max = search_point - std::streamoff(1);
+    } else {
+      range_min = search_point + std::streamoff(1);
+    }
+  }
+}
+
+std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
+  // If we have searched for this vertex before, just returned the cached copy.
+  if (node_id_to_edgelist_.find(v) != node_id_to_edgelist_.end()) {
+    return node_id_to_edgelist_[v];
+  }
+
+  // First, find the target vertex in the adjacencylist file.
+  find_vertex(v);
+
+  // We are pointing at the correct content line. Parse it to get the neighbours.
+  std::string content_line;
+  stag::safeGetline(is_, content_line);
+  std::vector<stag::edge> neighbors;
+  std::vector<stag::edge> edges = stag::parse_adjacencylist_content_line(
+      content_line);
+
+  // Update our internal edgelist.
+  node_id_to_edgelist_[v] = edges;
+
+  return edges;
+}
+
+std::vector<stag_int> stag::AdjacencyListLocalGraph::neighbors_unweighted(stag_int v) {
+  auto edges = neighbors(v);
+  std::vector<stag_int> unweighted_neighbors;
+  for (stag::edge e : edges) {
+    unweighted_neighbors.push_back(e.v2);
+  }
+  return unweighted_neighbors;
+}
+
+double stag::AdjacencyListLocalGraph::degree(stag_int v) {
+  auto edges = neighbors(v);
+  double deg = 0;
+  for (stag::edge e : edges) {
+    deg += e.weight;
+  }
+  return deg;
+}
+
+stag_int stag::AdjacencyListLocalGraph::degree_unweighted(stag_int v) {
+  auto edges = neighbors(v);
+  return edges.size();
+}
+
+std::vector<double> stag::AdjacencyListLocalGraph::degrees(std::vector<stag_int> vertices) {
+  std::vector<double> degs;
+  for (auto v : vertices) {
+    degs.push_back(degree(v));
+  }
+  return degs;
+}
+
+std::vector<stag_int> stag::AdjacencyListLocalGraph::degrees_unweighted(std::vector<stag_int> vertices) {
+  std::vector<stag_int> degs;
+  for (auto v : vertices) {
+    degs.push_back(degree_unweighted(v));
+  }
+  return degs;
+}
+
+bool stag::AdjacencyListLocalGraph::vertex_exists(stag_int v) {
+  try {
+    find_vertex(v);
+    return true;
+  } catch (std::runtime_error& e) {
+    return false;
+  }
+}
+
+stag::AdjacencyListLocalGraph::~AdjacencyListLocalGraph() {
+  is_.close();
 }
 
 //------------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 
 #include <Eigen/Sparse>
 #include <vector>
+#include <fstream>
 
 
 /**
@@ -513,6 +514,88 @@ namespace stag {
   /**
    * \endcond
    */
+
+  /**
+   * \brief A local graph backed by an adjacency list file on disk.
+   *
+   * The graph is loaded into memory in a local way only. That is, an adjacency
+   * list data structure is constructed in memory as node neighbours are queried.
+   * If a node is not found in the cached adjacency list, then the neighbours of
+   * the node are queried from the adjacency list on disk.
+   * This allows for local algorithms to be executed on very large graphs stored
+   * on disk without loading the whole graph into memory.
+   *
+   * See [Graph File Formats](@ref file-formats) for more information
+   * about the adjacency list file format.
+   *
+   * \note
+   * It is important that the adjacency list on disk is stored with sorted
+   * node indices. This allows us to query the neighbours of a given node in
+   * \f$O(log(n))\f$ time using binary search.
+   *
+   */
+  class AdjacencyListLocalGraph : public LocalGraph {
+  public:
+    /**
+     * Construct a local graph backed by an adjacency list file.
+     *
+     * The adjacency list file must not be modified externally while it is in
+     * use by this object.
+     *
+     * @param filename the name of the adjacencylist file which defines the graph
+     */
+    AdjacencyListLocalGraph(const std::string& filename);
+
+    // Override the abstract methods in the LocalGraph base class.
+    double degree(stag_int v) override;
+    stag_int degree_unweighted(stag_int v) override;
+    std::vector<edge> neighbors(stag_int v) override;
+    std::vector<stag_int> neighbors_unweighted(stag_int v) override;
+    std::vector<double> degrees(std::vector<stag_int> vertices) override;
+    std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
+    bool vertex_exists(stag_int v) override;
+    ~AdjacencyListLocalGraph() override;
+
+  private:
+    /**
+     * Move the ifstream head to the start of the next content line, and return
+     * the ID of the corresponding node.
+     *
+     * If there is no content line before the end of the file, return -1 and
+     * set the ifstream head to the end of the file.
+     *
+     * @return the node ID of the next content line
+     */
+    stag_int goto_next_content_line();
+
+    /**
+     * Perform a binary search to find the given vertex in the adjacencylist
+     * file.
+     *
+     * If the vertex v is defined, the input stream pointer will be pointing
+     * at the start of the corresponding content line.
+     *
+     * If the vertex does not exist, will throw a runtime exception.
+     *
+     * @param v the vertex to search for
+     */
+    void find_vertex(stag_int v);
+
+    // The input file stream corresponding to the adjacencylist file backing
+    // this graph. The implementation makes random access to this file to
+    // read the vertex adjacency information.
+    std::ifstream is_;
+    std::streampos end_of_file_;
+
+    // In order to increase the efficiency of looking up neighbourhood
+    // information in the graph, we cache the node ids corresponding to certain
+    // locations in the file. The cached locations will correspond to the binary
+    // search locations for the nodes we've queried.
+    std::unordered_map<stag_int, stag_int> fileloc_to_node_id_;
+
+    // We also store the full adjacency list of the graph queried so far.
+    std::unordered_map<stag_int, std::vector<edge>> node_id_to_edgelist_;
+  };
 
   /**
    * Construct a cycle graph on n vertices.

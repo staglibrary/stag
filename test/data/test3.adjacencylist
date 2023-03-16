@@ -1,0 +1,9 @@
+// Give only some of the weights, add extra spaces
+0:    1:1   2:0.5
+
+// Add blank lines and extra comments
+// Miss the weight for the second edge here
+1:  0:1  2
+
+// Notice that I changed the order of the adjacency edges.
+2:  1   0:0.5

@@ -37,12 +37,29 @@ find_package(Spectra 1.0.1 REQUIRED)
 message(STATUS "[stag] Found Spectra!")
 include_directories(${SPECTRA_INCLUDE_DIR})
 
+#####################################
 # Define the STAG library
-add_library(stag SHARED ${SOURCE_FILES} ${HEADER_FILES})
+#####################################
+# We would like to define two version of the library: shared and static.
+# In order to do this, we first build an 'object' library which compiles the
+# sources into object files.
+add_library(stag_object OBJECT ${SOURCE_FILES} ${HEADER_FILES})
+target_compile_options(stag_object PRIVATE -Werror -Wall -Wextra)
+set_property(TARGET stag_object PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+# Build the shared library which will be installed
+add_library(stag SHARED $<TARGET_OBJECTS:stag_object>)
+target_compile_options(stag PRIVATE -Werror -Wall -Wextra)
 set_target_properties(stag PROPERTIES PREFIX "")
 set_target_properties(stag PROPERTIES PUBLIC_HEADER "${STAG_PUBLIC_HEADERS}")
 
-# Configure the install target
+# Define a static version of the STAG library for the stagtools
+add_library(stag_static STATIC $<TARGET_OBJECTS:stag_object>)
+target_compile_options(stag_static PRIVATE -Werror -Wall -Wextra)
+
+######################################
+# Install
+######################################
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file("${CMAKE_CURRENT_LIST_DIR}/stagConfig.cmake.in"
