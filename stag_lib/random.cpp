@@ -287,8 +287,14 @@ stag::Graph stag::general_sbm(std::vector<stag_int> &cluster_sizes,
                               DenseMat &probabilities, bool exact) {
   stag_int n = 0;
   for (auto s : cluster_sizes) n += s;
+
+  // Initialise a sparse adjacency matrix, and use a null pointer for the
+  // edgelist file. This ensures that the general_sbm_internal method
+  // writes the generated graph to the adjacency matrix and does not write
+  // the graph to disk.
   SprsMat adj_mat(n, n);
   std::ostream* edgelist_os = nullptr;
+
   general_sbm_internal(&adj_mat, edgelist_os, cluster_sizes,
                        probabilities, exact);
   return stag::Graph(adj_mat);
