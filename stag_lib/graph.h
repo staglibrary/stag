@@ -539,6 +539,9 @@ namespace stag {
     /**
      * Construct a local graph backed by an adjacency list file.
      *
+     * The adjacency list file must not be modified externally while it is in
+     * use by this object.
+     *
      * @param filename the name of the adjacencylist file which defines the graph
      */
     AdjacencyListLocalGraph(const std::string& filename);
