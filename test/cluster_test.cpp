@@ -376,3 +376,44 @@ TEST(ClusterTest, ALLGLocalClusteringConsistent) {
 
   EXPECT_EQ(adj_cluster, full_cluster);
 }
+
+TEST(ClusterTest, Conductance) {
+  // Construct a test graph
+  std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
+  std::vector<stag_int> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
+  std::vector<double> values = {1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2};
+  stag::Graph testGraph(rowStarts, colIndices, values);
+
+  // Check the conductance
+  std::vector<stag_int> cluster = {0, 3};
+  double cond = stag::conductance(&testGraph, cluster);
+  EXPECT_NEAR(cond, 1, 0.00001);
+
+  cluster = {1, 3};
+  cond = stag::conductance(&testGraph, cluster);
+  EXPECT_NEAR(cond, 1./2, 0.00001);
+
+  // Check the conductance method for an AdjacencyListLocalGraph
+  std::string filename = "test/data/test3.adjacencylist";
+  stag::AdjacencyListLocalGraph adjGraph(filename);
+  cluster = {0, 1};
+  cond = stag::conductance(&adjGraph, cluster);
+  EXPECT_NEAR(cond, 1.5/3.5, 0.00001);
+
+  // Conductance of empty set is 0
+  cluster = {};
+  cond = stag::conductance(&adjGraph, cluster);
+  EXPECT_EQ(cond, 0);
+}
+
+TEST(CLusterTest, ConductanceArguments) {
+  // Construct a test graph
+  std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
+  std::vector<stag_int> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
+  std::vector<double> values = {1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2};
+  stag::Graph testGraph(rowStarts, colIndices, values);
+
+  // Negative integers in the cluster should throw an argument exception
+  std::vector<stag_int> cluster = {0, -1};
+  EXPECT_THROW(stag::conductance(&testGraph, cluster), std::invalid_argument);
+}

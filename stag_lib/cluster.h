@@ -189,6 +189,27 @@ namespace stag {
    */
   double adjusted_rand_index(std::vector<stag_int>& gt_labels,
                              std::vector<stag_int>& labels);
+
+  /**
+   * Compute the conductance of the given cluster in a graph.
+   *
+   * Given a graph \f$G = (V, E)\f$, the conductance of \f$S \subseteq V\f$
+   * is defined to be
+   *
+   * \f[
+   *    \phi(S) = \frac{w(S, V \setminus S)}{\mathrm{vol}(S)},
+   * \f]
+   *
+   * where \f$\mathrm{vol}(S) = \sum_{v \in S} \mathrm{deg}(v)\f$ is the volume
+   * of \f$S\f$ and \f$w(S, V \setminus S)\f$ is the total weight of edges crossing
+   * the cut between \f$S\f$ and \f$V \setminus S\f$.
+   *
+   * @param graph a stag::LocalGraph object representing \f$G\f$.
+   * @param cluster a vector of node IDs in \f$S\f$.
+   * @return the conductance \f$\phi_G(S)\f$.
+   */
+  double conductance(stag::LocalGraph* graph,
+                     std::vector<stag_int>& cluster);
 }
 
 #endif //STAG_TEST_CLUSTER_H

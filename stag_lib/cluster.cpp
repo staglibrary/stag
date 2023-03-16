@@ -3,6 +3,7 @@
 // license.
 //
 #include <vector>
+#include <set>
 #include <deque>
 #include <unordered_set>
 #include <stdexcept>
@@ -367,4 +368,34 @@ double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
   stag_int nC2 = nChoose2(n);
 
   return (c1 - ((double) (c2 * c3) / nC2)) / (((double) (c2 + c3)/2) - ((double) (c2 * c3)/nC2));
+}
+
+double stag::conductance(stag::LocalGraph* graph, std::vector<stag_int>& cluster) {
+  // We need to efficiently check whether a given node is in the cluster.
+  // For this purpose, convert the list of cluster nodes into a set.
+  std::set<stag_int> cluster_set(cluster.begin(), cluster.end());
+
+  // For each node in the cluster, we will query its neighbours, and update
+  // the numerator and denominator of the conductance formula.
+  double cut = 0;
+  double volume = 0;
+  for (auto v : cluster) {
+    std::vector<stag::edge> neighbors = graph->neighbors(v);
+    double this_deg = 0;
+    for (stag::edge e : neighbors) {
+      this_deg += e.weight;
+
+      // Check whether the neighbor of v is in the set
+      if (!cluster_set.count(e.v2)) {
+        // v2 is not in the cluster - add this weight to the cut
+        cut += e.weight;
+      }
+    }
+    volume += this_deg;
+  }
+
+  // Check for a divide-by-zero: volume of a set with volume 0 is defined to be
+  // 0.
+  if (volume == 0) return 0;
+  else return cut / volume;
 }
