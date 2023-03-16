@@ -38,12 +38,13 @@ AdjacencyList File Format
 In an AdjacencyList file, each line in the file corresponds to one node in
 the graph.
 A line consists of the node ID, followed by a list of adjacent nodes.
+The node IDs at the beginning of each line must be sorted in increasing order.
 For example, here is a simple AdjacencyList file.
 
 ~~~~~~
 # This is a comment
 0: 1 2
-1: 0 2 3
+1: 0 3 2
 2: 0 1
 3: 1
 ~~~~~~
@@ -61,6 +62,7 @@ The following example shows how to specify the weight of each edge.
 
 Here, the node with ID `1` has an edge of weight `0.5` to node `0` and an edge
 of weight `1` to node `2`.
+
 
 Working with Files
 ------------------
