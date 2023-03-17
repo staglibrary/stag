@@ -403,7 +403,15 @@ void stag::sort_edgelist(std::string &filename) {
                                  new_interval_min_id,
                                  new_interval_max_id});
       }
+    }
 
+    // If the final interval does not include the last lines of the file, we
+    // need to output them verbatim.
+    while (current_input_line < num_lines - 1) {
+      stag::safeGetline(ifs, line);
+      current_input_line++;
+      os << line << std::endl;
+      current_output_line++;
     }
 
     // Update the intervals
