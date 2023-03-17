@@ -89,6 +89,31 @@ jobs:
           name: shared-library-macos
           path: cmake-build-release/stag_lib/stag.so
 
+  Test-Macos:
+    runs-on: macos-latest
+    needs: Build-Macos
+    env:
+      LD_LIBRARY_PATH: ${{ github.workspace }}/stag_lib
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@master
+        with:
+          name: test-binary-macos
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: shared-library-macos
+          path: stag_lib/
+      - run: chmod +x stagt
+      - name: Run Tests
+        run: ./stagt
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            test-binary-macos
+            shared-library-macos
+
   Build-Windows:
     runs-on: windows-latest
     steps:
