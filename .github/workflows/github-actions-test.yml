@@ -146,7 +146,9 @@ jobs:
           name: test-binary-windows
           path: .
       - name: Run Tests
-        run: stagt_static.exe
+        run: |
+          dir
+          stagt_static.exe
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: |
