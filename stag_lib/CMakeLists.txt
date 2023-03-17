@@ -27,6 +27,9 @@ set(SOURCE_FILES
         KMeansRex/KMeansRexCore.cpp
         )
 
+# Generate correct files on windows
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 # Find and include the Eigen library
 find_package(Eigen3 3.1 REQUIRED)
 message(STATUS "[stag] Found Eigen: ${EIGEN3_INCLUDE_DIR}")
