@@ -57,7 +57,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Install Eigen
-        run: sudo apt-get install -y libeigen3-dev
+        run: |
+          cd 'C:\Program Files\'
+          wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip eigen-3.4.0.zip
+          mv .\eigen-3.4.0\ eigen3
       - name: Install Spectra
         run: |
           wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
@@ -72,11 +76,11 @@ jobs:
       - run: cmake --build cmake-build-release --target stagt
       - uses: actions/upload-artifact@master
         with:
-          name: test-binary
+          name: test-binary-windows
           path: cmake-build-release/stagt
       - uses: actions/upload-artifact@master
         with:
-          name: shared-library
+          name: shared-library-windows
           path: cmake-build-release/stag_lib/stag.so
 
   Docs:
