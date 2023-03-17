@@ -57,15 +57,25 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Install Eigen
-        run: sudo apt-get install -y libeigen3-dev
+        run: |
+          curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip eigen-3.4.0.zip
+          cd eigen-3.4.0
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --target install
+          cd ..\..
       - name: Install Spectra
         run: |
-          wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
-          tar xzvf v1.0.1.tar.gz
-          cd spectra-1.0.1/
-          mkdir build && cd build
+          curl --output v1.0.1.zip -L0 https://github.com/yixuan/spectra/archive/v1.0.1.zip
+          unzip v1.0.1.zip
+          cd spectra-1.0.1
+          mkdir build
+          cd build
           cmake ..
-          sudo make all && sudo make install
+          cmake --build . --target install
+          cd ..\..
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
