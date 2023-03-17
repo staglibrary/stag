@@ -147,8 +147,7 @@ jobs:
           path: .
       - name: Run Tests
         run: |
-          dir
-          stagt_static.exe
+          .\stagt_static.exe
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: |
