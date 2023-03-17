@@ -29,12 +29,14 @@ set(SOURCE_FILES
 
 # Find and include the Eigen library
 find_package(Eigen3 3.1 REQUIRED)
-message(STATUS "[stag] Found Eigen!")
+message(STATUS "[stag] Found Eigen: ${EIGEN3_INCLUDE_DIR}")
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 # Find and include the Spectra library
 find_package(Spectra 1.0.1 REQUIRED)
-message(STATUS "[stag] Found Spectra!")
+get_property(SPECTRA_INCLUDE_DIR TARGET Spectra::Spectra
+             PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "[stag] Found Spectra: ${SPECTRA_INCLUDE_DIR}")
 include_directories(${SPECTRA_INCLUDE_DIR})
 
 #####################################
