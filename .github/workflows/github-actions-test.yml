@@ -79,15 +79,11 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
-      - run: cmake --build cmake-build-release --target stagt
+      - run: cmake --build cmake-build-release --target stagt_static
       - uses: actions/upload-artifact@master
         with:
           name: test-binary-windows
-          path: cmake-build-release/stagt
-      - uses: actions/upload-artifact@master
-        with:
-          name: shared-library-windows
-          path: cmake-build-release/stag_lib/stag.so
+          path: cmake-build-release/stagt_static.exe
 
   Docs:
     runs-on: ubuntu-latest
