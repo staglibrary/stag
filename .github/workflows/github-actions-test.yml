@@ -65,7 +65,7 @@ jobs:
           cd build
           cmake ..
           cmake --build . --target install
-          cd ..\..
+          cd ../..
       - name: Install Spectra
         run: |
           curl --output v1.0.1.zip -L0 https://github.com/yixuan/spectra/archive/v1.0.1.zip
@@ -75,7 +75,7 @@ jobs:
           cd build
           cmake ..
           cmake --build . --target install
-          cd ..\..
+          cd ../..
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
