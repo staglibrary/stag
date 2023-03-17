@@ -53,6 +53,32 @@ jobs:
             test-binary-linux
             shared-library-linux
 
+  Build-Macos:
+    runs-on: macos-latest
+    steps:
+      - name: Install Eigen
+        run: sudo apt-get install -y libeigen3-dev
+      - name: Install Spectra
+        run: |
+          wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
+          tar xzvf v1.0.1.tar.gz
+          cd spectra-1.0.1/
+          mkdir build && cd build
+          cmake ..
+          sudo make all && sudo make install
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build cmake-build-release --target stagt
+      - uses: actions/upload-artifact@master
+        with:
+          name: test-binary-macos
+          path: cmake-build-release/stagt
+      - uses: actions/upload-artifact@master
+        with:
+          name: shared-library-macos
+          path: cmake-build-release/stag_lib/stag.so
+
   Build-Windows:
     runs-on: windows-latest
     steps:
@@ -100,8 +126,7 @@ jobs:
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: |
-            test-binary-linux
-            shared-library-linux
+            test-binary-windows
 
   Docs:
     runs-on: ubuntu-latest
