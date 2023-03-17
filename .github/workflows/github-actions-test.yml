@@ -30,7 +30,7 @@ jobs:
 
   Test-Linux:
     runs-on: ubuntu-latest
-    needs: Build
+    needs: Build-Linux
     env:
       LD_LIBRARY_PATH: ${{ github.workspace }}/stag_lib
     steps:
