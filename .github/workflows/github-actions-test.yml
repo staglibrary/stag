@@ -83,7 +83,7 @@ jobs:
       - uses: actions/upload-artifact@master
         with:
           name: test-binary-windows
-          path: cmake-build-release/stagt_static.exe
+          path: cmake-build-release/Debug/stagt_static.exe
 
   Test-Windows:
     runs-on: windows-latest
