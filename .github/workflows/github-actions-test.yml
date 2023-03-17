@@ -71,8 +71,11 @@ jobs:
           cd 'C:\Program Files\'
           curl --output v1.0.1.zip -L0 https://github.com/yixuan/spectra/archive/v1.0.1.zip
           unzip v1.0.1.zip
-          cp -r spectra-1.0.1\include\Spectra .
-          set Spectra_ROOT='C:\Program Files\Spectra'
+          cd spectra-1.0.1
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --target install
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
