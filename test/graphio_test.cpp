@@ -246,6 +246,14 @@ TEST(GraphioTest, Conversions) {
   stag::adjacencylist_to_edgelist(adjacencylist_filename, edgelist_filename);
   newGraph = stag::load_edgelist(edgelist_filename);
   EXPECT_EQ(testGraph, newGraph);
+
+  // We have seen problems with the test3.edgelist file.
+  // Make sure the conversion works.
+  edgelist_filename = "test/data/test3.edgelist";
+  stag::edgelist_to_adjacencylist(edgelist_filename, adjacencylist_filename);
+  testGraph = stag::load_edgelist(edgelist_filename);
+  newGraph = stag::load_adjacencylist(adjacencylist_filename);
+  EXPECT_EQ(testGraph, newGraph);
 }
 
 TEST(GraphioTest, CopyEdgelist) {
