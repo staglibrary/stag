@@ -55,16 +55,15 @@ set_target_properties(stag PROPERTIES PUBLIC_HEADER "${STAG_PUBLIC_HEADERS}")
 add_library(stag_static STATIC $<TARGET_OBJECTS:stag_object>)
 
 # Configure the compiler options to error on warnings
-string(
-    APPEND _compiler_opts
-    "$<IF:$<CXX_COMPILER_ID:MSVC>,"
-        "/W4,"
-        "-Wall -Wextra -Werror"
-    ">"
-)
-target_compile_options(stag_object PRIVATE "${_compiler_opts}")
-target_compile_options(stag PRIVATE "${_compiler_opts}")
-target_compile_options(stag_static PRIVATE "${_compiler_opts}")
+if(MSVC)
+    set(_COMPILE_OPTS /W4)
+else()
+    set(_COMPILE_OPTS -Werror -Wall -Wextra)
+endif()
+message(STATUS "[stag] Set compiler options: ${_COMPILE_OPTS}")
+target_compile_options(stag_object PRIVATE "${_COMPILE_OPTS}")
+target_compile_options(stag PRIVATE "${_COMPILE_OPTS}")
+target_compile_options(stag_static PRIVATE "${_COMPILE_OPTS}")
 
 ######################################
 # Install
