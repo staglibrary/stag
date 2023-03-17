@@ -62,12 +62,14 @@ jobs:
           curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
           unzip eigen-3.4.0.zip
           mv .\eigen-3.4.0\ eigen3
+          set Eigen3_ROOT='C:\Program Files\eigen3'
       - name: Install Spectra
         run: |
           cd 'C:\Program Files\'
           curl --output v1.0.1.zip -L0 https://github.com/yixuan/spectra/archive/v1.0.1.zip
           unzip v1.0.1.zip
           cp -r spectra-1.0.1\include\Spectra .
+          set Spectra_ROOT='C:\Program Files\Spectra'
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
