@@ -56,8 +56,6 @@ jobs:
   Build-Macos:
     runs-on: macos-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
       - name: Install Eigen
         run: |
           curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
@@ -78,6 +76,8 @@ jobs:
           cmake ..
           cmake --build . --target install
           cd ../..
+      - name: Check out repository code
+        uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build cmake-build-release --target stagt_static
       - uses: actions/upload-artifact@master
@@ -106,8 +106,6 @@ jobs:
   Build-Windows:
     runs-on: windows-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
       - name: Install Eigen
         run: |
           curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
@@ -128,6 +126,8 @@ jobs:
           cmake ..
           cmake --build . --target install
           cd ..\..
+      - name: Check out repository code
+        uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build cmake-build-release --target stagt_static
       - uses: actions/upload-artifact@master
