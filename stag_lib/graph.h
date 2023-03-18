@@ -17,6 +17,7 @@
 #include <Eigen/Sparse>
 #include <vector>
 #include <fstream>
+#include <unordered_map>
 
 
 /**

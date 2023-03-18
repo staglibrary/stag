@@ -1,8 +1,8 @@
 
-name: Build
+name: Test
 on: [push]
 jobs:
-  Build:
+  Build-Linux:
     runs-on: ubuntu-latest
     steps:
       - name: Install Eigen
@@ -21,12 +21,137 @@ jobs:
       - run: cmake --build cmake-build-release --target stagt
       - uses: actions/upload-artifact@master
         with:
-          name: test-binary
+          name: test-binary-linux
           path: cmake-build-release/stagt
       - uses: actions/upload-artifact@master
         with:
-          name: shared-library
+          name: shared-library-linux
           path: cmake-build-release/stag_lib/stag.so
+
+  Test-Linux:
+    runs-on: ubuntu-latest
+    needs: Build-Linux
+    env:
+      LD_LIBRARY_PATH: ${{ github.workspace }}/stag_lib
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@master
+        with:
+          name: test-binary-linux
+          path: .
+      - uses: actions/download-artifact@master
+        with:
+          name: shared-library-linux
+          path: stag_lib/
+      - run: chmod +x stagt
+      - name: Run Tests
+        run: ./stagt
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            test-binary-linux
+            shared-library-linux
+
+  Build-Macos:
+    runs-on: macos-latest
+    steps:
+      - name: Install Eigen
+        run: |
+          curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip eigen-3.4.0.zip
+          cd eigen-3.4.0
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --target install
+          cd ../..
+      - name: Install Spectra
+        run: |
+          curl --output v1.0.1.zip -L0 https://github.com/yixuan/spectra/archive/v1.0.1.zip
+          unzip v1.0.1.zip
+          cd spectra-1.0.1
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --target install
+          cd ../..
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build cmake-build-release --target stagt_static
+      - uses: actions/upload-artifact@master
+        with:
+          name: test-binary-macos
+          path: cmake-build-release/stagt_static
+
+  Test-Macos:
+    runs-on: macos-latest
+    needs: Build-Macos
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@master
+        with:
+          name: test-binary-macos
+          path: .
+      - run: chmod +x stagt_static
+      - name: Run Tests
+        run: ./stagt_static
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            test-binary-macos
+
+  Build-Windows:
+    runs-on: windows-latest
+    steps:
+      - name: Install Eigen
+        run: |
+          curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip eigen-3.4.0.zip
+          cd eigen-3.4.0
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --target install
+          cd ..\..
+      - name: Install Spectra
+        run: |
+          curl --output v1.0.1.zip -L0 https://github.com/yixuan/spectra/archive/v1.0.1.zip
+          unzip v1.0.1.zip
+          cd spectra-1.0.1
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --target install
+          cd ..\..
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build cmake-build-release --target stagt_static
+      - uses: actions/upload-artifact@master
+        with:
+          name: test-binary-windows
+          path: cmake-build-release/Debug/stagt_static.exe
+
+  Test-Windows:
+    runs-on: windows-latest
+    needs: Build-Windows
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@master
+        with:
+          name: test-binary-windows
+          path: .
+      - name: Run Tests
+        run: |
+          .\stagt_static.exe
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            test-binary-windows
 
   Docs:
     runs-on: ubuntu-latest
@@ -53,28 +178,3 @@ jobs:
         run: |
           cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
           cmake --build cmake-build-release --target Documentation
-
-  Test:
-    runs-on: ubuntu-latest
-    needs: Build
-    env:
-      LD_LIBRARY_PATH: ${{ github.workspace }}/stag_lib
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - uses: actions/download-artifact@master
-        with:
-          name: test-binary
-          path: .
-      - uses: actions/download-artifact@master
-        with:
-          name: shared-library
-          path: stag_lib/
-      - run: chmod +x stagt
-      - name: Run Tests
-        run: ./stagt
-      - uses: geekyeggo/delete-artifact@v1
-        with:
-          name: |
-            test-binary
-            shared-library

@@ -4,6 +4,7 @@
 //
 #include <stdexcept>
 #include <fstream>
+#include <unordered_map>
 #include "graph.h"
 #include "utility.h"
 #include "graphio.h"

@@ -37,6 +37,12 @@ endif()
 find_package(Eigen3 3.1 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+# Find and include the Spectra library
+find_package(Spectra 1.0.1 REQUIRED)
+get_property(SPECTRA_INCLUDE_DIR TARGET Spectra::Spectra
+        PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+include_directories(${SPECTRA_INCLUDE_DIR})
+
 # Google test
 enable_testing()
 
@@ -59,6 +65,22 @@ target_link_libraries(
         stagt
         GTest::gtest_main
         stag
+)
+
+add_executable(
+        stagt_static EXCLUDE_FROM_ALL
+        test/graph_test.cpp
+        test/stag_test.cpp
+        test/utility_test.cpp
+        test/graphio_test.cpp
+        test/random_test.cpp
+        test/cluster_test.cpp
+        test/spectrum_test.cpp)
+
+target_link_libraries(
+        stagt_static
+        GTest::gtest_main
+        stag_static
 )
 
 # Add the test data files - these need to be copied to the binary directory for the testing application to work

@@ -133,10 +133,16 @@ void sample_edges_binomial(SprsMat* adj_mat,
   if (this_cluster_start_idx == other_cluster_start_idx) max_edges /= 2;
   double expected_num_edges = p * ((double) max_edges);
 
+  // If the exppected number of edges is 0, don't do anything
+  if (expected_num_edges < 1) {
+    return;
+  }
+
   // Prepare the random number generator. We will approximate the binomial
   // distribution with the normal distribution
   std::random_device dev;
   std::mt19937 prng(dev());
+  assert(sqrt(1 - p) * expected_num_edges > 0);
   std::normal_distribution<double> numEdgesDist(expected_num_edges,
                                                 sqrt((1 - p) * expected_num_edges));
   std::uniform_int_distribution<stag_int> thisVertexDist(0, this_cluster_vertices - 1);
