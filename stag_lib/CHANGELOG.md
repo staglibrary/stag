@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - [Issue #92](https://github.com/staglibrary/stag/issues/92): Method for calculating the symmetric difference
-- [Issue #94](https://github.com/staglibrary/stag/issues/94): Compute the connected component corresponding to any vertex
+- [Issue #94](https://github.com/staglibrary/stag/issues/94): Compute the connected components of a graph
 
 ### Fixed
 - [Issue #87](https://github.com/staglibrary/stag/issues/87): Occasional bug with sorting edgelist file

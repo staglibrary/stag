@@ -459,6 +459,18 @@ TEST(ClusterTest, ConnComp) {
   std::sort(comp.begin(), comp.end());
   expected_comp = {5, 6, 7, 8, 9};
   EXPECT_EQ(comp, expected_comp);
+
+  // Find the connected components by the full decomposition algorithm
+  std::vector<std::vector<stag_int>> components = stag::connected_components(
+      &testGraph);
+  comp = components.at(0);
+  std::sort(comp.begin(), comp.end());
+  expected_comp = {0, 1, 2, 3, 4};
+  EXPECT_EQ(comp, expected_comp);
+  comp = components.at(1);
+  std::sort(comp.begin(), comp.end());
+  expected_comp = {5, 6, 7, 8, 9};
+  EXPECT_EQ(comp, expected_comp);
 }
 
 TEST(ClusterTest, ConnCompALLG){

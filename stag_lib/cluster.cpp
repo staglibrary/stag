@@ -423,7 +423,7 @@ std::vector<stag_int> stag::symmetric_difference(std::vector<stag_int> &S,
 //------------------------------------------------------------------------------
 // Find connected components
 //------------------------------------------------------------------------------
-std::vector<stag_int> stag::connected_component(stag::LocalGraph *g,
+std::vector<stag_int> stag::connected_component(stag::LocalGraph* g,
                                                 stag_int v) {
   // We track the connected component as both a set and a vector for efficient
   // algorithm.
@@ -452,4 +452,27 @@ std::vector<stag_int> stag::connected_component(stag::LocalGraph *g,
 
   // Return the component that we found
   return component_vec;
+}
+
+std::vector<std::vector<stag_int>> stag::connected_components(
+    stag::Graph* g) {
+  // The components to be returned
+  std::vector<std::vector<stag_int>> components;
+
+  // Keep track of the vertices which we've already found
+  std::unordered_set<stag_int> found_vertices;
+
+  for (stag_int v = 0; v < g->number_of_vertices(); v++) {
+    // If this vertex has not been returned as part of one of the connected
+    // components yet, then we find the connected component containing it.
+    if (!found_vertices.contains(v)) {
+      std::vector<stag_int> this_component = stag::connected_component(g, v);
+      components.push_back(this_component);
+
+      // Track that we've visited every node in the newly found component.
+      for (auto idx : this_component) found_vertices.insert(idx);
+    }
+  }
+
+  return components;
 }

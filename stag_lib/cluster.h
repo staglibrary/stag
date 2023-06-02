@@ -184,12 +184,20 @@ namespace stag {
    *
    * The returned vector is not sorted.
    *
-   * @param g a LocalGraph instance
+   * @param g a stag::LocalGraph instance
    * @param v a vertex of the graph
    * @return a vector containing the vertex ids of every vertex in the
    *         connected component corresponding to v
    */
   std::vector<stag_int> connected_component(stag::LocalGraph* g, stag_int v);
+
+  /**
+   * Return a vector of the connected components in the specified graph.
+   *
+   * @param g a stag::Graph instance
+   * @return a vector containing the connected components of the graph
+   */
+  std::vector<std::vector<stag_int>> connected_components(stag::Graph* g);
 
   /**
    * Compute the Adjusted Rand Index between two label vectors.
