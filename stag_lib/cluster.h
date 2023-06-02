@@ -226,8 +226,8 @@ namespace stag {
    * @return a vector containing the integers in the symmetric difference of S
    *         and T.
    */
-  std::vector<stag_int>& symmetric_difference(std::vector<stag_int>& S,
-                                              std::vector<stag_int>& T);
+  std::vector<stag_int> symmetric_difference(std::vector<stag_int>& S,
+                                             std::vector<stag_int>& T);
 }
 
 #endif //STAG_TEST_CLUSTER_H
