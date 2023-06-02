@@ -210,6 +210,27 @@ namespace stag {
    */
   double conductance(stag::LocalGraph* graph,
                      std::vector<stag_int>& cluster);
+
+  /**
+   * Compute the symmetric difference of two sets of integers.
+   *
+   * Given sets \f$S\f$ and \f$T\f$, the symmetric difference
+   * \f$S \triangle T\f$ is defined to be
+   *
+   * \f[
+   *    S \triangle T = \{S \setminus T\} \cup \{T \setminus S\}.
+   * \f]
+   *
+   * Although \f$S\f$ and \f$T\f$ are provided as vectors, they are treated
+   * as sets and any duplicates will be ignored.
+   *
+   * @param S a vector containing the first set of integers
+   * @param T a vector containina the second set of integers
+   * @return a vector containing the integers in the symmetric difference of S
+   *         and T.
+   */
+  std::vector<stag_int> symmetric_difference(std::vector<stag_int>& S,
+                                             std::vector<stag_int>& T);
 }
 
 #endif //STAG_TEST_CLUSTER_H
