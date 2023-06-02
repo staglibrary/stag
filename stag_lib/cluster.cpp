@@ -419,3 +419,37 @@ std::vector<stag_int> stag::symmetric_difference(std::vector<stag_int> &S,
                                 std::back_inserter(symmetric_difference));
   return symmetric_difference;
 }
+
+//------------------------------------------------------------------------------
+// Find connected components
+//------------------------------------------------------------------------------
+std::vector<stag_int> stag::connected_component(stag::LocalGraph *g,
+                                                stag_int v) {
+  // We track the connected component as both a set and a vector for efficient
+  // algorithm.
+  std::unordered_set<stag_int> component_set = {v};
+  std::vector<stag_int> component_vec = {v};
+  std::vector<stag_int> frontier = {v};
+
+  // Perform a breadth-first search from v, adding all discovered nodes to the
+  // connected component to return.
+  while (!frontier.empty()) {
+    // Pop the next vertex to search off the back of the frontier.
+    stag_int this_vertex = frontier.back();
+    frontier.pop_back();
+
+    // Iterate through the neighbours of this vertex
+    for (auto n : g->neighbors_unweighted(this_vertex)) {
+      // If we have not seen the neighbour before, add it to the connected
+      // component, and the frontier of the search.
+      if (component_set.find(n) == component_set.end()) {
+        component_set.insert(n);
+        component_vec.push_back(n);
+        frontier.push_back(n);
+      }
+    }
+  }
+
+  // Return the component that we found
+  return component_vec;
+}

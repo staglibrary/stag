@@ -176,6 +176,22 @@ namespace stag {
                                               SprsMat& vec);
 
   /**
+   * Return the vertex indices of every vertex in the same connected
+   * component as the specified vertex.
+   *
+   * The running time of this method is proportional to the size of the returned
+   * connected component.
+   *
+   * The returned vector is not sorted.
+   *
+   * @param g a LocalGraph instance
+   * @param v a vertex of the graph
+   * @return a vector containing the vertex ids of every vertex in the
+   *         connected component corresponding to v
+   */
+  std::vector<stag_int> connected_component(stag::LocalGraph* g, stag_int v);
+
+  /**
    * Compute the Adjusted Rand Index between two label vectors.
    *
    * @param gt_labels the ground truth labels for the dataset
