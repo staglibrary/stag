@@ -402,14 +402,20 @@ double stag::conductance(stag::LocalGraph* graph, std::vector<stag_int>& cluster
 
 std::vector<stag_int> stag::symmetric_difference(std::vector<stag_int> &S,
                                                  std::vector<stag_int> &T) {
+  // For the later steps, we assume that the vectors are sorted
   std::sort(S.begin(), S.end());
   std::sort(T.begin(), T.end());
 
-  std::vector<stag_int> symmetric_difference;
+  // Remove duplicates from the vectors
+  auto last_idx = std::unique(S.begin(), S.end());
+  S.erase(last_idx, S.end());
+  last_idx = std::unique(T.begin(), T.end());
+  T.erase(last_idx, T.end());
 
+  // Compute and return the symmetric difference
+  std::vector<stag_int> symmetric_difference;
   std::set_symmetric_difference(S.begin(), S.end(),
                                 T.begin(), T.end(),
                                 std::back_inserter(symmetric_difference));
-
   return symmetric_difference;
 }

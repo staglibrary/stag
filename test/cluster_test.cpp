@@ -406,7 +406,7 @@ TEST(ClusterTest, Conductance) {
   EXPECT_EQ(cond, 0);
 }
 
-TEST(CLusterTest, ConductanceArguments) {
+TEST(ClusterTest, ConductanceArguments) {
   // Construct a test graph
   std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
   std::vector<stag_int> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
@@ -416,4 +416,29 @@ TEST(CLusterTest, ConductanceArguments) {
   // Negative integers in the cluster should throw an argument exception
   std::vector<stag_int> cluster = {0, -1};
   EXPECT_THROW(stag::conductance(&testGraph, cluster), std::invalid_argument);
+}
+
+TEST(ClusterTest, SymmetricDifference) {
+  // Construct some sets
+  std::vector<stag_int> S = {0, 3, 2, 6};
+  std::vector<stag_int> T = {3, 1, 5, 2};
+
+  // Compute the symmetric difference
+  std::vector<stag_int> calculated_difference = stag::symmetric_difference(S, T);
+  std::vector<stag_int> expected_difference = {0, 1, 5, 6};
+  EXPECT_EQ(calculated_difference, expected_difference);
+
+  // If a value appears twice, the duplicates should be ignored
+  S.push_back(3);
+  calculated_difference = stag::symmetric_difference(S, T);
+  EXPECT_EQ(calculated_difference, expected_difference);
+  T.push_back(5);
+  calculated_difference = stag::symmetric_difference(S, T);
+  EXPECT_EQ(calculated_difference, expected_difference);
+
+  // If one of the vectors is empty, then the symmetric difference is equal
+  // to the non-empty vector.
+  S.clear();
+  calculated_difference = stag::symmetric_difference(S, T);
+  EXPECT_EQ(calculated_difference, T);
 }

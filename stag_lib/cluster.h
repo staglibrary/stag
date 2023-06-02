@@ -221,6 +221,9 @@ namespace stag {
    *    S \triangle T = \{S \setminus T\} \cup \{T \setminus S\}.
    * \f]
    *
+   * Although \f$S\f$ and \f$T\f$ are provided as vectors, they are treated
+   * as sets and any duplicates will be ignored.
+   *
    * @param S a vector containing the first set of integers
    * @param T a vector containina the second set of integers
    * @return a vector containing the integers in the symmetric difference of S
