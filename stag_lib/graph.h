@@ -376,6 +376,8 @@ namespace stag {
        /**
         * Construct and return a subgraph of this graph.
         *
+        * Note that the vertex indices will be changed in the subgraph.
+        *
         * @param vertices the vertices in the induced subgraph
         * @return a new stag::Graph object representing the subgraph induced by
         *         the given vertices
