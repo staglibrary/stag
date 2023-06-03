@@ -7,6 +7,7 @@
 #include <deque>
 #include <unordered_set>
 #include <stdexcept>
+#include <cmath>
 #include <algorithm>
 #include <Eigen/Sparse>
 #include <graph.h>
@@ -306,9 +307,9 @@ stag_int nChoose2(stag_int n)
   return n * (n-1) / 2;
 }
 
-double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
-                                 std::vector<stag_int>& labels) {
-  stag_int n = gt_labels.size();
+Eigen::MatrixXi contingency_table(std::vector<stag_int>& gt_labels,
+                                  std::vector<stag_int>& labels) {
+  auto n = (stag_int) gt_labels.size();
   if ((stag_int) labels.size() != n) {
     throw std::invalid_argument("Label vectors must be the same size.");
   }
@@ -328,16 +329,11 @@ double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
     }
   }
 
-  // Start by constructing the k by k contingency table
-  // and the sizes of every cluster
-  Eigen::VectorXi gt_sizes(k);
-  Eigen::VectorXi label_sizes(k);
+  // Construct the k by k contingency table
   Eigen::MatrixXi contingency(k, k);
 
   // Initialize everything to 0
   for (auto i = 0; i < k; i++) {
-    gt_sizes(i) = 0;
-    label_sizes(i) = 0;
     for (auto j = 0; j < k; j++) {
       contingency(i, j) = 0;
     }
@@ -345,9 +341,30 @@ double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
 
   for (auto i = 0; i < n; i++) {
     contingency(gt_labels.at(i), labels.at(i))++;
-    gt_sizes(gt_labels.at(i))++;
-    label_sizes(labels.at(i))++;
   }
+
+  return contingency;
+}
+
+std::unordered_map<stag_int, stag_int> compute_cluster_sizes(
+    std::vector<stag_int>& labels){
+  std::unordered_map<stag_int, stag_int> cluster_sizes;
+  for (stag_int l : labels) {
+    cluster_sizes[l]++;
+  }
+  return cluster_sizes;
+}
+
+double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
+                                 std::vector<stag_int>& labels) {
+  auto n = (stag_int) gt_labels.size();
+
+  // Start by constructing the k by k contingency table
+  // and the sizes of every cluster
+  std::unordered_map<stag_int, stag_int> gt_sizes = compute_cluster_sizes(gt_labels);
+  std::unordered_map<stag_int, stag_int> label_sizes = compute_cluster_sizes(labels);
+  Eigen::MatrixXi contingency = contingency_table(gt_labels, labels);
+  stag_int k = contingency.rows();
 
   // Now compute three components of the ARI
   // See https://stats.stackexchange.com/questions/207366/calculating-the-adjusted-rand-index.
@@ -361,13 +378,62 @@ double stag::adjusted_rand_index(std::vector<stag_int>& gt_labels,
   stag_int c2 = 0;
   stag_int c3 = 0;
   for (auto i = 0; i < k; i++) {
-    c2 += nChoose2(gt_sizes(i));
-    c3 += nChoose2(label_sizes(i));
+    c2 += nChoose2(gt_sizes[i]);
+    c3 += nChoose2(label_sizes[i]);
   }
 
   stag_int nC2 = nChoose2(n);
 
   return (c1 - ((double) (c2 * c3) / nC2)) / (((double) (c2 + c3)/2) - ((double) (c2 * c3)/nC2));
+}
+
+double entropy(std::vector<stag_int>& labels){
+  // The entropy of a clustering is defined to be
+  //   H(U) = sum p_i log(p_i)
+  // where p_i = |C_i| / N is the proportion of the items in the ith cluster.
+  auto N = (double) labels.size();
+
+  // We will build a map of cluster IDs to the number of elements in that
+  // cluster
+  std::unordered_map<stag_int, stag_int> cluster_sizes =
+      compute_cluster_sizes(labels);
+
+  // Compute the entropy
+  double entropy = 0;
+  for (auto& it : cluster_sizes) {
+    entropy += ((double) it.second / N) * std::log2(N / (double) it.second);
+  }
+  return entropy;
+}
+
+double stag::mutual_information(std::vector<stag_int> &gt_labels,
+                                std::vector<stag_int> &labels) {
+  // Start by constructing the k by k contingency table
+  // and the sizes of every cluster
+  std::unordered_map<stag_int, stag_int> gt_sizes = compute_cluster_sizes(gt_labels);
+  std::unordered_map<stag_int, stag_int> label_sizes = compute_cluster_sizes(labels);
+  Eigen::MatrixXi contingency = contingency_table(gt_labels, labels);
+  stag_int k = contingency.rows();
+  auto N = (double) labels.size();
+
+  // Compute the MI
+  double mi = 0;
+  for (stag_int k1 = 0; k1 < k; k1++) {
+    for (stag_int k2 = 0; k2 < k; k2++) {
+      mi += (contingency(k1, k2) / N) * std::log2((N * contingency(k1, k2)) /
+          ((double) gt_sizes[k1] * (double) label_sizes[k2]));
+    }
+  }
+  return mi;
+}
+
+double stag::normalised_mutual_information(std::vector<stag_int> &gt_labels,
+                                           std::vector<stag_int> &labels) {
+  double mi = mutual_information(gt_labels, labels);
+  double gt_entropy = entropy(gt_labels);
+  double label_entropy = entropy(labels);
+  double mean_entropy = (gt_entropy + label_entropy) / 2;
+  return mi / mean_entropy;
 }
 
 double stag::conductance(stag::LocalGraph* graph, std::vector<stag_int>& cluster) {

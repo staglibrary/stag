@@ -191,6 +191,31 @@ namespace stag {
                              std::vector<stag_int>& labels);
 
   /**
+   * Compute the Mutual Information between two label vectors.
+   *
+   * @param gt_labels the ground truth labels for the dataset
+   * @param labels the candidate labels whose MI should be calculated
+   * @return the MI between the two labels vectors
+   */
+  double mutual_information(std::vector<stag_int>& gt_labels,
+                            std::vector<stag_int>& labels);
+
+  /**
+   * Compute the Normalised Mutual Information between two label vectors.
+   *
+   * @param gt_labels the ground truth labels for the dataset
+   * @param labels the candidate labels whose NMI should be calculated
+   * @return the NMI between the two labels vectors
+   *
+   * \par References
+   * Vinh, Epps, and Bailey, (2009).
+   * Information theoretic measures for clusterings comparison.
+   * 26th Annual International Conference on Machine Learning (ICML ‘09).
+   */
+  double normalised_mutual_information(std::vector<stag_int>& gt_labels,
+                                       std::vector<stag_int>& labels);
+
+  /**
    * Compute the conductance of the given cluster in a graph.
    *
    * Given a graph \f$G = (V, E)\f$, the conductance of \f$S \subseteq V\f$
