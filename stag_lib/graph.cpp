@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <fstream>
 #include <unordered_map>
+#include <unordered_set>
+#include <set>
 #include "graph.h"
 #include "utility.h"
 #include "graphio.h"
@@ -207,6 +209,37 @@ std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
 
 bool stag::Graph::vertex_exists(stag_int v) {
   return v >= 0 && v < number_of_vertices_;
+}
+
+stag::Graph stag::Graph::subgraph(std::vector<stag_int>& vertices) {
+  // Convert the vector of vertices to a set, and construct the map from old
+  // vertex ID to the new one.
+  std::unordered_set<stag_int> vertex_set;
+  std::unordered_map<stag_int, stag_int> old_to_new_id;
+  stag_int next_id = 0;
+  for (stag_int v : vertices) {
+    if (!vertex_set.contains(v)) {
+      vertex_set.insert(v);
+      old_to_new_id.insert({v, next_id});
+      next_id++;
+    }
+  }
+
+  // Construct the non-zero entries in the new adjacency matrix
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int v : vertex_set) {
+    for (stag::edge e : neighbors(v)) {
+      if (e.v2 > v && vertex_set.contains(e.v2)) {
+        non_zero_entries.emplace_back(
+            old_to_new_id[v], old_to_new_id[e.v2], e.weight);
+      }
+    }
+  }
+
+  // Construct the final adjacency matrix
+  SprsMat adj_mat((stag_int) vertex_set.size(), (stag_int) vertex_set.size());
+  adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
 }
 
 //------------------------------------------------------------------------------
@@ -555,11 +588,6 @@ bool stag::AdjacencyListLocalGraph::vertex_exists(stag_int v) {
 stag::AdjacencyListLocalGraph::~AdjacencyListLocalGraph() {
   is_.close();
 }
-
-//------------------------------------------------------------------------------
-// Local Graph Non-abstract methods
-//------------------------------------------------------------------------------
-
 
 //------------------------------------------------------------------------------
 // Standard Graph Constructors
