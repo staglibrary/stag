@@ -373,6 +373,17 @@ namespace stag {
        */
        stag_int number_of_edges() const;
 
+       /**
+        * Construct and return a subgraph of this graph.
+        *
+        * Note that the vertex indices will be changed in the subgraph.
+        *
+        * @param vertices the vertices in the induced subgraph
+        * @return a new stag::Graph object representing the subgraph induced by
+        *         the given vertices
+        */
+       Graph subgraph(std::vector<stag_int>& vertices);
+
        // Override the abstract methods in the LocalGraph base class.
        double degree(stag_int v) override;
        stag_int degree_unweighted(stag_int v) override;

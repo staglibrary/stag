@@ -442,3 +442,49 @@ TEST(ClusterTest, SymmetricDifference) {
   calculated_difference = stag::symmetric_difference(S, T);
   EXPECT_EQ(calculated_difference, T);
 }
+
+TEST(ClusterTest, ConnComp) {
+  // Create a disconnected graph
+  stag_int n = 10;
+  stag_int k = 2;
+  stag::Graph testGraph = stag::sbm(n, k, 1, 0);
+
+  // Check the connected components
+  std::vector<stag_int> comp = stag::connected_component(&testGraph, 0);
+  std::sort(comp.begin(), comp.end());
+  std::vector<stag_int> expected_comp = {0, 1, 2, 3, 4};
+  EXPECT_EQ(comp, expected_comp);
+
+  comp = stag::connected_component(&testGraph, 7);
+  std::sort(comp.begin(), comp.end());
+  expected_comp = {5, 6, 7, 8, 9};
+  EXPECT_EQ(comp, expected_comp);
+
+  // Find the connected components by the full decomposition algorithm
+  std::vector<std::vector<stag_int>> components = stag::connected_components(
+      &testGraph);
+  comp = components.at(0);
+  std::sort(comp.begin(), comp.end());
+  expected_comp = {0, 1, 2, 3, 4};
+  EXPECT_EQ(comp, expected_comp);
+  comp = components.at(1);
+  std::sort(comp.begin(), comp.end());
+  expected_comp = {5, 6, 7, 8, 9};
+  EXPECT_EQ(comp, expected_comp);
+}
+
+TEST(ClusterTest, ConnCompALLG){
+  std::string filename = "test/data/test8.adjacencylist";
+  stag::AdjacencyListLocalGraph testGraph(filename);
+
+  // Check the connected components
+  std::vector<stag_int> comp = stag::connected_component(&testGraph, 2);
+  std::sort(comp.begin(), comp.end());
+  std::vector<stag_int> expected_comp = {1, 2, 3};
+  EXPECT_EQ(comp, expected_comp);
+
+  comp = stag::connected_component(&testGraph, 6);
+  std::sort(comp.begin(), comp.end());
+  expected_comp = {4, 5, 6};
+  EXPECT_EQ(comp, expected_comp);
+}
