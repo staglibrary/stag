@@ -232,6 +232,8 @@ stag::Graph stag::Graph::subgraph(std::vector<stag_int>& vertices) {
       if (e.v2 > v && vertex_set.contains(e.v2)) {
         non_zero_entries.emplace_back(
             old_to_new_id[v], old_to_new_id[e.v2], e.weight);
+        non_zero_entries.emplace_back(
+            old_to_new_id[e.v2], old_to_new_id[v], e.weight);
       }
     }
   }
