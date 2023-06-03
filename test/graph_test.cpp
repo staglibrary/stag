@@ -632,3 +632,38 @@ TEST(GraphTest, SubgraphCycle) {
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
+
+TEST(GraphTest, DisjointUnion) {
+  // Construct two graphs
+  stag::Graph g1 = stag::complete_graph(3);
+  stag::Graph g2 = stag::cycle_graph(4);
+
+  // Combine the two graphs into one
+  stag::Graph g3 = g1.disjoint_union(g2);
+
+  // Define the expected Laplacian matrix
+  std::vector<stag_int> rowStarts = {0, 3, 6, 9, 12, 15, 18, 21};
+  std::vector<stag_int> colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 4, 6, 3, 4, 5, 4, 5, 6, 3, 5, 6};
+  std::vector<double> values = {2, -1, -1, -1, 2, -1, -1, -1, 2, 2, -1, -1, -1, 2, -1, -1, 2, -1, -1, -1, 2};
+
+  // Check that the Laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(g3.laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(g3.laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(g3.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Check that one of the graphs is not changed
+  rowStarts = {0, 3, 6, 9};
+  colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2};
+  values = {2, -1, -1, -1, 2, -1, -1, -1, 2};
+  newStarts = stag::sprsMatOuterStarts(g1.laplacian());
+  newIndices = stag::sprsMatInnerIndices(g1.laplacian());
+  newValues = stag::sprsMatValues(g1.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}

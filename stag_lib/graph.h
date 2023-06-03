@@ -384,6 +384,18 @@ namespace stag {
         */
        Graph subgraph(std::vector<stag_int>& vertices);
 
+       /**
+        * Construct and return the disjoint union of this graph and another.
+        *
+        * The disjoint union of two graphs \f$G\f$ and \f$H\f$ is a graph
+        * containing \f$G\f$ and \f$H\f$ as disconnected subgraphs.
+        *
+        * @param other the other graph to be combined with this one
+        * @return a new stag::Graph object representing the union of this graph
+        *         with the other one
+        */
+       Graph disjoint_union(Graph& other);
+
        // Override the abstract methods in the LocalGraph base class.
        double degree(stag_int v) override;
        stag_int degree_unweighted(stag_int v) override;

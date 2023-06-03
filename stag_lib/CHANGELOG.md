@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Issue #94](https://github.com/staglibrary/stag/issues/94): Compute the connected components of a graph
 - [Issue #94](https://github.com/staglibrary/stag/issues/94): Add a subgraph method to stag Graph class
 - [Issue #93](https://github.com/staglibrary/stag/issues/93): Add methods to compute mutual information between clusters
+- [Issue #98](https://github.com/staglibrary/stag/issues/98): Add method to construct the graph union
 
 ### Fixed
 - [Issue #87](https://github.com/staglibrary/stag/issues/87): Occasional bug with sorting edgelist file
