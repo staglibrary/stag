@@ -401,7 +401,9 @@ double entropy(std::vector<stag_int>& labels){
   // Compute the entropy
   double entropy = 0;
   for (auto& it : cluster_sizes) {
-    entropy += ((double) it.second / N) * std::log2(N / (double) it.second);
+    if (it.second > 0) {
+      entropy += ((double) it.second / N) * std::log2(N / (double) it.second);
+    }
   }
   return entropy;
 }
@@ -420,8 +422,10 @@ double stag::mutual_information(std::vector<stag_int> &gt_labels,
   double mi = 0;
   for (stag_int k1 = 0; k1 < k; k1++) {
     for (stag_int k2 = 0; k2 < k; k2++) {
-      mi += (contingency(k1, k2) / N) * std::log2((N * contingency(k1, k2)) /
-          ((double) gt_sizes[k1] * (double) label_sizes[k2]));
+      if (contingency(k1, k2) > 0) {
+        mi += (contingency(k1, k2) / N) * std::log2((N * contingency(k1, k2)) /
+                                                    ((double) gt_sizes[k1] * (double) label_sizes[k2]));
+      }
     }
   }
   return mi;
