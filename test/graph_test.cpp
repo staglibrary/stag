@@ -585,3 +585,50 @@ TEST(GraphTest, ALLGNeighboursOrder) {
     EXPECT_NE(n, node);
   }
 }
+
+TEST(GraphTest, Subgraph) {
+  // Create a complete graph
+  stag::Graph testGraph = stag::complete_graph(8);
+
+  // Extract a subgraph (this will also be complete)
+  std::vector<stag_int> vertices = {3, 5, 2, 1};
+  stag::Graph subgraph = testGraph.subgraph(vertices);
+
+  // Define the expected Laplacian matrix
+  std::vector<stag_int> rowStarts = {0, 4, 8, 12, 16};
+  std::vector<stag_int> colIndices = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+  std::vector<double> values = {3, -1, -1, -1, -1, 3, -1, -1, -1, -1, 3, -1, -1, -1, -1, 3};
+
+  // Check that the Laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(subgraph.laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(subgraph.laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(subgraph.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, SubgraphCycle) {
+  // Create a cycle graph
+  stag::Graph testGraph = stag::cycle_graph(8);
+
+  // Extract a subgraph - this will be a path on 3 vertices, and an isolated
+  // vertex.
+  std::vector<stag_int> vertices = {3, 4, 5, 7};
+  stag::Graph subgraph = testGraph.subgraph(vertices);
+
+  // Define the expected Laplacian matrix
+  std::vector<stag_int> rowStarts = {0, 2, 5, 7, 8};
+  std::vector<stag_int> colIndices = {0, 1, 0, 1, 2, 1, 2, 3};
+  std::vector<double> values = {1, -1, -1, 2, -1, -1, 1, 0};
+
+  // Check that the Laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(subgraph.laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(subgraph.laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(subgraph.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
