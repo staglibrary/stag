@@ -244,6 +244,38 @@ stag::Graph stag::Graph::subgraph(std::vector<stag_int>& vertices) {
   return stag::Graph(adj_mat);
 }
 
+stag::Graph stag::Graph::disjoint_union(Graph& other) {
+  // Get the adjacency matrix data from this graph
+  std::vector<double> values = stag::sprsMatValues(&adjacency_matrix_);
+  std::vector<stag_int> innerIndices = stag::sprsMatInnerIndices(&adjacency_matrix_);
+  std::vector<stag_int> outerStarts = stag::sprsMatOuterStarts(&adjacency_matrix_);
+
+  // Get the adjacency matrix data from the other graph
+  SprsMat other_adj = *other.adjacency();
+  std::vector<double> other_values = stag::sprsMatValues(&other_adj);
+  std::vector<stag_int> other_innerIndices = stag::sprsMatInnerIndices(&other_adj);
+  std::vector<stag_int> other_outerStarts = stag::sprsMatOuterStarts(&other_adj);
+
+  // We will extend the matrix data vectors with the data from the other graph
+  values.reserve(values.size() + distance(other_values.begin(),
+                                          other_values.end()));
+  values.insert(values.end(), other_values.begin(), other_values.end());
+
+  stag_int start_offset = outerStarts.at(outerStarts.size() - 1);
+  for (stag_int other_start : other_outerStarts) {
+    if (other_start != 0) {
+      outerStarts.push_back(other_start + start_offset);
+    }
+  }
+
+  stag_int inner_offset = number_of_vertices_;
+  for (stag_int other_inner : other_innerIndices) {
+    innerIndices.push_back(other_inner + inner_offset);
+  }
+
+  return {outerStarts, innerIndices, values};
+}
+
 //------------------------------------------------------------------------------
 // Graph Object Private Methods
 //------------------------------------------------------------------------------

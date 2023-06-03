@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 #include <graph.h>
 #include <utility.h>
+#include <random.h>
+#include <cluster.h>
+#include <stdio.h>
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \
@@ -631,4 +634,70 @@ TEST(GraphTest, SubgraphCycle) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, DisjointUnion) {
+  // Construct two graphs
+  stag::Graph g1 = stag::complete_graph(3);
+  stag::Graph g2 = stag::cycle_graph(4);
+
+  // Combine the two graphs into one
+  stag::Graph g3 = g1.disjoint_union(g2);
+
+  // Define the expected Laplacian matrix
+  std::vector<stag_int> rowStarts = {0, 3, 6, 9, 12, 15, 18, 21};
+  std::vector<stag_int> colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 4, 6, 3, 4, 5, 4, 5, 6, 3, 5, 6};
+  std::vector<double> values = {2, -1, -1, -1, 2, -1, -1, -1, 2, 2, -1, -1, -1, 2, -1, -1, 2, -1, -1, -1, 2};
+
+  // Check that the Laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(g3.laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(g3.laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(g3.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Check that one of the graphs is not changed
+  rowStarts = {0, 3, 6, 9};
+  colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2};
+  values = {2, -1, -1, -1, 2, -1, -1, -1, 2};
+  newStarts = stag::sprsMatOuterStarts(g1.laplacian());
+  newIndices = stag::sprsMatInnerIndices(g1.laplacian());
+  newValues = stag::sprsMatValues(g1.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, UnionComponents) {
+  // Check that the connected components of a graph union are the original
+  // graphs.
+
+  // Create two random graphs.
+  stag_int n = 100;
+  stag_int k = 2;
+  stag::Graph g1 = stag::sbm(n, k, 0.5, 0.5);
+  stag::Graph g2 = stag::sbm(n, k, 0.5, 0.5);
+
+  // Join the graphs
+  stag::Graph union_graph = g1.disjoint_union(g2);
+
+  // Find the first connected component of the union graph
+  std::vector<stag_int> cc = stag::connected_component(&union_graph, 0);
+  stag::Graph cc_graph = union_graph.subgraph(cc);
+
+  // It's difficult to check equality of graphs, so let's just make sure that
+  // the degree sequences are the same.
+  EXPECT_EQ(cc_graph.number_of_vertices(), g1.number_of_vertices());
+  std::vector<stag_int> cc_degrees;
+  std::vector<stag_int> g1_degrees;
+  for (auto v = 0; v < cc_graph.number_of_vertices(); v++) {
+    cc_degrees.push_back(cc_graph.degree_unweighted(v));
+    g1_degrees.push_back(g1.degree_unweighted(v));
+  }
+  std::sort(cc_degrees.begin(), cc_degrees.end());
+  std::sort(g1_degrees.begin(), g1_degrees.end());
+  EXPECT_TRUE(cc_degrees == g1_degrees);
 }
