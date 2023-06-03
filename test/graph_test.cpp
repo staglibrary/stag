@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 #include <graph.h>
 #include <utility.h>
+#include <random.h>
+#include <cluster.h>
+#include <stdio.h>
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \
@@ -666,4 +669,35 @@ TEST(GraphTest, DisjointUnion) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, UnionComponents) {
+  // Check that the connected components of a graph union are the original
+  // graphs.
+
+  // Create two random graphs.
+  stag_int n = 100;
+  stag_int k = 2;
+  stag::Graph g1 = stag::sbm(n, k, 0.5, 0.5);
+  stag::Graph g2 = stag::sbm(n, k, 0.5, 0.5);
+
+  // Join the graphs
+  stag::Graph union_graph = g1.disjoint_union(g2);
+
+  // Find the first connected component of the union graph
+  std::vector<stag_int> cc = stag::connected_component(&union_graph, 0);
+  stag::Graph cc_graph = union_graph.subgraph(cc);
+
+  // It's difficult to check equality of graphs, so let's just make sure that
+  // the degree sequences are the same.
+  EXPECT_EQ(cc_graph.number_of_vertices(), g1.number_of_vertices());
+  std::vector<stag_int> cc_degrees;
+  std::vector<stag_int> g1_degrees;
+  for (auto v = 0; v < cc_graph.number_of_vertices(); v++) {
+    cc_degrees.push_back(cc_graph.degree_unweighted(v));
+    g1_degrees.push_back(g1.degree_unweighted(v));
+  }
+  std::sort(cc_degrees.begin(), cc_degrees.end());
+  std::sort(g1_degrees.begin(), g1_degrees.end());
+  EXPECT_TRUE(cc_degrees == g1_degrees);
 }
