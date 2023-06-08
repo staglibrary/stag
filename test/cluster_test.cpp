@@ -513,3 +513,25 @@ TEST(ClusterTest, ConnCompALLG){
   expected_comp = {4, 5, 6};
   EXPECT_EQ(comp, expected_comp);
 }
+
+TEST(ClusterTest, CheegerCut){
+  // Construct a test graph from the SBM
+  stag_int n = 100;
+  stag_int k = 2;
+  stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
+
+  // Find the clusters
+  auto clusters = stag::cheeger_cut(&testGraph);
+
+  // There should be approximately the same number of each cluster
+  stag_int c0 = 0;
+  stag_int c1 = 0;
+
+  for (auto c : clusters) {
+    if (c == 0) c0++;
+    if (c == 1) c1++;
+  }
+  EXPECT_NE(c0, 0);
+  EXPECT_NE(c1, 0);
+  EXPECT_NEAR(c0 / c1, 1, 0.01);
+}

@@ -187,21 +187,29 @@ namespace stag {
    *
    * where \f$\phi(S)\f$ is the conductance of \f$S\f$.
    *
-   * This method is expected to be run on vectors whose support is much less
-   * than the total size of the graph. If the total volume of the support of vec
-   * is larger than half of the volume of an entire graph, then this method may
-   * return unexpected results.
+   * When the provided graph is a stag::LocalGraph, the volume of the support of
+   * the provided vector should be less than half the total volume of the graph.
+   * The method does not (and cannot) check this condition.
+   *
+   * When the provided graph is a stag::Graph, there is no restriction on the
+   * volume of the support of the provided vector.
    *
    * Note that the caller is responsible for any required normalisation of the
    * input vector. In particular, this method does not normalise the vector by
    * the node degrees.
    *
-   * @param graph a stag::LocalGraph object
+   * @param graph a stag::LocalGraph or stag::Graph object
    * @param vec the vector to sweep over
    * @return a vector containing the indices of vec which give the minimum
    *         conductance in the given graph
    */
   std::vector<stag_int> sweep_set_conductance(stag::LocalGraph* graph,
+                                              SprsMat& vec);
+
+  /**
+   * @overload
+   */
+  std::vector<stag_int> sweep_set_conductance(stag::Graph* graph,
                                               SprsMat& vec);
 
   /**
