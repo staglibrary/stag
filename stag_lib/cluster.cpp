@@ -46,6 +46,26 @@ std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
   return {clusters.data(), clusters.data() + clusters.rows()};
 }
 
+std::vector<stag_int> stag::cheeger_cut(stag::Graph* graph) {
+  // First, compute the first 2 eigenvectors of the normalised graph Laplacian
+  // matrix.
+  const SprsMat* lap = graph->normalised_laplacian();
+  Eigen::MatrixXd eigvecs = stag::compute_eigenvectors(lap, 2);
+
+  // The vector to pass to the sweep set method is the second eigenvector,
+  // with each entry normalised by the square root of the node degree.
+  SprsMat vec = eigvecs.col(1).sparseView();
+  for (stag_int i = 0; i < graph->number_of_vertices(); i++) {
+    vec.coeffRef(i, 0) = std::sqrt(1 / graph->degree(i)) * vec.coeff(i, 0);
+  }
+
+  // Perform the sweep
+  std::vector<stag_int> clusters (graph->number_of_vertices(), 0);
+  std::vector<stag_int> cut = stag::sweep_set_conductance(graph, vec);
+  for (stag_int i : cut) clusters.at(i) = 1;
+  return clusters;
+}
+
 std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, double target_volume) {
   if (target_volume <= 0) throw std::invalid_argument("Target volume must be positive.");
 
