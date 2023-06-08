@@ -46,6 +46,35 @@ std::vector<stag_int> stag::spectral_cluster(stag::Graph *graph, stag_int k) {
   return {clusters.data(), clusters.data() + clusters.rows()};
 }
 
+std::vector<stag_int> stag::cheeger_cut(stag::Graph* graph) {
+  // First, compute the first 2 eigenvectors of the normalised graph Laplacian
+  // matrix.
+  const SprsMat* lap = graph->normalised_laplacian();
+  stag::EigenSystem eigsys = stag::compute_eigensystem(lap, 2);
+
+  // The vector to pass to the sweep set method is the second eigenvector,
+  // with each entry normalised by the square root of the node degree.
+  SprsMat vec;
+
+  // Check the eigenvalues to ensure we are selecting the second eigenvector
+  if (get<0>(eigsys).coeff(0) > get<0>(eigsys).coeff(1)) {
+    vec = get<1>(eigsys).col(0).sparseView();
+  } else {
+    vec = get<1>(eigsys).col(1).sparseView();
+  }
+
+  // Normalise by the square root of vertex degrees.
+  for (stag_int i = 0; i < graph->number_of_vertices(); i++) {
+    vec.coeffRef(i, 0) = std::sqrt(1 / graph->degree(i)) * vec.coeff(i, 0);
+  }
+
+  // Perform the sweep
+  std::vector<stag_int> clusters (graph->number_of_vertices(), 0);
+  std::vector<stag_int> cut = stag::sweep_set_conductance(graph, vec);
+  for (stag_int i : cut) clusters.at(i) = 1;
+  return clusters;
+}
+
 std::vector<stag_int> stag::local_cluster(stag::LocalGraph *graph, stag_int seed_vertex, double target_volume) {
   if (target_volume <= 0) throw std::invalid_argument("Target volume must be positive.");
 
@@ -245,8 +274,12 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
 //------------------------------------------------------------------------------
 // Sweep set implementation
 //------------------------------------------------------------------------------
-std::vector<stag_int> stag::sweep_set_conductance(stag::LocalGraph* graph,
-                                                  SprsMat& vec) {
+std::vector<stag_int> sweep_set_conductance_inner(stag::LocalGraph* graph,
+                                                  SprsMat& vec,
+                                                  double total_volume) {
+  // If the provided total volume of the graph is not 0, then we use the correct
+  // min(vol(S), vol(V \ S)) on the denominator.
+
   // The given vector must be one dimensional
   assert(vec.cols() == 1);
 
@@ -264,6 +297,7 @@ std::vector<stag_int> stag::sweep_set_conductance(stag::LocalGraph* graph,
   std::unordered_set<stag_int> vertex_set;
   double cut_weight = 0;
   double set_volume = 0;
+  double set_complement_volume = total_volume;
   double best_conductance = 2;
   stag_int best_idx = 0;
   stag_int current_idx = 0;
@@ -277,6 +311,7 @@ std::vector<stag_int> stag::sweep_set_conductance(stag::LocalGraph* graph,
 
     // Update the vertex set volume
     set_volume += degrees.at(current_idx - 1);
+    set_complement_volume = total_volume - set_volume;
 
     // Update the cut weight. We need to add the total degree of the node v,
     // and then remove any edges from v to the rest of the vertex set.
@@ -286,14 +321,35 @@ std::vector<stag_int> stag::sweep_set_conductance(stag::LocalGraph* graph,
     }
 
     // Check whether the current conductance is the best we've seen
-    if (cut_weight / set_volume < best_conductance) {
-      best_conductance = cut_weight / set_volume;
+    double this_denominator;
+    if (total_volume == 0) {
+      this_denominator = set_volume;
+    } else {
+      this_denominator = std::min(set_volume, set_complement_volume);
+    }
+    if (this_denominator > 0 && cut_weight / this_denominator < best_conductance) {
+      best_conductance = cut_weight / this_denominator ;
       best_idx = current_idx;
     }
   }
 
   // Return the best cut
   return {sorted_indices.begin(), sorted_indices.begin() + best_idx};
+}
+
+std::vector<stag_int> sweep_set_conductance_inner(stag::LocalGraph* graph,
+                                                  SprsMat& vec) {
+  return sweep_set_conductance_inner(graph, vec, 0);
+}
+
+std::vector<stag_int> stag::sweep_set_conductance(stag::Graph* graph,
+                                                  SprsMat& vec) {
+  return sweep_set_conductance_inner(graph, vec, graph->total_volume());
+}
+
+std::vector<stag_int> stag::sweep_set_conductance(stag::LocalGraph* graph,
+                                                  SprsMat& vec) {
+  return sweep_set_conductance_inner(graph, vec);
 }
 
 //------------------------------------------------------------------------------
