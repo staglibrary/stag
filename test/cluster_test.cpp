@@ -516,7 +516,7 @@ TEST(ClusterTest, ConnCompALLG){
 
 TEST(ClusterTest, CheegerCut){
   // Construct a test graph from the SBM
-  stag_int n = 100;
+  stag_int n = 1000;
   stag_int k = 2;
   stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
 
@@ -534,4 +534,20 @@ TEST(ClusterTest, CheegerCut){
   EXPECT_NE(c0, 0);
   EXPECT_NE(c1, 0);
   EXPECT_NEAR(c0 / c1, 1, 0.01);
+}
+
+TEST(ClusterTest, CheegerCutComplete){
+  // Construct a complete graph
+  stag_int n = 200;
+  stag::Graph testGraph = stag::complete_graph(n);
+
+  // Find the cheeger cut of the graph
+  std::vector<stag_int> clusters = stag::cheeger_cut(&testGraph);
+
+  // There should be exactly n / 2 vertices in one cluster.
+  stag_int c0 = 0;
+  for (auto c : clusters) {
+    if (c == 0) c0++;
+  }
+  EXPECT_EQ(c0, n / 2);
 }
