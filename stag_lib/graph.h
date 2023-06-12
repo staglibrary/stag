@@ -40,6 +40,12 @@ typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
 typedef Eigen::MatrixXd DenseMat;
 
 /**
+ * A dense vector format compatible with the Eigen sparse matrix datatype.
+ * Convenient for matrix-vector manipulation.
+ */
+typedef Eigen::VectorXd DenseVec;
+
+/**
  * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value
  * of an entry in a graph adjacency matrix.
  */

@@ -59,7 +59,8 @@ add_executable(
         test/graphio_test.cpp
         test/random_test.cpp
         test/cluster_test.cpp
-        test/spectrum_test.cpp)
+        test/spectrum_test.cpp
+        test/solve_test.cpp)
 
 target_link_libraries(
         stagt
@@ -75,7 +76,8 @@ add_executable(
         test/graphio_test.cpp
         test/random_test.cpp
         test/cluster_test.cpp
-        test/spectrum_test.cpp)
+        test/spectrum_test.cpp
+        test/solve_test.cpp)
 
 target_link_libraries(
         stagt_static
