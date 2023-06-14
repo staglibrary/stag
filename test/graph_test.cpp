@@ -735,6 +735,9 @@ TEST(GraphTest, Equality) {
   graph1 = createTestGraph();
   graph2 = stag::complete_graph(4);
   EXPECT_NE(graph1, graph2);
+
+  graph2 = createTestGraphSelfLoops();
+  EXPECT_NE(graph1, graph2);
 }
 
 TEST(GraphTest, VertexExists) {
@@ -834,6 +837,27 @@ TEST(GraphTest, Subgraph) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create a graph with self-loops
+  testGraph = createTestGraphSelfLoops();
+
+  // Extract a subgraph
+  vertices = {1, 2, 3};
+  subgraph = testGraph.subgraph(vertices);
+
+  // Define the expected adjacency matrix
+  rowStarts = {0, 1, 4, 6};
+  colIndices = {1, 0, 1, 2, 1, 2};
+  values = {6, 6, 2, 1, 1, 1};
+
+  // Check that the adjacencymatrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(subgraph.adjacency());
+  newIndices = stag::sprsMatInnerIndices(subgraph.adjacency());
+  newValues = stag::sprsMatValues(subgraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
 TEST(GraphTest, SubgraphCycle) {
@@ -889,6 +913,36 @@ TEST(GraphTest, DisjointUnion) {
   newStarts = stag::sprsMatOuterStarts(g1.laplacian());
   newIndices = stag::sprsMatInnerIndices(g1.laplacian());
   newValues = stag::sprsMatValues(g1.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, DisjoinUnionSelfLoops) {
+  // Construct two graphs
+  stag::Graph g1 = createTestGraph();
+  stag::Graph g2 = createTestGraphSelfLoops();
+
+  // One has self loops, the other doesn't
+  EXPECT_EQ(g1.has_self_loops(), false);
+  EXPECT_EQ(g2.has_self_loops(), true);
+
+  // Combine the two graphs into one
+  stag::Graph g3 = g1.disjoint_union(g2);
+
+  // The new graph has self loops
+  EXPECT_EQ(g3.has_self_loops(), true);
+
+  // Define the expected adjacency matrix
+  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 8, 11, 13, 17, 19};
+  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2, 4, 5, 6, 4, 6, 4, 5, 6, 7, 6, 7};
+  std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1, 1, 2, 3.3333, 2, 6, 3.3333, 6, 2, 1, 1, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(g3.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(g3.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(g3.adjacency());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);

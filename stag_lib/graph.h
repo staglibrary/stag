@@ -200,7 +200,8 @@ namespace stag {
        * }
        * \endcode
        *
-       * The provided adjacency matrix must be symmetric.
+       * The provided adjacency matrix must be symmetric, and may include
+       * self-loops.
        *
        * @param adjacency_matrix the sparse eigen matrix representing the adjacency matrix
        *               of the graph.
