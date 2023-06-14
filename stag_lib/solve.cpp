@@ -15,14 +15,7 @@ double solution_error(const SprsMat* A, DenseVec& b, DenseVec& x) {
 }
 
 DenseVec solve_laplacian_jacobi(stag::Graph* g, DenseVec& b, double eps) {
-  // Solve the system by Jacobi iteration. Since the graph Laplacian is not
-  // strictly diagonally dominant, we add a small positive constant to the
-  // diagonal.
-  SprsMat I(g->number_of_vertices(), g->number_of_vertices());
-  I.setIdentity();
-  SprsMat A = *g->laplacian() + (eps) * I;
-  DenseVec x = stag::jacobi_iteration(&A, b, eps);
-  std::cout << "Final Error: " << solution_error(g->laplacian(), b, x) << std::endl;
+  DenseVec x = stag::jacobi_iteration(g->laplacian(), b, eps);
   return x;
 }
 
@@ -83,9 +76,6 @@ DenseVec stag::jacobi_iteration(const SprsMat* A, DenseVec& b, double eps) {
     double new_error = solution_error(A, b, x_t);
     assert(new_error < error);
     error = new_error;
-
-    std::cout << "Error: " << error << std::endl;
-    std::cout << x_t << std::endl;
   }
 
   return x_t;
