@@ -24,6 +24,15 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
   // The number of vertices is the dimensions of the adjacency matrix
   number_of_vertices_ = adjacency_matrix_.outerSize();
 
+  // Check whether the graph has any self-loops
+  has_self_loops_ = false;
+  for (auto i = 0; i < number_of_vertices_; i++) {
+    if (adjacency_matrix_.coeff(i, i) != 0) {
+      has_self_loops_ = true;
+      break;
+    }
+  }
+
   // Set the flags to indicate which matrices have been initialised.
   lap_init_ = false;
   signless_lap_init_ = false;
@@ -44,6 +53,15 @@ stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &in
 
   // The number of vertices is the dimensions of the adjacency matrix
   number_of_vertices_ = adjacency_matrix_.outerSize();
+
+  // Check whether the graph has any self-loops
+  has_self_loops_ = false;
+  for (auto i = 0; i < number_of_vertices_; i++) {
+    if (adjacency_matrix_.coeff(i, i) != 0) {
+      has_self_loops_ = true;
+      break;
+    }
+  }
 
   // Set the flags to indicate which matrices have been initialised.
   lap_init_ = false;
@@ -102,8 +120,17 @@ const SprsMat* stag::Graph::lazy_random_walk_matrix() {
 }
 
 double stag::Graph::total_volume() {
-  Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
-  return degrees.sum();
+  // We will compute the total volume from the degree matrix of the graph.
+  initialise_degree_matrix_();
+
+  double vol = 0;
+  for (int k = 0; k < degree_matrix_.outerSize() ; ++k) {
+    for (SprsMat::InnerIterator it(degree_matrix_, k); it; ++it) {
+      vol += it.value();
+    }
+  }
+
+  return vol;
 }
 
 double stag::Graph::average_degree() {
@@ -115,7 +142,26 @@ stag_int stag::Graph::number_of_vertices() const {
 }
 
 stag_int stag::Graph::number_of_edges() const {
-  return adjacency_matrix_.nonZeros() / 2;
+  stag_int nnz = adjacency_matrix_.nonZeros();
+
+  if (has_self_loops_) {
+    // If there are self loops in the graph, then we need to count the non-zeros
+    // on the diagonal twice.
+    for (auto i = 0; i < number_of_vertices_; i++) {
+      if (adjacency_matrix_.coeff(i, i) != 0) nnz++;
+    }
+
+    // Now, we have counted every edge twice.
+    return nnz / 2;
+  } else {
+    // If there are no self loops in the graph, then the number of edges is
+    // half the number of non-zero elements in the adjacency matrix.
+    return nnz / 2;
+  }
+}
+
+bool stag::Graph::has_self_loops() const {
+  return has_self_loops_;
 }
 
 void stag::Graph::check_vertex_argument(stag_int v) {
@@ -169,11 +215,14 @@ stag_int stag::Graph::degree_unweighted(stag_int v) {
   check_vertex_argument(v);
 
   // The combinatorical degree of a vertex is equal to the number of non-zero
-  // entries in its adjacency matrix row.
+  // entries in its adjacency matrix row, plus 1 if there is a self-loop.
   const stag_int *indexPtr = adjacency_matrix_.outerIndexPtr();
   stag_int rowStart = *(indexPtr + v);
   stag_int nextRowStart = *(indexPtr + v + 1);
-  return nextRowStart - rowStart;
+  stag_int self_loop = 0;
+  if (adjacency_matrix_.coeff(v, v) != 0) self_loop = 1;
+
+  return nextRowStart - rowStart + self_loop;
 }
 
 std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
@@ -186,8 +235,13 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
   stag_int vRowStart = *(rowStarts + v);
   stag_int degree_unw = degree_unweighted(v);
 
+  // If there is a self-loop, then we have to subtract one from the unweighted
+  // degree.
+  stag_int self_loop = 0;
+  if (adjacency_matrix_.coeff(v, v) != 0) self_loop = 1;
+
   std::vector<stag::edge> edges;
-  for (stag_int i = 0; i < degree_unw; i++) {
+  for (stag_int i = 0; i < degree_unw - self_loop; i++) {
     if (*(weights + vRowStart + i) != 0) {
       edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
     }
@@ -204,7 +258,13 @@ std::vector<stag_int> stag::Graph::neighbors_unweighted(stag_int v) {
   const stag_int *rowStarts = adjacency_matrix_.outerIndexPtr();
   stag_int vRowStart = *(rowStarts + v);
   stag_int degree = degree_unweighted(v);
-  return {innerIndices + vRowStart, innerIndices + vRowStart + degree};
+
+  // If there is a self-loop, then we have to subtract one from the unweighted
+  // degree.
+  stag_int self_loop = 0;
+  if (adjacency_matrix_.coeff(v, v) != 0) self_loop = 1;
+
+  return {innerIndices + vRowStart, innerIndices + vRowStart + degree - self_loop};
 }
 
 bool stag::Graph::vertex_exists(stag_int v) {
@@ -229,11 +289,16 @@ stag::Graph stag::Graph::subgraph(std::vector<stag_int>& vertices) {
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int v : vertex_set) {
     for (stag::edge e : neighbors(v)) {
-      if (e.v2 > v && vertex_set.contains(e.v2)) {
+      if (e.v2 >= v && vertex_set.contains(e.v2)) {
         non_zero_entries.emplace_back(
             old_to_new_id[v], old_to_new_id[e.v2], e.weight);
-        non_zero_entries.emplace_back(
-            old_to_new_id[e.v2], old_to_new_id[v], e.weight);
+
+        // Add the symmetric entry to the adjacency matrix only if this is
+        // not a self-loop.
+        if (e.v2 > v) {
+          non_zero_entries.emplace_back(
+              old_to_new_id[e.v2], old_to_new_id[v], e.weight);
+        }
       }
     }
   }
@@ -377,10 +442,12 @@ void stag::Graph::initialise_degree_matrix_() {
   if (deg_init_) return;
 
   // Construct the vertex degrees.
-  Eigen::VectorXd degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
+  Eigen::VectorXd simple_degrees = adjacency_matrix_ * Eigen::VectorXd::Ones(adjacency_matrix_.cols());
   degree_matrix_ = SprsMat(adjacency_matrix_.cols(), adjacency_matrix_.cols());
   for (stag_int i = 0; i < adjacency_matrix_.cols(); i++) {
-    degree_matrix_.insert(i, i) = degrees[i];
+    // If there is a self-loop on this vertex, then we count its weight twice
+    // for the vertex degree.
+    degree_matrix_.insert(i, i) = simple_degrees[i] + adjacency_matrix_.coeff(i, i);
   }
 
   // Compress the degree matrix storage, and set the initialised flag

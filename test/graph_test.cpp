@@ -37,19 +37,55 @@ stag::Graph createTestGraph() {
   return {rowStarts, colIndices, values};
 }
 
+/**
+ * Create a simple test graph with self-loops.
+ *
+ * @return a stag::Graph object to be tested
+ */
+stag::Graph createTestGraphSelfLoops() {
+  // Create the data for the graph adjacency matrix.
+  //     1       2  3.3333 0
+  //     2       0   6     0
+  //     3.3333  6   2     1
+  //     0       0   1     1
+  std::vector<stag_int> rowStarts = {0, 3, 5, 9, 11};
+  std::vector<stag_int> colIndices = {0, 1, 2, 0, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> values = {1, 2, 3.3333, 2, 6, 3.3333, 6, 2, 1, 1, 1};
+
+  // Create the stag Graph object
+  return {rowStarts, colIndices, values};
+}
+
 TEST(GraphTest, Volume) {
   stag::Graph testGraph = createTestGraph();
   EXPECT_EQ(testGraph.total_volume(), 24.6666);
+
+  testGraph = createTestGraphSelfLoops();
+  EXPECT_EQ(testGraph.total_volume(), 32.6666);
 }
 
 TEST(GraphTest, NumberOfVertices) {
   stag::Graph testGraph = createTestGraph();
+  EXPECT_EQ(testGraph.number_of_vertices(), 4);
+
+  testGraph = createTestGraphSelfLoops();
   EXPECT_EQ(testGraph.number_of_vertices(), 4);
 }
 
 TEST(GraphTest, NumberOfEdges) {
   stag::Graph testGraph = createTestGraph();
   EXPECT_EQ(testGraph.number_of_edges(), 4);
+
+  testGraph = createTestGraphSelfLoops();
+  EXPECT_EQ(testGraph.number_of_edges(), 7);
+}
+
+TEST(GraphTest, HasSelfLoops) {
+  stag::Graph testGraph = createTestGraph();
+  EXPECT_EQ(testGraph.has_self_loops(), false);
+
+  testGraph = createTestGraphSelfLoops();
+  EXPECT_EQ(testGraph.has_self_loops(), true);
 }
 
 TEST(GraphTest, UnweightedDegree) {
@@ -58,6 +94,12 @@ TEST(GraphTest, UnweightedDegree) {
   EXPECT_EQ(testGraph.degree_unweighted(1), 2);
   EXPECT_EQ(testGraph.degree_unweighted(2), 3);
   EXPECT_EQ(testGraph.degree_unweighted(3), 1);
+
+  testGraph = createTestGraphSelfLoops();
+  EXPECT_EQ(testGraph.degree_unweighted(0), 4);
+  EXPECT_EQ(testGraph.degree_unweighted(1), 2);
+  EXPECT_EQ(testGraph.degree_unweighted(2), 5);
+  EXPECT_EQ(testGraph.degree_unweighted(3), 3);
 }
 
 TEST(GraphTest, Degree) {
@@ -66,6 +108,12 @@ TEST(GraphTest, Degree) {
   EXPECT_NEAR(testGraph.degree(1), 8, 0.000001);
   EXPECT_NEAR(testGraph.degree(2), 10.3333, 0.000001);
   EXPECT_NEAR(testGraph.degree(3), 1, 0.000001);
+
+  testGraph = createTestGraphSelfLoops();
+  EXPECT_NEAR(testGraph.degree(0), 7.3333, 0.000001);
+  EXPECT_NEAR(testGraph.degree(1), 8, 0.000001);
+  EXPECT_NEAR(testGraph.degree(2), 14.3333, 0.000001);
+  EXPECT_NEAR(testGraph.degree(3), 3, 0.000001);
 }
 
 TEST(GraphTest, OutOfRangeVertices) {
@@ -106,6 +154,20 @@ TEST(GraphTest, UnweightedNeighbors) {
 
   expectedNeighbors = {2};
   EXPECT_EQ(testGraph.neighbors_unweighted(3), expectedNeighbors);
+
+  testGraph = createTestGraphSelfLoops();
+
+  expectedNeighbors = {0, 1, 2};
+  EXPECT_EQ(testGraph.neighbors_unweighted(0), expectedNeighbors);
+
+  expectedNeighbors = {0, 2};
+  EXPECT_EQ(testGraph.neighbors_unweighted(1), expectedNeighbors);
+
+  expectedNeighbors = {0, 1, 2, 3};
+  EXPECT_EQ(testGraph.neighbors_unweighted(2), expectedNeighbors);
+
+  expectedNeighbors = {2, 3};
+  EXPECT_EQ(testGraph.neighbors_unweighted(3), expectedNeighbors);
 }
 
 TEST(GraphTest, Neighbors) {
@@ -122,6 +184,20 @@ TEST(GraphTest, Neighbors) {
 
   expectedNeighbors = {{3, 2, 1}};
   EXPECT_EQ(testGraph.neighbors(3), expectedNeighbors);
+
+  testGraph = createTestGraphSelfLoops();
+
+  expectedNeighbors = {{0, 0, 1}, {0, 1, 2}, {0, 2, 3.3333}};
+  EXPECT_EQ(testGraph.neighbors(0), expectedNeighbors);
+
+  expectedNeighbors = {{1, 0, 2}, {1, 2, 6}};
+  EXPECT_EQ(testGraph.neighbors(1), expectedNeighbors);
+
+  expectedNeighbors = {{2, 0, 3.3333}, {2, 1, 6}, {2, 2, 2}, {2, 3, 1}};
+  EXPECT_EQ(testGraph.neighbors(2), expectedNeighbors);
+
+  expectedNeighbors = {{3, 2, 1}, {3, 3, 1}};
+  EXPECT_EQ(testGraph.neighbors(3), expectedNeighbors);
 }
 
 TEST(GraphTest, AdjacencyMatrix) {
@@ -137,6 +213,23 @@ TEST(GraphTest, AdjacencyMatrix) {
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test grpah object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the graph adjacency matrix.
+  rowStarts = {0, 3, 5, 9, 11};
+  colIndices = {0, 1, 2, 0, 2, 0, 1, 2, 3, 2, 3};
+  values = {1, 2, 3.3333, 2, 6, 3.3333, 6, 2, 1, 1, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  newValues = stag::sprsMatValues(testGraph.adjacency());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
@@ -207,6 +300,23 @@ TEST(GraphTest, LaplacianMatrix) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the graph laplacian matrix.
+  rowStarts = {0, 3, 6, 10, 12};
+  colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  values = {6.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 12.3333, -1, -1, 2};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.laplacian());
+  newIndices = stag::sprsMatInnerIndices(testGraph.laplacian());
+  newValues = stag::sprsMatValues(testGraph.laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
 TEST(GraphTest, NormalisedLaplacianMatrix) {
@@ -225,6 +335,26 @@ TEST(GraphTest, NormalisedLaplacianMatrix) {
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.normalised_laplacian());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.normalised_laplacian());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.normalised_laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the normalised graph laplacian matrix.
+  rowStarts = {0, 3, 6, 10, 12};
+  colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  values = {1 - 1/7.3333, -2/(sqrt(7.3333) * sqrt(8)), -3.3333/(sqrt(7.3333) * sqrt(14.3333)),
+            -2/(sqrt(8) * sqrt(7.3333)), 1, -6/(sqrt(8) * sqrt(14.3333)),
+            -3.3333/(sqrt(14.3333) * sqrt(7.3333)), -6/(sqrt(14.3333) * sqrt(8)), 1 - 2/14.3333, -1/(sqrt(14.3333) * sqrt(3)),
+            -1/(sqrt(14.3333) * sqrt(3)), 1 - 1./3};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.normalised_laplacian());
+  newIndices = stag::sprsMatInnerIndices(testGraph.normalised_laplacian());
+  newValues = stag::sprsMatValues(testGraph.normalised_laplacian());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
@@ -248,13 +378,30 @@ TEST(GraphTest, SignlessLaplacianMatrix) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the signless graph Laplacian matrix.
+  rowStarts = {0, 3, 6, 10, 12};
+  colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  values = {8.3333, 2, 3.3333, 2, 8, 6, 3.3333, 6, 16.3333, 1, 1, 4};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.signless_laplacian());
+  newIndices = stag::sprsMatInnerIndices(testGraph.signless_laplacian());
+  newValues = stag::sprsMatValues(testGraph.signless_laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
 TEST(GraphTest, NormalisedSignlessLaplacianMatrix) {
   // Create the test graph object
   stag::Graph testGraph = createTestGraph();
 
-  // Create the expected data for the normalised graph laplacian matrix.
+  // Create the expected data for the normalised signless Laplacian matrix.
   std::vector<stag_int> rowStarts = {0, 3, 6, 10, 12};
   std::vector<stag_int> colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
   std::vector<double> values = {1, 2/(sqrt(5.3333) * sqrt(8)), 3.3333/(sqrt(5.3333) * sqrt(10.3333)),
@@ -266,6 +413,26 @@ TEST(GraphTest, NormalisedSignlessLaplacianMatrix) {
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.normalised_signless_laplacian());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.normalised_signless_laplacian());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.normalised_signless_laplacian());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the normalised signless Laplacian matrix.
+  rowStarts = {0, 3, 6, 10, 12};
+  colIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  values = {1 + 1./7.3333, 2/(sqrt(7.3333) * sqrt(8)), 3.3333/(sqrt(7.3333) * sqrt(14.3333)),
+            2/(sqrt(8) * sqrt(7.3333)), 1, 6/(sqrt(8) * sqrt(14.3333)),
+            3.3333/(sqrt(14.3333) * sqrt(7.3333)), 6/(sqrt(14.3333) * sqrt(8)), 1 + 2./14.3333, 1/(sqrt(14.3333) * sqrt(3)),
+            1/(sqrt(3) * sqrt(14.3333)), 1 + 1./3};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.normalised_signless_laplacian());
+  newIndices = stag::sprsMatInnerIndices(testGraph.normalised_signless_laplacian());
+  newValues = stag::sprsMatValues(testGraph.normalised_signless_laplacian());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
@@ -289,6 +456,23 @@ TEST(GraphTest, DegreeMatrix) {
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the graph degree matrix.
+  rowStarts = {0, 1, 2, 3, 4};
+  colIndices = {0, 1, 2, 3};
+  values = {7.3333, 8, 14.3333, 3};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.degree_matrix());
+  newIndices = stag::sprsMatInnerIndices(testGraph.degree_matrix());
+  newValues = stag::sprsMatValues(testGraph.degree_matrix());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
 TEST(GraphTest, InverseDegreeMatrix) {
@@ -304,6 +488,23 @@ TEST(GraphTest, InverseDegreeMatrix) {
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.inverse_degree_matrix());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.inverse_degree_matrix());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.inverse_degree_matrix());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the inverse degree matrix.
+  rowStarts = {0, 1, 2, 3, 4};
+  colIndices = {0, 1, 2, 3};
+  values = {1./7.3333, 1./8, 1./14.3333, 1./3};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.inverse_degree_matrix());
+  newIndices = stag::sprsMatInnerIndices(testGraph.inverse_degree_matrix());
+  newValues = stag::sprsMatValues(testGraph.inverse_degree_matrix());
 
   EXPECT_EQ(rowStarts, newStarts);
   EXPECT_EQ(colIndices, newIndices);
@@ -326,6 +527,26 @@ TEST(GraphTest, LazyRandomWalkMatrix) {
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.lazy_random_walk_matrix());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.lazy_random_walk_matrix());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.lazy_random_walk_matrix());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Create the test graph object
+  testGraph = createTestGraphSelfLoops();
+
+  // Create the expected data for the lazy random walk matrix.
+  colStarts = {0, 3, 6, 10, 12};
+  rowIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  values = {1./2 + 1./14.6666, 1./7.3333, 3.3333/14.6666,
+            1./8, 1./2, 3./8,
+            3.3333/28.6666, 3./14.3333, 1./2 + 1./14.3333, 1./28.6666,
+            1./6, 1./2 + 1./6};
+
+  // Check that the laplacian matrix has the form that we expect
+  newStarts = stag::sprsMatOuterStarts(testGraph.lazy_random_walk_matrix());
+  newIndices = stag::sprsMatInnerIndices(testGraph.lazy_random_walk_matrix());
+  newValues = stag::sprsMatValues(testGraph.lazy_random_walk_matrix());
 
   EXPECT_EQ(colStarts, newStarts);
   EXPECT_EQ(rowIndices, newIndices);
@@ -354,6 +575,9 @@ TEST(GraphTest, AverageDegree) {
     stag::Graph testGraph = stag::star_graph(n);
     EXPECT_EQ(testGraph.average_degree(), 2. * (n-1) / n);
   }
+
+  stag::Graph testGraph = createTestGraphSelfLoops();
+  EXPECT_EQ(testGraph.average_degree(), 32.6666/4);
 }
 
 TEST(GraphTest, CycleGraphLaplacian) {

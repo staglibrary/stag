@@ -374,6 +374,11 @@ namespace stag {
        stag_int number_of_edges() const;
 
        /**
+        * Returns a boolean indicating whether this graph contains self loops.
+        */
+       bool has_self_loops() const;
+
+       /**
         * Construct and return a subgraph of this graph.
         *
         * Note that the vertex indices will be changed in the subgraph.
@@ -481,6 +486,9 @@ namespace stag {
       // matrix, stored in a sparse format. The adj_init_ variable is used to
       // indicate whether the matrix has been initialised yet.
       SprsMat adjacency_matrix_;
+
+      // Whether the graph has self loops
+      bool has_self_loops_;
 
       // The laplacian matrix of the graph. The lap_init_ variable is used to
       // indicate whether the matrix has been initialised yet.
