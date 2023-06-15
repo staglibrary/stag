@@ -18,6 +18,17 @@
             EXPECT_NEAR(expected[idx], actual[idx], thresh) << "at index: " << idx;\
         }
 
+#define EXPECT_GRAPHS_NEARLY_EQ(expected, actual) \
+  EXPECT_FLOATS_NEARLY_EQ(stag::sprsMatInnerIndices(expected.adjacency()), \
+                          stag::sprsMatInnerIndices(actual.adjacency()),   \
+                          EPSILON)                                         \
+  EXPECT_FLOATS_NEARLY_EQ(stag::sprsMatOuterStarts(expected.adjacency()), \
+                          stag::sprsMatOuterStarts(actual.adjacency()),   \
+                          EPSILON)                                         \
+  EXPECT_FLOATS_NEARLY_EQ(stag::sprsMatValues(expected.adjacency()), \
+                          stag::sprsMatValues(actual.adjacency()),   \
+                          EPSILON)
+
 /**
  * Create a useful test graph which we will use repeatedly.
  *
@@ -54,6 +65,76 @@ stag::Graph createTestGraphSelfLoops() {
 
   // Create the stag Graph object
   return {rowStarts, colIndices, values};
+}
+
+TEST(GraphTest, LaplacianInitialisation) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<stag_int> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<stag_int> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Create the corresponding adjacency matrix
+  //     0       2  3.3333 0
+  //     2       0   6     0
+  //     3.3333  6   0     1
+  //     0       0   1     0
+  std::vector<stag_int> adjRowStarts = {0, 2, 4, 7, 8};
+  std::vector<stag_int> adjColIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> adjValues = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
+
+  // We will initialise the same graph in three ways:
+  //    - SprsMat Laplacian matrix
+  //    - Data vectors for sparse Laplacian matrix
+  //    - Adjacency matrix
+  // All three methods should result in the same graph.
+  stag::Graph testGraph1 = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+  SprsMat lap = stag::sprsMatFromVectors(lapRowStarts, lapColIndices, lapValues);
+  stag::Graph testGraph2 = stag::Graph(lap);
+  stag::Graph testGraph3 = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(testGraph1, testGraph2);
+  EXPECT_GRAPHS_NEARLY_EQ(testGraph2, testGraph3);
+  EXPECT_GRAPHS_NEARLY_EQ(testGraph1, testGraph3);
+}
+
+TEST(GraphTest, LaplacianSelfLoopInitialisation) {
+  // Create a graph Laplacian matrix, with self-loops
+  //     6.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   12.3333 -1
+  //     0        0  -1        2
+  std::vector<stag_int> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<stag_int> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {6.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 12.3333, -1, -1, 2};
+
+  // Create the corresponding adjacency matrix
+  //     1       2   3.3333 0
+  //     2       0   6      0
+  //     3.3333  6   2      1
+  //     0       0   1      1
+  std::vector<stag_int> adjRowStarts = {0, 3, 5, 9, 11};
+  std::vector<stag_int> adjColIndices = {0, 1, 2, 0, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> adjValues = {1, 2, 3.3333, 2, 6, 3.3333, 6, 2, 1, 1, 1};
+
+  // We will initialise the same graph in three ways:
+  //    - SprsMat Laplacian matrix
+  //    - Data vectors for sparse Laplacian matrix
+  //    - Adjacency matrix
+  // All three methods should result in the same graph.
+  stag::Graph testGraph1 = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+  SprsMat lap = stag::sprsMatFromVectors(lapRowStarts, lapColIndices, lapValues);
+  stag::Graph testGraph2 = stag::Graph(lap);
+  stag::Graph testGraph3 = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(testGraph1, testGraph2);
+  EXPECT_GRAPHS_NEARLY_EQ(testGraph2, testGraph3);
+  EXPECT_GRAPHS_NEARLY_EQ(testGraph1, testGraph3);
 }
 
 TEST(GraphTest, Volume) {

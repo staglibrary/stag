@@ -15,11 +15,60 @@
 //------------------------------------------------------------------------------
 // Graph Object Constructors
 //------------------------------------------------------------------------------
+/**
+ * Given a matrix, which is either an adjacency matrix OR a Laplacian matrix,
+ * return the adjacency matrix of the graph.
+ */
+SprsMat adjacency_from_adj_or_lap(const SprsMat& matrix) {
+  // Since we support only graphs with positive edge weights,
+  // we can just check for negative entries in the matrix. If the matrix contains
+  // negative entries, then it must be the Laplacian. Otherwise, we take it to
+  // be an adjacency matrix.
+  //
+  // We first assume the given matrix is an adjacency matrix and update this
+  // if we find a negative entry.
+  SprsMat adjacency_matrix(matrix.rows(), matrix.cols());
+  bool found_negative_value = false;
+  for (int k = 0; k < matrix.outerSize() ; ++k) {
+    for (SprsMat::InnerIterator it(matrix, k); it; ++it) {
+      if (it.value() < 0) {
+        found_negative_value = true;
+        break;
+      }
+    }
+    if (found_negative_value) break;
+  }
+  if (found_negative_value) {
+    // The adjacency matrix is D - L
+    // First set it to negative the Laplacian, and then update the diagonal
+    // entries.
+    adjacency_matrix = -matrix;
 
-stag::Graph::Graph(const SprsMat& adjacency_matrix) {
-  // Load the adjacency matrix into this object.
-  adjacency_matrix_ = adjacency_matrix;
-  adjacency_matrix_.makeCompressed();
+    // The self-loop weights are equal to the difference between the diagonal
+    // entry of the Laplacian and the rest of the entries in the row/column
+    Eigen::VectorXd self_loop_weights = matrix * Eigen::VectorXd::Ones(matrix.cols());
+    for (auto i = 0; i < matrix.cols(); i++) {
+      adjacency_matrix.coeffRef(i, i) = self_loop_weights.coeff(i);
+    }
+  } else {
+    adjacency_matrix = matrix;
+  }
+  // Due to floating-point errors, we sometimes see tiny floats showing up
+  // in place of zeros. We don't want to introduce self-loops with tiny weights
+  // so we set these to 0.
+  adjacency_matrix.prune([](const stag_int& row, const stag_int& col, const double& value)
+                          {
+                            (void) row;
+                            (void) col;
+                            return value > EPSILON;
+                          });
+
+  return adjacency_matrix;
+}
+
+stag::Graph::Graph(const SprsMat& matrix) {
+  // Get the adjacency matrix from the provided (adjacency or Laplacian) matrix
+  adjacency_matrix_ = adjacency_from_adj_or_lap(matrix);
 
   // The number of vertices is the dimensions of the adjacency matrix
   number_of_vertices_ = adjacency_matrix_.outerSize();
@@ -49,7 +98,8 @@ stag::Graph::Graph(const SprsMat& adjacency_matrix) {
 stag::Graph::Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &innerIndices,
                    std::vector<double> &values) {
   // Map the provided data vectors to the sparse matrix type.
-  adjacency_matrix_ = stag::sprsMatFromVectors(outerStarts, innerIndices, values);
+  SprsMat matrix = stag::sprsMatFromVectors(outerStarts, innerIndices, values);
+  adjacency_matrix_ = adjacency_from_adj_or_lap(matrix);
 
   // The number of vertices is the dimensions of the adjacency matrix
   number_of_vertices_ = adjacency_matrix_.outerSize();
