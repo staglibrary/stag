@@ -51,6 +51,9 @@ typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
 // Redefine the eigen index type to be the same as stag_int
 #undef EIGEN_DEFAULT_DENSE_INDEX_TYPE
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE stag_int
+
+// Define a small epsilon
+#define EPSILON 0.0000000001
 /**
  * \endcond
  */
@@ -166,11 +169,19 @@ namespace stag {
    * Vertices of the graph are always referred to by their unique integer index.
    * This index corresponds to the position of the vertex in the stored adjacency
    * matrix of the graph.
+   *
+   * This class supports graphs with positive edge weights. Self-loops are
+   * permitted.
    */
   class Graph : public LocalGraph {
     public:
       /**
        * Create a graph from an Eigen matrix.
+       *
+       * The provided matrix should correspond either to the
+       * adjacency matrix or Laplacian matrix of the graph. STAG will
+       * automatically detect whether the provided matrix is an adjacency matrix
+       * or a Laplacian matrix.
        *
        * \par Example
        *
@@ -200,14 +211,14 @@ namespace stag {
        * }
        * \endcode
        *
-       * The provided adjacency matrix must be symmetric, and may include
+       * The provided matrix must be symmetric, and may include
        * self-loops.
        *
-       * @param adjacency_matrix the sparse eigen matrix representing the adjacency matrix
-       *               of the graph.
-       * @throws domain_error if the adjacency matrix is not symmetric
+       * @param matrix the sparse eigen matrix representing the adjacency matrix
+       *               or Laplacian matrix of the graph.
+       * @throws domain_error if the provided matrix is not symmetric
        */
-      explicit Graph(const SprsMat& adjacency_matrix);
+      explicit Graph(const SprsMat& matrix);
 
       /**
        * Create a graph from raw arrays describing a CSC sparse matrix.
