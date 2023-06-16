@@ -59,7 +59,7 @@ namespace stag {
    * \cond
    * Parse a single content line of a STAG adjacency list file.
    */
-  std::vector<stag::edge> parse_adjacencylist_content_line(std::string line);
+  std::vector<stag::Edge> parse_adjacencylist_content_line(std::string line);
   /**
    * \endcond
    */

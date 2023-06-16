@@ -19,7 +19,7 @@
  * @return a triple representing the edge (u, v, weight).
  * @throw std::invalid_argument the line cannot be parsed
  */
-stag::edge parse_edgelist_content_line(std::string line) {
+stag::Edge parse_edgelist_content_line(std::string line) {
   // List the possible delimiters for the elements on the line
   std::vector<std::string> delimiters{",", " ", "\t"};
 
@@ -103,7 +103,7 @@ stag::Graph stag::load_edgelist(std::string &filename) {
   // Read the file in one line at a time
   stag_int number_of_vertices = 0;
   std::string line;
-  stag::edge this_edge;
+  stag::Edge this_edge;
   while (stag::safeGetline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
@@ -187,7 +187,7 @@ void stag::copy_edgelist_duplicate_edges(std::string& infile, std::string& outfi
 
   // Read the file in one line at a time
   std::string line;
-  stag::edge this_edge;
+  stag::Edge this_edge;
   while (stag::safeGetline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
@@ -230,7 +230,7 @@ void get_edgelist_lines_and_nodes(std::string& filename, stag_int& lines,
   max_id = 0;
   lines = 0;
   std::string line;
-  stag::edge this_edge;
+  stag::Edge this_edge;
   while (stag::safeGetline(is, line)) {
     lines++;
 
@@ -299,7 +299,7 @@ void stag::sort_edgelist(std::string &filename) {
     // For each interval, we will iterate over that portion of the input file
     // twice.
     std::string line;
-    stag::edge this_edge;
+    stag::Edge this_edge;
     std::vector<EdgelistSortInterval> new_intervals;
     for (EdgelistSortInterval interval : intervals) {
       // The pivot index is half-way between the max and min.
@@ -432,7 +432,7 @@ void stag::sort_edgelist(std::string &filename) {
 // Adjacency List processing
 //------------------------------------------------------------------------------
 
-stag::edge parse_adjacencylist_edge(std::string token, stag_int source_node) {
+stag::Edge parse_adjacencylist_edge(std::string token, stag_int source_node) {
   stag_int neighbour;
   double weight;
 
@@ -456,13 +456,13 @@ stag::edge parse_adjacencylist_edge(std::string token, stag_int source_node) {
 /**
  * Comparison function for sorting edges.
  */
-bool cmp_neighbors(const stag::edge& a, const stag::edge& b) {
+bool cmp_neighbors(const stag::Edge& a, const stag::Edge& b) {
   return a.v2 < b.v2;
 }
 
 
-std::vector<stag::edge> stag::parse_adjacencylist_content_line(std::string line) {
-  std::vector<stag::edge> edges;
+std::vector<stag::Edge> stag::parse_adjacencylist_content_line(std::string line) {
+  std::vector<stag::Edge> edges;
 
   // Begin by finding the ID of the node at the start of the line
   size_t split_pos = line.find(':');
@@ -514,7 +514,7 @@ stag::Graph stag::load_adjacencylist(std::string &filename) {
   // Read the file in one line at a time
   stag_int number_of_vertices = 0;
   std::string line;
-  std::vector<stag::edge> neighbours;
+  std::vector<stag::Edge> neighbours;
   while (stag::safeGetline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
@@ -572,7 +572,7 @@ void stag::save_adjacencylist(stag::Graph &graph, std::string &filename) {
   for (stag_int node = 0; node < graph.number_of_vertices(); node++) {
     os << node << ":";
 
-    for (stag::edge e: graph.neighbors(node)) {
+    for (stag::Edge e: graph.neighbors(node)) {
       os << " " << e.v2 << ":" << e.weight;
     }
 
@@ -596,7 +596,7 @@ void stag::adjacencylist_to_edgelist(std::string &adjacencylist_fname, std::stri
 
   // Read the file in one line at a time
   std::string line;
-  std::vector<stag::edge> neighbours;
+  std::vector<stag::Edge> neighbours;
   while (stag::safeGetline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
@@ -650,7 +650,7 @@ void stag::edgelist_to_adjacencylist(std::string &edgelist_fname,
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {
       try {
         // This line of the input file isn't a comment, parse it.
-        stag::edge this_edge = parse_edgelist_content_line(line);
+        stag::Edge this_edge = parse_edgelist_content_line(line);
         written_content = true;
 
         // If this is a larger node than we've seen so far, begin a new

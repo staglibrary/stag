@@ -41,7 +41,7 @@ typedef Eigen::MatrixXd DenseMat;
 
 /**
  * A dense vector format compatible with the Eigen sparse matrix datatype.
- * Convenient for matrix-vector manipulation.
+ * Convenient for matrix-vector manipulation with the SprsMat type.
  */
 typedef Eigen::VectorXd DenseVec;
 
@@ -68,7 +68,7 @@ namespace stag {
   /**
    * \brief A structure representing a weighted edge in a graph.
    */
-  struct edge {
+  struct Edge {
     /**
      * The first vertex in the edge.
      */
@@ -117,7 +117,7 @@ namespace stag {
        * @param v an int representing some vertex in the graph
        * @return an edge vector containing the neighborhood information
        */
-      virtual std::vector<edge> neighbors(stag_int v) = 0;
+      virtual std::vector<Edge> neighbors(stag_int v) = 0;
 
       /**
        * Given a vertex v, return a vector containing the neighbors of v.
@@ -422,7 +422,7 @@ namespace stag {
        // Override the abstract methods in the LocalGraph base class.
        double degree(stag_int v) override;
        stag_int degree_unweighted(stag_int v) override;
-       std::vector<edge> neighbors(stag_int v) override;
+       std::vector<Edge> neighbors(stag_int v) override;
        std::vector<stag_int> neighbors_unweighted(stag_int v) override;
        std::vector<double> degrees(std::vector<stag_int> vertices) override;
        std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
@@ -558,8 +558,8 @@ namespace stag {
   /**
    * Define equality for edges.
    */
-  bool operator==(const edge& lhs, const edge& rhs);
-  bool operator!=(const edge& lhs, const edge& rhs);
+  bool operator==(const Edge& lhs, const Edge& rhs);
+  bool operator!=(const Edge& lhs, const Edge& rhs);
 
   /**
    * \endcond
@@ -599,7 +599,7 @@ namespace stag {
     // Override the abstract methods in the LocalGraph base class.
     double degree(stag_int v) override;
     stag_int degree_unweighted(stag_int v) override;
-    std::vector<edge> neighbors(stag_int v) override;
+    std::vector<Edge> neighbors(stag_int v) override;
     std::vector<stag_int> neighbors_unweighted(stag_int v) override;
     std::vector<double> degrees(std::vector<stag_int> vertices) override;
     std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
@@ -644,7 +644,7 @@ namespace stag {
     std::unordered_map<stag_int, stag_int> fileloc_to_node_id_;
 
     // We also store the full adjacency list of the graph queried so far.
-    std::unordered_map<stag_int, std::vector<edge>> node_id_to_edgelist_;
+    std::unordered_map<stag_int, std::vector<Edge>> node_id_to_edgelist_;
   };
 
   /**
@@ -681,6 +681,27 @@ namespace stag {
    * @return a stag::Graph object representing the star graph
    */
    stag::Graph star_graph(stag_int n);
+
+   /**
+    * Construct the graph whose Laplacian is the second difference matrix of
+    * size \f$n\f$.
+    *
+    * The second difference matrix is tri-diagonal with the following structure.
+    *
+    * \f[
+    *   \begin{bmatrix}
+    *       2  &  -1    &        &        &        \\
+    *       -1 &   2    &    -1  &        &        \\
+    *          & \ddots & \ddots & \ddots &        \\
+    *          &        &    -1  &   2    &    -1  \\
+    *          &        &        &  -1    &     2  \\
+    *   \end{bmatrix}
+    * \f]
+    *
+    * @param n the dimension of the second difference matrix
+    * @return a stag::Graph object representing the second difference matrix
+    */
+   stag::Graph second_difference_graph(stag_int n);
 
 }
 #endif //STAG_LIBRARY_H

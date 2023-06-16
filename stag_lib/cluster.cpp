@@ -162,7 +162,7 @@ void push(stag::LocalGraph *graph, SprsMat *p, SprsMat *r, double alpha, stag_in
   // Iterate through the neighbors of u
   double deg = graph->degree(u);
   stag_int v;
-  for (stag::edge e : graph->neighbors(u)) {
+  for (stag::Edge e : graph->neighbors(u)) {
     v = e.v2;
     assert(v != u);
 
@@ -254,7 +254,7 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
 
     degree_index = 0;
     stag_int v;
-    for (stag::edge e : graph->neighbors(u)) {
+    for (stag::Edge e : graph->neighbors(u)) {
       v = e.v2;
       if (r.coeff(e.v2, 0) >= epsilon * neighbor_degrees.at(degree_index) &&
             !queue_members.contains(v)) {
@@ -316,7 +316,7 @@ std::vector<stag_int> sweep_set_conductance_inner(stag::LocalGraph* graph,
     // Update the cut weight. We need to add the total degree of the node v,
     // and then remove any edges from v to the rest of the vertex set.
     cut_weight += degrees.at(current_idx - 1);
-    for (stag::edge e : graph->neighbors(v)) {
+    for (stag::Edge e : graph->neighbors(v)) {
       if (vertex_set.contains(e.v2)) cut_weight -= 2 * e.weight;
     }
 
@@ -506,9 +506,9 @@ double stag::conductance(stag::LocalGraph* graph, std::vector<stag_int>& cluster
   double cut = 0;
   double volume = 0;
   for (auto v : cluster) {
-    std::vector<stag::edge> neighbors = graph->neighbors(v);
+    std::vector<stag::Edge> neighbors = graph->neighbors(v);
     double this_deg = 0;
-    for (stag::edge e : neighbors) {
+    for (stag::Edge e : neighbors) {
       this_deg += e.weight;
 
       // Check whether the neighbor of v is in the set

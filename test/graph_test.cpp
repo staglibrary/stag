@@ -254,7 +254,7 @@ TEST(GraphTest, UnweightedNeighbors) {
 TEST(GraphTest, Neighbors) {
   stag::Graph testGraph = createTestGraph();
 
-  std::vector<stag::edge> expectedNeighbors = {{0, 1, 2}, {0, 2, 3.3333}};
+  std::vector<stag::Edge> expectedNeighbors = {{0, 1, 2}, {0, 2, 3.3333}};
   EXPECT_EQ(testGraph.neighbors(0), expectedNeighbors);
 
   expectedNeighbors = {{1, 0, 2}, {1, 2, 6}};
@@ -762,6 +762,25 @@ TEST(GraphTest, StarGraph) {
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, SecondDifferenceGraph) {
+  // Create a small second difference graph
+  stag::Graph testGraph = stag::second_difference_graph(5);
+
+  // Define the expected Laplacian matrix
+  std::vector<stag_int> colStarts = {0, 2, 5, 8, 11, 13};
+  std::vector<stag_int> rowIndices = {0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4};
+  std::vector<stag_int> values = {2, -1, -1, 2, -1, -1, 2, -1, -1, 2, -1, -1, 2};
+
+  // Check that the Laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.laplacian());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.laplacian());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.laplacian());
 
   EXPECT_EQ(colStarts, newStarts);
   EXPECT_EQ(rowIndices, newIndices);

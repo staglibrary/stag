@@ -14,17 +14,23 @@ double solution_error(const SprsMat* A, DenseVec& b, DenseVec& x) {
   return e_vec.norm();
 }
 
-DenseVec solve_laplacian_jacobi(stag::Graph* g, DenseVec& b, double eps) {
-  DenseVec x = stag::jacobi_iteration(g->laplacian(), b, eps);
-  return x;
-}
-
 DenseVec stag::solve_laplacian(Graph* g, DenseVec& b, double eps) {
   return solve_laplacian_jacobi(g, b, eps);
 }
 
+DenseVec stag::solve_laplacian_jacobi(stag::Graph* g, DenseVec& b, double eps,
+                                      stag_int max_iterations) {
+  DenseVec x = stag::jacobi_iteration(g->laplacian(), b, eps,
+                                      max_iterations);
+  return x;
+}
+
+DenseVec stag::solve_laplacian_jacobi(stag::Graph* g, DenseVec& b, double eps) {
+  return stag::solve_laplacian_jacobi(g, b, eps, STAG_MAX_ITERATIONS);
+}
+
 /**
- * Test whether the provided sparse matrix is symmatric diagonally dominant.
+ * Test whether the provided sparse matrix is symmetric diagonally dominant.
  *
  * @param A the matrix to test
  * @return a boolean result
@@ -57,10 +63,8 @@ bool symmetric_diagonally_dominant(const SprsMat* A) {
   return true;
 }
 
-DenseVec stag::jacobi_iteration(const SprsMat* A, DenseVec& b, double eps) {
-  // Check that A is strictly diagonally dominant
-  assert(symmetric_diagonally_dominant(A));
-
+DenseVec stag::jacobi_iteration(const SprsMat* A, DenseVec& b, double eps,
+                                stag_int max_iterations) {
   // The preconditioner is the diagonal matrix of A.
   Eigen::DiagonalMatrix<double, Eigen::Dynamic> P = A->diagonal().asDiagonal();
   Eigen::DiagonalMatrix<double, Eigen::Dynamic> P_inv = P.inverse();
@@ -70,12 +74,15 @@ DenseVec stag::jacobi_iteration(const SprsMat* A, DenseVec& b, double eps) {
   // We will iterate until the error is below the provided epsilon
   DenseVec x_t = b;
   double error = solution_error(A, b, x_t);
+  stag_int iteration = 0;
   while (error > eps) {
     x_t = x_t + P_inv * (b - *A * x_t);
 
-    double new_error = solution_error(A, b, x_t);
-    assert(new_error < error);
-    error = new_error;
+    error = solution_error(A, b, x_t);
+
+    // Check whether we have passed the maximum number of iterations.
+    iteration++;
+    if (iteration > max_iterations) throw stag::ConvergenceError();
   }
 
   return x_t;

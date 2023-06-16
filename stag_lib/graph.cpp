@@ -275,7 +275,7 @@ stag_int stag::Graph::degree_unweighted(stag_int v) {
   return nextRowStart - rowStart + self_loop;
 }
 
-std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
+std::vector<stag::Edge> stag::Graph::neighbors(stag_int v) {
   check_vertex_argument(v);
 
   // Iterate through the non-zero entries in the vth row of the adjacency matrix
@@ -290,7 +290,7 @@ std::vector<stag::edge> stag::Graph::neighbors(stag_int v) {
   stag_int self_loop = 0;
   if (adjacency_matrix_.coeff(v, v) != 0) self_loop = 1;
 
-  std::vector<stag::edge> edges;
+  std::vector<stag::Edge> edges;
   for (stag_int i = 0; i < degree_unw - self_loop; i++) {
     if (*(weights + vRowStart + i) != 0) {
       edges.push_back({v, *(innerIndices + vRowStart + i), *(weights + vRowStart + i)});
@@ -338,7 +338,7 @@ stag::Graph stag::Graph::subgraph(std::vector<stag_int>& vertices) {
   // Construct the non-zero entries in the new adjacency matrix
   std::vector<EdgeTriplet> non_zero_entries;
   for (stag_int v : vertex_set) {
-    for (stag::edge e : neighbors(v)) {
+    for (stag::Edge e : neighbors(v)) {
       if (e.v2 >= v && vertex_set.contains(e.v2)) {
         non_zero_entries.emplace_back(
             old_to_new_id[v], old_to_new_id[e.v2], e.weight);
@@ -555,11 +555,11 @@ bool stag::operator!=(const stag::Graph &lhs, const stag::Graph &rhs) {
   return !(lhs == rhs);
 }
 
-bool stag::operator==(const stag::edge &lhs, const stag::edge &rhs) {
+bool stag::operator==(const stag::Edge &lhs, const stag::Edge &rhs) {
   return lhs.v1 == rhs.v1 && lhs.v2 == rhs.v2 && lhs.weight == rhs.weight;
 }
 
-bool stag::operator!=(const stag::edge &lhs, const stag::edge &rhs) {
+bool stag::operator!=(const stag::Edge &lhs, const stag::Edge &rhs) {
   return !(lhs == rhs);
 }
 
@@ -666,7 +666,7 @@ void stag::AdjacencyListLocalGraph::find_vertex(stag_int v) {
   }
 }
 
-std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
+std::vector<stag::Edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
   // If we have searched for this vertex before, just returned the cached copy.
   if (node_id_to_edgelist_.find(v) != node_id_to_edgelist_.end()) {
     return node_id_to_edgelist_[v];
@@ -678,8 +678,8 @@ std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
   // We are pointing at the correct content line. Parse it to get the neighbours.
   std::string content_line;
   stag::safeGetline(is_, content_line);
-  std::vector<stag::edge> neighbors;
-  std::vector<stag::edge> edges = stag::parse_adjacencylist_content_line(
+  std::vector<stag::Edge> neighbors;
+  std::vector<stag::Edge> edges = stag::parse_adjacencylist_content_line(
       content_line);
 
   // Update our internal edgelist.
@@ -691,7 +691,7 @@ std::vector<stag::edge> stag::AdjacencyListLocalGraph::neighbors(stag_int v) {
 std::vector<stag_int> stag::AdjacencyListLocalGraph::neighbors_unweighted(stag_int v) {
   auto edges = neighbors(v);
   std::vector<stag_int> unweighted_neighbors;
-  for (stag::edge e : edges) {
+  for (stag::Edge e : edges) {
     unweighted_neighbors.push_back(e.v2);
   }
   return unweighted_neighbors;
@@ -700,7 +700,7 @@ std::vector<stag_int> stag::AdjacencyListLocalGraph::neighbors_unweighted(stag_i
 double stag::AdjacencyListLocalGraph::degree(stag_int v) {
   auto edges = neighbors(v);
   double deg = 0;
-  for (stag::edge e : edges) {
+  for (stag::Edge e : edges) {
     deg += e.weight;
   }
   return deg;
@@ -811,4 +811,21 @@ stag::Graph stag::star_graph(stag_int n) {
   SprsMat adj_mat(n, n);
   adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
   return stag::Graph(adj_mat);
+}
+
+stag::Graph stag::second_difference_graph(stag_int n) {
+  if (n < 2) throw std::invalid_argument("Number of vertices must be at least 2.");
+
+  // Construct the non-zero entries in the Laplacian matrix
+  std::vector<EdgeTriplet> non_zero_entries;
+  for (stag_int i = 0; i < n; i++) {
+    non_zero_entries.emplace_back(i, i, 2);
+    if (i < n - 1) non_zero_entries.emplace_back(i, i+1, -1);
+    if (i > 0) non_zero_entries.emplace_back(i, i-1, -1);
+  }
+
+  // Construct the final Laplacian matrix
+  SprsMat lap_mat(n, n);
+  lap_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(lap_mat);
 }
