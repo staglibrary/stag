@@ -102,6 +102,69 @@ namespace stag {
   DenseVec jacobi_iteration(const SprsMat* A, DenseVec& b, double eps,
                             stag_int max_iterations);
 
+
+  /**
+   * Solve the Laplacian system \f$L x = b\f$ by the Gauss-Seidel method.
+   *
+   * At each iteration, we solve the system
+   *
+   * \f[
+   *    P x_{k+1} = (P - L) x_k + b,
+   * \f]
+   *
+   * where \f$P = \mathrm{lower}(L)\f$ is the lower-triangular part of
+   * the Laplacian matrix \f$L\f$ (including the diagonal).
+   * The error at iteration \f$k\f$ is given by
+   *
+   * \f[
+   *    e_k = \| L x_k - b \|_2,
+   * \f]
+   *
+   * and we terminate the algorithm when \f$e_k\f$ is less than the provided
+   * error parameter.
+   *
+   * \note
+   * The Gauss-Seidel method is guaranteed to converge if the Laplacian matrix is
+   * Strictly Diagonally Dominant (SDD), and may also converge in other cases.
+   *
+   * @param g the graph representing the Laplacian matrix to be used
+   * @param b the vector \f$b\f$
+   * @param eps the error parameter \f$\epsilon\f$ controlling the permitted
+   *            approximation error.
+   * @param max_iterations (optional) the maximum number of iterations to perform.
+   *                       If this parameter is omitted, STAG will automatically
+   *                       set the maximum iterations.
+   * @return the approximate solution \f$\hat{x}\f$ such that
+   *         \f$\| L \hat{x} - b \|_2 \leq \epsilon\f$.
+   * @throws stag::ConvergenceError if the algorithm does not converge
+   */
+  DenseVec solve_laplacian_gauss_seidel(Graph* g, DenseVec& b, double eps,
+                                        stag_int max_iterations);
+
+  /**
+   * @overload
+   */
+  DenseVec solve_laplacian_gauss_seidel(Graph* g, DenseVec& b, double eps);
+
+
+  /**
+   * Solve a linear system \f$A x = b\f$ by the Gauss-Seidel method.
+   *
+   * For more information about the Gauss-Seidel method, see
+   * stag::solve_laplacian_gauss_seidel.
+   *
+   * @param A the matrix \f$A\f$
+   * @param b the vector \f$b\f$
+   * @param eps the error parameter \f$\epsilon\f$ controlling the permitted
+   *            approximation error
+   * @param max_iterations the maximum number of iterations to perform
+   * @return the approximate solution \f$\hat{x}\f$ such that
+   *         \f$\| A \hat{x} - b \|_2 \leq \epsilon\f$.
+   * @throws stag::ConvergenceError if the algorithm does not converge
+   */
+  DenseVec gauss_seidel_iteration(const SprsMat* A, DenseVec& b, double eps,
+                                  stag_int max_iterations);
+
   //----------------------------------------------------------------------------
   // Custom Exceptions for errors during the solve
   //----------------------------------------------------------------------------
