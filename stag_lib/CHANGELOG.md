@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Construction of the second difference graph
 - [Issue #106](https://github.com/staglibrary/stag/issues/106): Add Jacobi iteration method for solving Laplacian systems
 - [Issue #106](https://github.com/staglibrary/stag/issues/106): Add Gauss-Seidel method for solving Laplacian systems
+- [Issue #106](https://github.com/staglibrary/stag/issues/106): Add exact conjugate gradient algorithm for solving Laplacian systems
 
 ### Fixed
 - [Issue #87](https://github.com/staglibrary/stag/issues/87): Occasional bug with sorting edgelist file

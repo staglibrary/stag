@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <graph.h>
+#include <random.h>
 #include <solve.h>
 
 TEST(SolveTest, JacobiIterationConvergenceFailure) {
@@ -87,4 +88,13 @@ TEST(SolveTest, ConjugateGradientExact) {
   DenseVec b_hat = *testGraph.laplacian() * x_hat;
 
   EXPECT_TRUE(b_hat.isApprox(b, 0.0001));
+
+  // Try the same with a random graph
+  n = 10;
+  testGraph = stag::erdos_renyi(n, 0.5);
+  DenseVec b2(n);
+  b2 << 4, 2, -4, -1, 3, -2, 3, -6, 1, 0; // Must be orthogonal to all-ones
+  x_hat = stag::solve_laplacian_exact_conjugate_gradient(&testGraph, b2);
+  b_hat = *testGraph.laplacian() * x_hat;
+  EXPECT_TRUE(b_hat.isApprox(b2, 0.0001));
 }

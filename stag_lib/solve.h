@@ -169,6 +169,30 @@ namespace stag {
    * Solve a Laplacian system \f$L x = b\f$ by the exact conjugate gradient
    * method.
    *
+   * This method is not efficient, and an implementation is provided for educational
+   * and research purposes.
+   *
+   * In the conjugate gradient method, we first compute \f$n\f$ vectors
+   * \f$p_1, \ldots, p_n\f$ such that
+   * \f[
+   *    p_i^T L p_j = 0
+   * \f]
+   * for all \f$i \neq j\f$.
+   * Then, \f$p_1, \ldots, p_n\f$ form a basis of \f$\mathbb{R}^n\f$ and we know
+   * that any solution \f$x^*\f$ can be written as
+   * \f[
+   *    x^* = \sum_{i=1}^n \alpha_i p_i
+   * \f]
+   * and
+   * \f[
+   *    L x^* = \sum_{i=1}^n \alpha_i L p_i = b.
+   * \f]
+   * Multiplying both sides by an arbitrary \f$p_k\f$ and rearranging gives
+   * \f[
+   *    \alpha_k = \frac{p_k^T b}{p_k^T L p_k},
+   * \f]
+   * from which we can compute \f$x^*\f$.
+   *
    * @param g the graph representing the Laplacian matrix to be used
    * @param b the vector \f$b\f$
    * @return the solution \f$x\f$ such that \f$L x = b\f$

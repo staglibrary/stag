@@ -212,12 +212,30 @@ DenseVec stag::solve_laplacian_exact_conjugate_gradient(Graph *g, DenseVec &b) {
   //   1. Compute a set of n conjugate vectors p_1, ..., p_n
   //   2. Compute the coefficients a_k = (p_k^T b) / (p_k^T A p_k)
   //   3. Return x = sum_k a_k p_k
-  DenseMat P = conjugate_arnoldi(g->laplacian(), b);
+
+  // If the graph G contains self-loops, then the Laplacian matrix is positive
+  // definite, and we can use a full n-dimensional basis.
+  // Otherwise, we need only (n-1) dimensions.
+  stag_int num_dimensions;
+  if (g->has_self_loops()) {
+    num_dimensions = g->number_of_vertices();
+  } else {
+    num_dimensions = g->number_of_vertices() - 1;
+
+    // If there are no self-loops, the target vector should be orthogonal
+    // to the all ones vector.
+    if (std::abs(b.dot(Eigen::VectorXd::Ones(b.rows()))) > EPSILON) {
+      throw std::invalid_argument("b must be orthogonal to the constant vector");
+    }
+  }
+
+  // Compute the n conjugate vectors p_1, ..., p_n
+  DenseMat P = conjugate_arnoldi(g->laplacian(), b, num_dimensions);
 
   DenseVec x(b.rows());
   x.setZero();
 
-  for (stag_int k = 0; k < b.rows(); k++) {
+  for (stag_int k = 0; k < num_dimensions; k++) {
     // We do not bother diving by p_k^T A p_k since this is guaranteed to be
     // 1 by the output of conjugate_arnoldi.
     double ak = P.col(k).dot(b);
