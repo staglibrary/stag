@@ -3,6 +3,7 @@
 // license.
 //
 #include "iostream"
+#include <cmath>
 #include "graph.h"
 #include "utility.h"
 #include "solve.h"
@@ -144,4 +145,88 @@ DenseVec stag::gauss_seidel_iteration(const SprsMat *A,
   }
 
   return x_t;
+}
+
+/**
+ * Compute the first \f$n\f$ Arnoldi vectors of \f$A\f$, beginning with \f$b\f$.
+ *
+ * The Arnoldi vectors are an orthogonalization of the vectors
+ * \f[
+ *  b, A b, A^2 b, \ldots, A^n b,
+ * \f]
+ * which are the basis vectors of the Krylov subspace.
+ *
+ * In conjugate Arnoldi, the Krylov basis vectors are orthogonalised with
+ * respect to the \f$A\f$ inner product.
+ *
+ * @param A
+ * @param b
+ * @param dim
+ * @return
+ */
+DenseMat conjugate_arnoldi(const SprsMat* A,
+                           DenseVec &b,
+                           stag_int n) {
+  // Comments will give 'latex' type pseudocode for the algorithm as presented
+  // in many sources on the Arnoldi method.
+  DenseMat Q(b.rows(), n);
+
+  // q_i = b
+  Q.col(0) = b / std::sqrt(b.dot(*A * b));
+
+  // FOR i := 2, ... n:
+  for (stag_int i = 1; i < n; i++) {
+    // x_i = A q_{i-1}
+    Q.col(i) = *A * Q.col(i-1);
+
+    // FOR j := 1, ..., i-1
+    for (stag_int j = 0; j < i; j++) {
+      // h_{i,j} = x_i^T A q_j
+      double hij = Q.col(i).dot(*A * Q.col(j));
+
+      // x_i = x_i - h_{i, j} q_j
+      Q.col(i) = Q.col(i) - hij * Q.col(j);
+      assert(std::abs(Q.col(i).dot(*A * Q.col(j))) < 0.000001);
+    } // END FOR
+
+    // h_{i, i} = \sqrt{x_i^T A x_i}
+    double hii = std::sqrt(Q.col(i).dot(*A * Q.col(i)));
+
+    // q_i = x_i / h_{i, i}
+    Q.col(i) = (1 / hii) * Q.col(i);
+    assert(std::abs(Q.col(i).dot(*A * Q.col(i)) - 1) < 0.000001);
+  } // END FOR
+
+  // RETURN q_1, ..., q_n
+  return Q;
+}
+
+DenseMat conjugate_arnoldi(const SprsMat* A,
+                           DenseVec &b) {
+  return conjugate_arnoldi(A, b, A->cols());
+}
+
+DenseVec stag::solve_laplacian_exact_conjugate_gradient(Graph *g, DenseVec &b) {
+  // Exactly solving a Laplacian system by the conjugate gradient method
+  // involves the steps:
+  //   1. Compute a set of n conjugate vectors p_1, ..., p_n
+  //   2. Compute the coefficients a_k = (p_k^T b) / (p_k^T A p_k)
+  //   3. Return x = sum_k a_k p_k
+  DenseMat P = conjugate_arnoldi(g->laplacian(), b);
+
+  DenseVec x(b.rows());
+  x.setZero();
+
+  for (stag_int k = 0; k < b.rows(); k++) {
+    // We do not bother diving by p_k^T A p_k since this is guaranteed to be
+    // 1 by the output of conjugate_arnoldi.
+    double ak = P.col(k).dot(b);
+    x += ak * P.col(k);
+
+    // Check for convergence - if the Laplacian has an eigenvalue close to 0,
+    // we find that sometimes the process converges one step early.
+    if ((*g->laplacian() * x - b).norm() <= EPSILON) break;
+  }
+
+  return x;
 }

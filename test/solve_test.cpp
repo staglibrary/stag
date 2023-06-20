@@ -70,3 +70,21 @@ TEST(SolveTest, GaussSeidel) {
   x << (15./2), 13, (29./2), 15, (19./2);
   EXPECT_TRUE(x_hat.isApprox(x, 0.01));
 }
+
+TEST(SolveTest, ConjugateGradientExact) {
+  // Create a small second difference graph
+  stag_int n = 5;
+  stag::Graph testGraph = stag::second_difference_graph(n);
+
+  // Construct the target vector
+  DenseVec b(n);
+  b << 2, 4, 1, 6, 4;
+
+  // Solve the linear system
+  DenseVec x_hat = stag::solve_laplacian_exact_conjugate_gradient(&testGraph, b);
+
+  // Check that we're close to the solution
+  DenseVec b_hat = *testGraph.laplacian() * x_hat;
+
+  EXPECT_TRUE(b_hat.isApprox(b, 0.0001));
+}

@@ -165,6 +165,16 @@ namespace stag {
   DenseVec gauss_seidel_iteration(const SprsMat* A, DenseVec& b, double eps,
                                   stag_int max_iterations);
 
+  /**
+   * Solve a Laplacian system \f$L x = b\f$ by the exact conjugate gradient
+   * method.
+   *
+   * @param g the graph representing the Laplacian matrix to be used
+   * @param b the vector \f$b\f$
+   * @return the solution \f$x\f$ such that \f$L x = b\f$
+   */
+  DenseVec solve_laplacian_exact_conjugate_gradient(Graph* g, DenseVec& b);
+
   //----------------------------------------------------------------------------
   // Custom Exceptions for errors during the solve
   //----------------------------------------------------------------------------
