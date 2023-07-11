@@ -1089,6 +1089,21 @@ TEST(GraphTest, UnionComponents) {
   EXPECT_TRUE(cc_degrees == g1_degrees);
 }
 
+TEST(GraphTest, GraphConnected) {
+  // Create a random disconnected graph
+  stag_int n = 100;
+  stag::Graph g1 = stag::sbm(n, 2, 0.5, 0);
+  EXPECT_FALSE(g1.is_connected());
+
+  // The barbell graph is connected
+  stag::Graph g2 = stag::barbell_graph(n);
+  EXPECT_TRUE(g2.is_connected());
+
+  // The identity graph is not connected
+  stag::Graph g3 = stag::identity_graph(n);
+  EXPECT_FALSE(g3.is_connected());
+}
+
 TEST(GraphTest, ALLGSelfLoopDegree) {
   stag::Graph testGraph = stag::identity_graph(5);
   std::string adjacencylist_filename = "output.adjacencylist";
