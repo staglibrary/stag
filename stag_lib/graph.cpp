@@ -829,3 +829,13 @@ stag::Graph stag::identity_graph(stag_int n) {
   adj_mat.setIdentity();
   return stag::Graph(adj_mat);
 }
+
+//------------------------------------------------------------------------------
+// Other operators
+//------------------------------------------------------------------------------
+stag::Graph stag::operator+(const stag::Graph& lhs, const stag::Graph& rhs) {
+  if (lhs.number_of_vertices() != rhs.number_of_vertices())
+    throw std::invalid_argument("Number of vertices must match.");
+
+  return stag::Graph(*lhs.adjacency() + *rhs.adjacency());
+}

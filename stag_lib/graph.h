@@ -698,6 +698,26 @@ namespace stag {
    * @return a stag::Graph object representing the identity graph
    */
   stag::Graph identity_graph(stag_int n);
+
+  /**
+   * Adding two graphs is equivalent to adding their adjacency matrices.
+   *
+   * The graphs must have the same number of vertices. For example, the following
+   * code adds a complete graph and a cycle graph on \f$5\f$ vertices.
+   *
+   * \code{.cpp}
+   *    #include <stag/graph.h>
+   *
+   *    int main() {
+   *        stag::Graph myGraph = stag::complete_graph(5) + stag::cycle_graph(5);
+   *
+   *        return 0;
+   *    }
+   * \endcode
+   *
+   * @throws std::invalud_argument if the graphs have different sizes.
+   */
+  stag::Graph operator+(const stag::Graph& lhs, const stag::Graph& rhs);
 }
 
 #endif //STAG_LIBRARY_H

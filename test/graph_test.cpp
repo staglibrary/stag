@@ -1117,3 +1117,28 @@ TEST(GraphTest, ALLGSelfLoopDegree) {
     EXPECT_EQ(allg.degree_unweighted(i), 1);
   }
 }
+
+TEST(GraphTest, AddGraphs) {
+  stag_int n = 4;
+  stag::Graph testGraph = stag::complete_graph(n) + stag::cycle_graph(n);
+
+  // Define the expected adjacency matrix
+  std::vector<stag_int> rowStarts = {0, 3, 6, 9, 12};
+  std::vector<stag_int> colIndices = {1, 2, 3, 0, 2, 3, 0, 1, 3, 0, 1, 2};
+  std::vector<double> values = {2, 1, 2, 2, 2, 1, 1, 2, 2, 2, 1, 2};
+
+  // Check that the laplacian matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(rowStarts, newStarts);
+  EXPECT_EQ(colIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
+TEST(GraphTest, AddGraphsBadSize) {
+  stag::Graph g1 = stag::complete_graph(5);
+  stag::Graph g2 = stag::cycle_graph(6);
+  EXPECT_THROW(g1 + g2, std::invalid_argument);
+}
