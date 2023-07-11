@@ -8,8 +8,6 @@ on:
 jobs:
   Publish_Docs:
     runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Install Eigen
         run: sudo apt-get install -y libeigen3-dev
@@ -37,10 +35,11 @@ jobs:
         uses: cpina/github-action-push-to-another-repository@main
         env:
           SSH_DEPLOY_KEY: ${{ secrets.WEBSITE_SSH_DEPLOY_KEY }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           source-directory: 'cmake-build-release/docs/docs/doxygen/html'
           destination-github-username: 'staglibrary'
           destination-repository-name: 'stagorg.github.io'
           user-email: macgregor.pr@gmail.com
           target-branch: master
-          target-directory: docs/cpp/${{BRANCH_NAME}}
+          target-directory: 'docs/cpp/${{ BRANCH_NAME }}'
