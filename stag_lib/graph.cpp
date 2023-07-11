@@ -10,6 +10,7 @@
 #include "graph.h"
 #include "utility.h"
 #include "graphio.h"
+#include "cluster.h"
 
 
 //------------------------------------------------------------------------------
@@ -212,6 +213,12 @@ stag_int stag::Graph::number_of_edges() const {
 
 bool stag::Graph::has_self_loops() const {
   return has_self_loops_;
+}
+
+bool stag::Graph::is_connected() {
+  if ((stag_int) stag::connected_component(this, 0).size()
+        == number_of_vertices_) return true;
+  return false;
 }
 
 void stag::Graph::check_vertex_argument(stag_int v) {

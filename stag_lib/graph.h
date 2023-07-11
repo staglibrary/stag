@@ -391,6 +391,14 @@ namespace stag {
        bool has_self_loops() const;
 
        /**
+        * Returns a boolean indicating whether the graph is connected.
+        *
+        * The running time of this method is \f$O(m)\f$, where \f$m\f$ is the
+        * number of edges in the graph.
+        */
+       bool is_connected();
+
+       /**
         * Construct and return a subgraph of this graph.
         *
         * Note that the vertex indices will be changed in the subgraph.

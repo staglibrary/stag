@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Issue #22](https://github.com/staglibrary/stag/issues/22): Add Cheeger cut method
 - [Issue #107](https://github.com/staglibrary/stag/issues/107): Add support for self-loops in graphs
 - [Issue #108](https://github.com/staglibrary/stag/issues/108): Allow graphs to be initialised with Laplacian matrix
+- [Issue #111](https://github.com/staglibrary/stag/issues/111): Add `is_connected` method to Graph object
 
 ### Fixed
 - [Issue #87](https://github.com/staglibrary/stag/issues/87): Occasional bug with sorting edgelist file
