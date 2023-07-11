@@ -92,6 +92,9 @@ namespace stag {
     public:
       /**
        * Given a vertex v, return its weighted degree.
+       *
+       * A self-loop of weight \f$1\f$ contributes \f$2\f$ to the vertex's
+       * degree.
        */
       virtual double degree(stag_int v) = 0;
 
@@ -684,6 +687,17 @@ namespace stag {
    */
    stag::Graph star_graph(stag_int n);
 
+  /**
+   * Construct the 'identity graph'. The identity graph consists of \f$n\f$
+   * vertices, each with a self-loop of weight 1.
+   *
+   * Both the adjacency matrix and Laplacian matrix of the identity graph are
+   * equal to the identity matrix.
+   *
+   * @param n the number of vertices in the constructed graph
+   * @return a stag::Graph object representing the identity graph
+   */
+  stag::Graph identity_graph(stag_int n);
 }
-#endif //STAG_LIBRARY_H
 
+#endif //STAG_LIBRARY_H
