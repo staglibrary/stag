@@ -1117,3 +1117,32 @@ TEST(GraphTest, ALLGSelfLoopDegree) {
     EXPECT_EQ(allg.degree_unweighted(i), 1);
   }
 }
+
+TEST(GraphTest, ScalarMultiplication) {
+  // Create a small star graph, multiplied by 3
+  stag::Graph testGraph = 3 * stag::star_graph(5);
+
+  // Define the expected adjacency matrix
+  std::vector<stag_int> colStarts = {0, 4, 5, 6, 7, 8};
+  std::vector<stag_int> rowIndices = {1, 2, 3, 4, 0, 0, 0, 0};
+  std::vector<stag_int> values = {3, 3, 3, 3, 3, 3, 3, 3};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Try post-multiplying by a double
+  testGraph = stag::star_graph(5) * 3.0;
+  newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
