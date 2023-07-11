@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Issue #111](https://github.com/staglibrary/stag/issues/111): Add `is_connected` method to Graph object
 - [Issue #113](https://github.com/staglibrary/stag/issues/113): Construct the identity graph
 - [Issue #114](https://github.com/staglibrary/stag/issues/114): Implement scalar multiplication of graphs
+- [Issue #112](https://github.com/staglibrary/stag/issues/112): Add graph addition operator
 
 ### Fixed
 - [Issue #87](https://github.com/staglibrary/stag/issues/87): Occasional bug with sorting edgelist file
