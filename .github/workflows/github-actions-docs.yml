@@ -31,6 +31,8 @@ jobs:
         run: |
           cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
           cmake --build cmake-build-release --target Documentation
+      - name: Get the branch name
+        uses: nelonoel/branch-name@v1
       - name: Publish docs
         uses: cpina/github-action-push-to-another-repository@main
         env:
@@ -41,4 +43,4 @@ jobs:
           destination-repository-name: 'stagorg.github.io'
           user-email: macgregor.pr@gmail.com
           target-branch: master
-          target-directory: docs/cpp
+          target-directory: docs/cpp/${BRANCH_NAME}
