@@ -1128,6 +1128,6 @@ TEST(GraphTest, ScalarMultiplication) {
   newValues = stag::sprsMatValues(testGraph.adjacency());
 
   EXPECT_EQ(colStarts, newStarts);
-  EXPECT_EQ(rowIndices, newIndicesange;
+  EXPECT_EQ(rowIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
