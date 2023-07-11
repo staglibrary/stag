@@ -548,27 +548,6 @@ namespace stag {
       SprsMat lazy_random_walk_matrix_;
   };
 
-  /**
-   * \cond
-   * Do not generate documentation for operator definitions.
-   */
-
-  /**
-   * Define equality for two graphs. Two graphs are equal iff their adjacency
-   * matrices are equal
-   */
-  bool operator==(const Graph& lhs, const Graph& rhs);
-  bool operator!=(const Graph& lhs, const Graph& rhs);
-
-  /**
-   * Define equality for edges.
-   */
-  bool operator==(const edge& lhs, const edge& rhs);
-  bool operator!=(const edge& lhs, const edge& rhs);
-
-  /**
-   * \endcond
-   */
 
   /**
    * \brief A local graph backed by an adjacency list file on disk.
@@ -698,6 +677,61 @@ namespace stag {
    * @return a stag::Graph object representing the identity graph
    */
   stag::Graph identity_graph(stag_int n);
+
+  /**
+   * \cond
+   * Do not generate documentation for operator definitions.
+   */
+
+  /**
+   * Define equality for two graphs. Two graphs are equal iff their adjacency
+   * matrices are equal
+   */
+  bool operator==(const Graph& lhs, const Graph& rhs);
+  bool operator!=(const Graph& lhs, const Graph& rhs);
+
+  /**
+   * Define equality for edges.
+   */
+  bool operator==(const edge& lhs, const edge& rhs);
+  bool operator!=(const edge& lhs, const edge& rhs);
+
+  /**
+   * \endcond
+   */
+
+  /**
+   * Multiplying a graph by a scalar is equivalent to multiplying the weight
+   * of each edge by the given value.
+   *
+   * For example, the following code creates a complete graph with edges of
+   * weight 2.
+   *
+   * \code{.cpp}
+   *     #include <stag/graph.h>
+   *
+   *     int main() {
+   *       stag::Graph myGraph = 2 * stag::complete_graph(10);
+   *
+   *       return 0;
+   *     }
+   * \endcode
+   *
+   */
+  template <typename Scalar>
+  stag::Graph operator*(Scalar lhs, const stag::Graph& rhs) {
+    const SprsMat new_adj = lhs * *rhs.adjacency();
+    return stag::Graph(new_adj);
+  }
+
+  /**
+   * \overload
+   */
+  template <typename Scalar>
+  stag::Graph operator*(const stag::Graph& lhs, Scalar rhs) {
+    const SprsMat new_adj = rhs * *lhs.adjacency();
+    return stag::Graph(new_adj);
+  }
 
   /**
    * Adding two graphs is equivalent to adding their adjacency matrices.

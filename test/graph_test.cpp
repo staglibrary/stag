@@ -1127,7 +1127,7 @@ TEST(GraphTest, AddGraphs) {
   std::vector<stag_int> colIndices = {1, 2, 3, 0, 2, 3, 0, 1, 3, 0, 1, 2};
   std::vector<double> values = {2, 1, 2, 2, 2, 1, 1, 2, 2, 2, 1, 2};
 
-  // Check that the laplacian matrix has the form that we expect
+  // Check that the adjacency matrix has the form that we expect
   std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
   std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
   std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
@@ -1141,4 +1141,32 @@ TEST(GraphTest, AddGraphsBadSize) {
   stag::Graph g1 = stag::complete_graph(5);
   stag::Graph g2 = stag::cycle_graph(6);
   EXPECT_THROW(g1 + g2, std::invalid_argument);
+}
+
+TEST(GraphTest, ScalarMultiplication) {
+  // Create a small star graph, multiplied by 3
+  stag::Graph testGraph = 3 * stag::star_graph(5);
+
+  // Define the expected adjacency matrix
+  std::vector<stag_int> colStarts = {0, 4, 5, 6, 7, 8};
+  std::vector<stag_int> rowIndices = {1, 2, 3, 4, 0, 0, 0, 0};
+  std::vector<stag_int> values = {3, 3, 3, 3, 3, 3, 3, 3};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // Try post-multiplying by a double
+  testGraph = stag::star_graph(5) * 3.0;
+  newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
