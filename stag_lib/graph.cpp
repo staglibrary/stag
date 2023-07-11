@@ -701,7 +701,9 @@ double stag::AdjacencyListLocalGraph::degree(stag_int v) {
   auto edges = neighbors(v);
   double deg = 0;
   for (stag::edge e : edges) {
-    deg += e.weight;
+    // Self-loops count twice towards the degree
+    if (e.v2 == v) deg += 2 * e.weight;
+    else deg += e.weight;
   }
   return deg;
 }
@@ -810,5 +812,13 @@ stag::Graph stag::star_graph(stag_int n) {
   // Construct the final adjacency matrix
   SprsMat adj_mat(n, n);
   adj_mat.setFromTriplets(non_zero_entries.begin(), non_zero_entries.end());
+  return stag::Graph(adj_mat);
+}
+
+stag::Graph stag::identity_graph(stag_int n) {
+  if (n < 1) throw std::invalid_argument("Number of vertices must be at least 1.");
+
+  SprsMat adj_mat(n, n);
+  adj_mat.setIdentity();
   return stag::Graph(adj_mat);
 }

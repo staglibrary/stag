@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <graph.h>
+#include <graphio.h>
 #include <utility.h>
 #include <random.h>
 #include <cluster.h>
@@ -801,6 +802,33 @@ TEST(GraphTest, BarbellGraph) {
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
 
+TEST(GraphTest, IdentityGraph) {
+  // Create a small identity graph
+  stag::Graph testGraph = stag::identity_graph(5);
+
+  // Define the expected adjacency matrix
+  std::vector<stag_int> colStarts = {0, 1, 2, 3, 4, 5};
+  std::vector<stag_int> rowIndices = {0, 1, 2, 3, 4};
+  std::vector<stag_int> values = {1, 1, 1, 1, 1};
+
+  // Check that the adjacency matrix has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(testGraph.adjacency());
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(testGraph.adjacency());
+  std::vector<double> newValues = stag::sprsMatValues(testGraph.adjacency());
+
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+
+  // The Laplacian matrix should also be the identity
+  newStarts = stag::sprsMatOuterStarts(testGraph.laplacian());
+  newIndices = stag::sprsMatInnerIndices(testGraph.laplacian());
+  newValues = stag::sprsMatValues(testGraph.laplacian());
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
+}
+
 TEST(GraphTest, Equality) {
   // Create two identical graphs
   stag::Graph graph1 = stag::cycle_graph(10);
@@ -1059,4 +1087,18 @@ TEST(GraphTest, UnionComponents) {
   std::sort(cc_degrees.begin(), cc_degrees.end());
   std::sort(g1_degrees.begin(), g1_degrees.end());
   EXPECT_TRUE(cc_degrees == g1_degrees);
+}
+
+TEST(GraphTest, ALLGSelfLoopDegree) {
+  stag::Graph testGraph = stag::identity_graph(5);
+  std::string adjacencylist_filename = "output.adjacencylist";
+  stag::save_adjacencylist(testGraph, adjacencylist_filename);
+  stag::AdjacencyListLocalGraph allg{adjacencylist_filename};
+
+  // The degree of a node in the identity graph is 2 - the self-loop counts
+  // twice.
+  for (stag_int i = 0; i < 5; i++) {
+    EXPECT_EQ(allg.degree(i), 2);
+    EXPECT_EQ(allg.degree_unweighted(i), 1);
+  }
 }
