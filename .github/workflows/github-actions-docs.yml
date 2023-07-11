@@ -42,4 +42,4 @@ jobs:
           destination-repository-name: 'stagorg.github.io'
           user-email: macgregor.pr@gmail.com
           target-branch: master
-          target-directory: 'docs/cpp/${{ BRANCH_NAME }}'
+          target-directory: ${{ format('docs/cpp/{0}', BRANCH_NAME) }}'
