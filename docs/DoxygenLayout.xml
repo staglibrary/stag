@@ -38,6 +38,7 @@
       <tab type="globals" visible="no" title="" intro=""/>
     </tab>
     <tab type="examples" visible="yes" title="" intro=""/>
+    <tab type="user" url="https://github.com/staglibrary/stag/releases" title="Releases"/>
     <tab type="user" url="https://staglibrary.io/docs/python" title="STAG Python"/>
     <tab type="user" url="https://staglibrary.io/" title="STAG Website"/>
   </navindex>
