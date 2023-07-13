@@ -311,7 +311,7 @@ namespace stag {
    * as sets and any duplicates will be ignored.
    *
    * @param S a vector containing the first set of integers
-   * @param T a vector containina the second set of integers
+   * @param T a vector containing the second set of integers
    * @return a vector containing the integers in the symmetric difference of S
    *         and T.
    */
