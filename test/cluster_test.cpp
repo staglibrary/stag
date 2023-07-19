@@ -124,6 +124,35 @@ TEST(ClusterTest, ApproxPageRank) {
   EXPECT_FLOATS_NEARLY_EQ(expected_r, stag::sprsMatValues(&std::get<1>(apr)), 0.00001);
 }
 
+TEST(ClusterTest, ApproxPageRankNoPush) {
+  // Test the approximate pagerank algorithm when there is no push operation.
+  // This happens when the degree of the starting vertex is greater than 1/eps.
+
+  // Construct a test graph
+  std::vector<stag_int> rowStarts = {0, 3, 5, 7, 10};
+  std::vector<stag_int> colIndices = {1, 2, 3, 0, 3, 0, 3, 0, 1, 2};
+  std::vector<double> values = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  stag::Graph testGraph(rowStarts, colIndices, values);
+
+  // Run the approximate pagerank method
+  SprsMat seed(1, 1);
+  seed.coeffRef(0, 0) = 1;
+  std::tuple<SprsMat, SprsMat> apr = stag::approximate_pagerank(&testGraph, seed, 1./3, 1./2);
+
+  // Define the expected pagerank vector - this is the empty sparse matrix.
+  std::vector<stag_int> colStarts = {0, 0};
+  std::vector<stag_int> rowIndices;
+  std::vector<stag_int> valuesVec;
+
+  // Check that the pagerank vector has the form that we expect
+  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(&std::get<0>(apr));
+  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(&std::get<0>(apr));
+  std::vector<double> newValues = stag::sprsMatValues(&std::get<0>(apr));
+  EXPECT_EQ(colStarts, newStarts);
+  EXPECT_EQ(rowIndices, newIndices);
+  EXPECT_FLOATS_NEARLY_EQ(valuesVec, newValues, 0.000001);
+}
+
 TEST(ClusterTest, ACL) {
   // Construct a test barbell graph
   stag::Graph testGraph = stag::barbell_graph(10);
