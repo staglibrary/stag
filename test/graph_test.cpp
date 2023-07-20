@@ -138,6 +138,24 @@ TEST(GraphTest, LaplacianSelfLoopInitialisation) {
   EXPECT_GRAPHS_NEARLY_EQ(testGraph1, testGraph3);
 }
 
+TEST(GraphTest, InvalidLaplacianInitialisation) {
+  // Try to initialise a graph with a matrix which cannot be a Laplacian or
+  // adjacency matrix.
+  std::vector<stag_int> matRowStarts = {0, 2, 4, 6, 8};
+  std::vector<stag_int> matColIndices = {1, 3, 0, 2, 1, 3, 0, 2};
+  std::vector<double> matValues = {-1, 1, -1, 1, 1, 1, 1, 1};
+
+  EXPECT_THROW(stag::Graph(matRowStarts, matColIndices, matValues),
+               std::domain_error);
+
+  // Try again with a non diagonally dominant Laplacian
+  matRowStarts = {0, 2, 4, 6, 8};
+  matColIndices = {1, 3, 0, 2, 1, 3, 0, 2};
+  matValues = {-1, -1, -1, -1, -1, -1, -1, -1};
+  EXPECT_THROW(stag::Graph(matRowStarts, matColIndices, matValues),
+               std::domain_error);
+}
+
 TEST(GraphTest, Volume) {
   stag::Graph testGraph = createTestGraph();
   EXPECT_EQ(testGraph.total_volume(), 24.6666);
