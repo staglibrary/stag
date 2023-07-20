@@ -19,6 +19,9 @@
 /**
  * Given a matrix, which is either an adjacency matrix OR a Laplacian matrix,
  * return the adjacency matrix of the graph.
+ *
+ * Throws a std::domain_error if the provided matrix doesn't look like an
+ * adjacency matrix or Laplacian matrix of an unsigned graph.
  */
 SprsMat adjacency_from_adj_or_lap(const SprsMat& matrix) {
   // Since we support only graphs with positive edge weights,
@@ -26,20 +29,34 @@ SprsMat adjacency_from_adj_or_lap(const SprsMat& matrix) {
   // negative entries, then it must be the Laplacian. Otherwise, we take it to
   // be an adjacency matrix.
   //
-  // We first assume the given matrix is an adjacency matrix and update this
-  // if we find a negative entry.
+  // If we find a negative entry, then we check the following properties of the
+  // Laplacian matrix:
+  //    - no positive off-diagonal entries
+  //    - diagonal entries are non-negative
+  //    - matrix is diagonally dominant
   SprsMat adjacency_matrix(matrix.rows(), matrix.cols());
   bool found_negative_value = false;
+  bool positive_off_diagonal_value = false;
+  bool diagonally_dominant = true;
   for (int k = 0; k < matrix.outerSize() ; ++k) {
+    double col_total = 0;
     for (SprsMat::InnerIterator it(matrix, k); it; ++it) {
+      col_total += it.value();
       if (it.value() < 0) {
         found_negative_value = true;
-        break;
+      } else {
+        if (it.row() != it.col()) positive_off_diagonal_value = true;
       }
     }
-    if (found_negative_value) break;
+    if (col_total < 0) diagonally_dominant = false;
   }
+
   if (found_negative_value) {
+    // Check that the matrix is diagonally dominant and has no positive
+    // off-diagonal entries.
+    if (positive_off_diagonal_value) throw std::domain_error("Off-diagonal entries should be all negative or all positive.");
+    if (!diagonally_dominant) throw std::domain_error("Laplacian matrix should be diagonally dominant.");
+
     // The adjacency matrix is D - L
     // First set it to negative the Laplacian, and then update the diagonal
     // entries.

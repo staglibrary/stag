@@ -4,6 +4,11 @@ All notable changes to the library are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- [Issue #126](https://github.com/staglibrary/stag/issues/126): Check Laplacian matrix is diagonally dominant
+
 ## [1.3.0] - 2023-07-12
 ### Added
 - [Issue #92](https://github.com/staglibrary/stag/issues/92): Method for calculating the symmetric difference

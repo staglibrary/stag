@@ -146,7 +146,14 @@ TEST(GraphTest, InvalidLaplacianInitialisation) {
   std::vector<double> matValues = {-1, 1, -1, 1, 1, 1, 1, 1};
 
   EXPECT_THROW(stag::Graph(matRowStarts, matColIndices, matValues),
-               std::invalid_argument);
+               std::domain_error);
+
+  // Try again with a non diagonally dominant Laplacian
+  matRowStarts = {0, 2, 4, 6, 8};
+  matColIndices = {1, 3, 0, 2, 1, 3, 0, 2};
+  matValues = {-1, -1, -1, -1, -1, -1, -1, -1};
+  EXPECT_THROW(stag::Graph(matRowStarts, matColIndices, matValues),
+               std::domain_error);
 }
 
 TEST(GraphTest, Volume) {
