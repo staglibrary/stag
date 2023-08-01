@@ -34,6 +34,13 @@ TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
   }
 }
 
+TEST(SpectrumTest, LaplacianEigenvalues) {
+  stag::Graph testGraph = stag::complete_graph(100);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.laplacian(), 1);
+  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
+  EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
+}
+
 TEST(SpectrumTest, RandomGraphSpectrum) {
     // Create a graph from the SBM
     stag_int n = 100;
