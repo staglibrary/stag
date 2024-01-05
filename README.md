@@ -102,7 +102,7 @@ You may find it helpful to refer to the [example STAG project](https://github.co
 
 ## Citing STAG
 
-If you find the STAG library useful in your research, please cite our technical report.
+If you find the STAG library useful in your research, please cite our [technical report](https://arxiv.org/abs/2304.03170).
 
 ```
 @article{stag,
