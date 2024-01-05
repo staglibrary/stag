@@ -100,6 +100,23 @@ target_link_libraries(
 
 You may find it helpful to refer to the [example STAG project](https://github.com/staglibrary/example-stag-project).
 
+## Citing STAG
+
+If you find the STAG library useful in your research, please cite our technical report.
+
+```
+@article{stag,
+    author       = {Peter Macgregor and He Sun},
+    title        = {Spectral Toolkit of Algorithms for Graphs: Technical Report {(1)}},
+    journal      = {CoRR},
+    volume       = {abs/2304.03170},
+    year         = {2023},
+    doi          = {10.48550/arXiv.2304.03170},
+    eprinttype    = {arXiv},
+    eprint       = {2304.03170},
+}
+```
+
 ## Contact
 
 If you have any questions about using the STAG library, please contact a member of the STAG
