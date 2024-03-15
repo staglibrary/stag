@@ -75,7 +75,7 @@ Eigen::VectorXd random_unit_vector(StagInt dimension) {
   // normalising the resulting vector.
   std::random_device dev;
   std::mt19937 prng(dev());
-  std::normal_distribution<double> gaussian_distribution(0, 1);
+  std::normal_distribution<StagReal> gaussian_distribution(0, 1);
 
   Eigen::VectorXd random_vector(dimension);
   for (auto i = 0; i < dimension; i++) {
@@ -103,7 +103,7 @@ Eigen::VectorXd stag::power_method(const SprsMat *mat, StagInt num_iterations,
 Eigen::VectorXd stag::power_method(const SprsMat *mat,
                                    Eigen::VectorXd initial_vector) {
   StagInt n = mat->rows();
-  StagInt t = 10 * ((int) ceil(log((double) n)));
+  StagInt t = 10 * ((int) ceil(log((StagReal) n)));
   return stag::power_method(mat, t, std::move(initial_vector));
 }
 
@@ -115,12 +115,12 @@ Eigen::VectorXd stag::power_method(const SprsMat *mat) {
   return stag::power_method(mat, random_unit_vector(mat->rows()));
 }
 
-double stag::rayleigh_quotient(const SprsMat *mat, Eigen::VectorXd& vec) {
+StagReal stag::rayleigh_quotient(const SprsMat *mat, Eigen::VectorXd& vec) {
   if (mat->rows() != mat->cols()) throw std::invalid_argument("Matrix must be square.");
   if (vec.size() != mat->rows()) throw std::invalid_argument("Vector and matrix must have the same dimension");
   if (vec.norm() == 0) throw std::invalid_argument("Vector with norm 0 had undefined Rayleigh quotient");
 
-  double numerator = vec.transpose() * *mat * vec;
-  double denominator = pow(vec.norm(), 2);
+  StagReal numerator = vec.transpose() * *mat * vec;
+  StagReal denominator = pow(vec.norm(), 2);
   return numerator / denominator;
 }

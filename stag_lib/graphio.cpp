@@ -26,10 +26,10 @@ stag::edge parse_edgelist_content_line(std::string line) {
   // Split the line to extract the edge information
   // The weight defaults to 1 if it is not otherwise updated by the information
   // in the line.
-  int num_tokens_found = 0;
-  int u = -1;
-  int v = -1;
-  double weight = 1;
+  StagUInt num_tokens_found = 0;
+  StagInt u = -1;
+  StagInt v = -1;
+  StagReal weight = 1;
 
   // Try splitting by each delimiter in turn
   size_t split_pos = 0;
@@ -434,7 +434,7 @@ void stag::sort_edgelist(std::string &filename) {
 
 stag::edge parse_adjacencylist_edge(std::string token, StagInt source_node) {
   StagInt neighbour;
-  double weight;
+  StagReal weight;
 
   // Try to split on ':' to get a weight
   size_t split_pos = token.find(':');

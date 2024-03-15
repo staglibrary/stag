@@ -11,49 +11,12 @@
 #ifndef STAG_LIBRARY_H
 #define STAG_LIBRARY_H
 
-#include <Eigen/Sparse>
 #include <vector>
 #include <fstream>
 #include <unordered_map>
 
+#include <definitions.h>
 
-/**
- * The integer type used throughout the library.
- */
-typedef int64_t StagInt;
-
-/**
- * The fundamental datatype used in this library is the sparse matrix.
- * We use the `Eigen::SparseMatrix` class in column-major format.
- */
-typedef Eigen::SparseMatrix<double, Eigen::ColMajor, StagInt> SprsMat;
-
-/**
- *  Occasionally, it is more efficient to use a dense matrix, such as when
- *  the matrix is very small.
- *
- *  In this case, we use the `Eigen::MatrixXd` class.
- */
-typedef Eigen::MatrixXd DenseMat;
-
-/**
- * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value
- * of an entry in a graph adjacency matrix.
- */
-typedef Eigen::Triplet<double, StagInt> EdgeTriplet;
-
-/**
- * \cond
- */
-// Redefine the eigen index type to be the same as stag_int
-#undef EIGEN_DEFAULT_DENSE_INDEX_TYPE
-#define EIGEN_DEFAULT_DENSE_INDEX_TYPE stag_int
-
-// Define a small epsilon
-#define EPSILON 0.0000000001
-/**
- * \endcond
- */
 
 namespace stag {
   /**
@@ -73,7 +36,7 @@ namespace stag {
     /**
      * The weight of the edge.
      */
-    double weight;
+    StagReal weight;
   };
 
   /**
@@ -93,7 +56,7 @@ namespace stag {
        * A self-loop of weight \f$1\f$ contributes \f$2\f$ to the vertex's
        * degree.
        */
-      virtual double degree(StagInt v) = 0;
+      virtual StagReal degree(StagInt v) = 0;
 
       /**
        * Given a vertex v, return its unweighted degree. That is, the number
@@ -135,7 +98,7 @@ namespace stag {
        *                 queried.
        * @return a vector of degrees
        */
-      virtual std::vector<double> degrees(std::vector<StagInt> vertices) = 0;
+      virtual std::vector<StagReal> degrees(std::vector<StagInt> vertices) = 0;
 
       /**
        * Given a list of vertices, return their unweighted degrees.
@@ -236,7 +199,7 @@ namespace stag {
        * @param values the values of each non-zero element in the matrix
        */
       Graph(std::vector<StagInt> &outerStarts, std::vector<StagInt> &innerIndices,
-            std::vector<double> &values);
+            std::vector<StagReal> &values);
 
       /**
        * Return the sparse adjacency matrix of the graph.
@@ -361,7 +324,7 @@ namespace stag {
        *
        * @return the graph's volume.
        */
-      double total_volume();
+      StagReal total_volume();
 
       /**
        * The average degree of the graph.
@@ -370,7 +333,7 @@ namespace stag {
        *
        * @return the graph's average degree.
        */
-      double average_degree();
+      StagReal average_degree();
 
       /**
        * The number of vertices in the graph.
@@ -422,11 +385,11 @@ namespace stag {
        Graph disjoint_union(Graph& other);
 
        // Override the abstract methods in the LocalGraph base class.
-       double degree(StagInt v) override;
+       StagReal degree(StagInt v) override;
        StagInt degree_unweighted(StagInt v) override;
        std::vector<edge> neighbors(StagInt v) override;
        std::vector<StagInt> neighbors_unweighted(StagInt v) override;
-       std::vector<double> degrees(std::vector<StagInt> vertices) override;
+       std::vector<StagReal> degrees(std::vector<StagInt> vertices) override;
        std::vector<StagInt> degrees_unweighted(std::vector<StagInt> vertices) override;
        bool vertex_exists(StagInt v) override;
        ~Graph() override = default;
@@ -578,11 +541,11 @@ namespace stag {
     AdjacencyListLocalGraph(const std::string& filename);
 
     // Override the abstract methods in the LocalGraph base class.
-    double degree(StagInt v) override;
+    StagReal degree(StagInt v) override;
     StagInt degree_unweighted(StagInt v) override;
     std::vector<edge> neighbors(StagInt v) override;
     std::vector<StagInt> neighbors_unweighted(StagInt v) override;
-    std::vector<double> degrees(std::vector<StagInt> vertices) override;
+    std::vector<StagReal> degrees(std::vector<StagInt> vertices) override;
     std::vector<StagInt> degrees_unweighted(std::vector<StagInt> vertices) override;
     bool vertex_exists(StagInt v) override;
     ~AdjacencyListLocalGraph() override;

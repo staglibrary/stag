@@ -16,6 +16,7 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCore.h
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
+        definitions.h
         )
 
 set(SOURCE_FILES

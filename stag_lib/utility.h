@@ -21,7 +21,7 @@ namespace stag {
    * Given a sparse matrix, return the values vector, compatible with the CSC
    * format of other libraries.
    */
-  std::vector<double> sprsMatValues(const SprsMat *matrix);
+  std::vector<StagReal> sprsMatValues(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the InnerIndices vector, compatible with the
@@ -42,12 +42,12 @@ namespace stag {
    * @param n (optional) - the dimension of the dense vector to construct
    * @return a vector
    */
-   std::vector<double> sprsMatToVec(const SprsMat *matrix, StagInt n);
+   std::vector<StagReal> sprsMatToVec(const SprsMat *matrix, StagInt n);
 
    /**
     * \overload
     */
-   std::vector<double> sprsMatToVec(const SprsMat *matrix);
+   std::vector<StagReal> sprsMatToVec(const SprsMat *matrix);
 
    /**
     * Construct a sparse matrix from the CSC data vectors.
@@ -61,7 +61,7 @@ namespace stag {
     */
    SprsMat sprsMatFromVectors(std::vector<StagInt>& column_starts,
                               std::vector<StagInt>& row_indices,
-                              std::vector<double>& values);
+                              std::vector<StagReal>& values);
 
    /**
     * Add two vectors together element-wise.

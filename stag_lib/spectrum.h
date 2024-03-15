@@ -25,7 +25,7 @@ namespace stag {
    *
    * Undocumented by doxygen.
    */
-  typedef Spectra::SparseSymMatProd<double, Eigen::Upper, Eigen::ColMajor, StagInt> SprsMatOp;
+  typedef Spectra::SparseSymMatProd<StagReal, Eigen::Upper, Eigen::ColMajor, StagInt> SprsMatOp;
   /**
    * \endcond
    */
@@ -196,7 +196,7 @@ namespace stag {
    * @param vec a vector \f$v \in \mathbb{R}^n\f$.
    * @return the Rayleigh quotient \f$R(M, v)\f$.
    */
-  double rayleigh_quotient(const SprsMat* mat, Eigen::VectorXd& vec);
+  StagReal rayleigh_quotient(const SprsMat* mat, Eigen::VectorXd& vec);
 }
 
 

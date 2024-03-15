@@ -43,12 +43,12 @@ namespace stag {
    * @param exact (optional) whether to use the exact probability distribution. Default: false.
    * @return the randomly generated graph
    */
-  Graph sbm(StagInt n, StagInt k, double p, double q, bool exact);
+  Graph sbm(StagInt n, StagInt k, StagReal p, StagReal q, bool exact);
 
   /**
    * @overload
    */
-  Graph sbm(StagInt n, StagInt k, double p, double q);
+  Graph sbm(StagInt n, StagInt k, StagReal p, StagReal q);
 
   /**
    * Generate a graph from the general stochastic block model.
@@ -143,12 +143,12 @@ namespace stag {
    * @param exact (optional) whether to sample from the exact model. Default: false.
    * @return the randomly generated graph
    */
-  Graph erdos_renyi(StagInt n, double p, bool exact);
+  Graph erdos_renyi(StagInt n, StagReal p, bool exact);
 
   /**
    * \overload
    */
-  Graph erdos_renyi(StagInt n, double p);
+  Graph erdos_renyi(StagInt n, StagReal p);
 
   /**
    * Construct a vector with the ground truth labels for a graph drawn from the

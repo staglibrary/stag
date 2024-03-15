@@ -26,27 +26,27 @@ std::vector<StagInt> stag::sprsMatOuterStarts(const SprsMat* matrix) {
   return {indexPtr, indexPtr + outerSize + 1};
 }
 
-std::vector<double> stag::sprsMatValues(const SprsMat* matrix) {
+std::vector<StagReal> stag::sprsMatValues(const SprsMat* matrix) {
   // Make sure that the given matrix is compressed
   assert(matrix->isCompressed());
 
   // Return the required indices vector
-  const double *valuePtr = matrix->valuePtr();
+  const StagReal *valuePtr = matrix->valuePtr();
   StagInt nonZeros = matrix->nonZeros();
   return {valuePtr, valuePtr + nonZeros};
 }
 
-std::vector<double> stag::sprsMatToVec(const SprsMat* matrix) {
+std::vector<StagReal> stag::sprsMatToVec(const SprsMat* matrix) {
   // If the number of dimensions is not given, use the dimension of the sparse
   // matrix.
   return stag::sprsMatToVec(matrix, matrix->rows());
 }
 
-std::vector<double> stag::sprsMatToVec(const SprsMat* matrix, StagInt n) {
+std::vector<StagReal> stag::sprsMatToVec(const SprsMat* matrix, StagInt n) {
   if (n < 1) throw std::invalid_argument("Dimension n must be at least 1.");
 
   // Initialise the solution vector.
-  std::vector<double> dense_vec;
+  std::vector<StagReal> dense_vec;
 
   for (StagInt i = 0; i < n; i++) {
     if (i < matrix->rows()) {
@@ -62,7 +62,7 @@ std::vector<double> stag::sprsMatToVec(const SprsMat* matrix, StagInt n) {
 
 SprsMat stag::sprsMatFromVectors(std::vector<StagInt>& column_starts,
                                  std::vector<StagInt>& row_indices,
-                                 std::vector<double>& values) {
+                                 std::vector<StagReal>& values) {
   // The length of the row_indices and values vectors should be the same
   if (row_indices.size() != values.size()) {
     throw std::invalid_argument("Sparse matrix indices and values array length mismatch.");

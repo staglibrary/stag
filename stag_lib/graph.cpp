@@ -39,7 +39,7 @@ SprsMat adjacency_from_adj_or_lap(const SprsMat& matrix) {
   bool positive_off_diagonal_value = false;
   bool diagonally_dominant = true;
   for (int k = 0; k < matrix.outerSize() ; ++k) {
-    double col_total = 0;
+    StagReal col_total = 0;
     for (SprsMat::InnerIterator it(matrix, k); it; ++it) {
       col_total += it.value();
       if (it.value() < 0) {
@@ -74,7 +74,7 @@ SprsMat adjacency_from_adj_or_lap(const SprsMat& matrix) {
   // Due to floating-point errors, we sometimes see tiny floats showing up
   // in place of zeros. We don't want to introduce self-loops with tiny weights
   // so we set these to 0.
-  adjacency_matrix.prune([](const StagInt& row, const StagInt& col, const double& value)
+  adjacency_matrix.prune([](const StagInt& row, const StagInt& col, const StagReal& value)
                           {
                             (void) row;
                             (void) col;
@@ -114,7 +114,7 @@ stag::Graph::Graph(const SprsMat& matrix) {
 }
 
 stag::Graph::Graph(std::vector<StagInt> &outerStarts, std::vector<StagInt> &innerIndices,
-                   std::vector<double> &values) {
+                   std::vector<StagReal> &values) {
   // Map the provided data vectors to the sparse matrix type.
   SprsMat matrix = stag::sprsMatFromVectors(outerStarts, innerIndices, values);
   adjacency_matrix_ = adjacency_from_adj_or_lap(matrix);
@@ -187,11 +187,11 @@ const SprsMat* stag::Graph::lazy_random_walk_matrix() {
   return &lazy_random_walk_matrix_;
 }
 
-double stag::Graph::total_volume() {
+StagReal stag::Graph::total_volume() {
   // We will compute the total volume from the degree matrix of the graph.
   initialise_degree_matrix_();
 
-  double vol = 0;
+  StagReal vol = 0;
   for (int k = 0; k < degree_matrix_.outerSize() ; ++k) {
     for (SprsMat::InnerIterator it(degree_matrix_, k); it; ++it) {
       vol += it.value();
@@ -201,7 +201,7 @@ double stag::Graph::total_volume() {
   return vol;
 }
 
-double stag::Graph::average_degree() {
+StagReal stag::Graph::average_degree() {
   return total_volume() / number_of_vertices_;
 }
 
@@ -254,8 +254,8 @@ void stag::Graph::check_vertex_argument(StagInt v) {
 // Local Graph Methods
 //------------------------------------------------------------------------------
 
-std::vector<double> stag::Graph::degrees(std::vector<StagInt> vertices) {
-    std::vector<double> degrees;
+std::vector<StagReal> stag::Graph::degrees(std::vector<StagInt> vertices) {
+    std::vector<StagReal> degrees;
 
     for (StagInt v : vertices) {
         degrees.emplace_back(degree(v));
@@ -276,7 +276,7 @@ std::vector<StagInt> stag::Graph::degrees_unweighted(
 }
 
 
-double stag::Graph::degree(StagInt v) {
+StagReal stag::Graph::degree(StagInt v) {
   check_vertex_argument(v);
 
   // For now, we can be a little lazy and use the degree matrix. Once this is
@@ -303,7 +303,7 @@ std::vector<stag::edge> stag::Graph::neighbors(StagInt v) {
   check_vertex_argument(v);
 
   // Iterate through the non-zero entries in the vth row of the adjacency matrix
-  const double *weights = adjacency_matrix_.valuePtr();
+  const StagReal *weights = adjacency_matrix_.valuePtr();
   const StagInt *innerIndices = adjacency_matrix_.innerIndexPtr();
   const StagInt *rowStarts = adjacency_matrix_.outerIndexPtr();
   StagInt vRowStart = *(rowStarts + v);
@@ -385,13 +385,13 @@ stag::Graph stag::Graph::subgraph(std::vector<StagInt>& vertices) {
 
 stag::Graph stag::Graph::disjoint_union(Graph& other) {
   // Get the adjacency matrix data from this graph
-  std::vector<double> values = stag::sprsMatValues(&adjacency_matrix_);
+  std::vector<StagReal> values = stag::sprsMatValues(&adjacency_matrix_);
   std::vector<StagInt> innerIndices = stag::sprsMatInnerIndices(&adjacency_matrix_);
   std::vector<StagInt> outerStarts = stag::sprsMatOuterStarts(&adjacency_matrix_);
 
   // Get the adjacency matrix data from the other graph
   SprsMat other_adj = *other.adjacency();
-  std::vector<double> other_values = stag::sprsMatValues(&other_adj);
+  std::vector<StagReal> other_values = stag::sprsMatValues(&other_adj);
   std::vector<StagInt> other_innerIndices = stag::sprsMatInnerIndices(&other_adj);
   std::vector<StagInt> other_outerStarts = stag::sprsMatOuterStarts(&other_adj);
 
@@ -721,9 +721,9 @@ std::vector<StagInt> stag::AdjacencyListLocalGraph::neighbors_unweighted(StagInt
   return unweighted_neighbors;
 }
 
-double stag::AdjacencyListLocalGraph::degree(StagInt v) {
+StagReal stag::AdjacencyListLocalGraph::degree(StagInt v) {
   auto edges = neighbors(v);
-  double deg = 0;
+  StagReal deg = 0;
   for (stag::edge e : edges) {
     // Self-loops count twice towards the degree
     if (e.v2 == v) deg += 2 * e.weight;
@@ -737,8 +737,8 @@ StagInt stag::AdjacencyListLocalGraph::degree_unweighted(StagInt v) {
   return edges.size();
 }
 
-std::vector<double> stag::AdjacencyListLocalGraph::degrees(std::vector<StagInt> vertices) {
-  std::vector<double> degs;
+std::vector<StagReal> stag::AdjacencyListLocalGraph::degrees(std::vector<StagInt> vertices) {
+  std::vector<StagReal> degs;
   for (auto v : vertices) {
     degs.push_back(degree(v));
   }
