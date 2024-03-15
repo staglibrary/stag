@@ -126,7 +126,7 @@ the default constructor.
     int main() {
         // Construct a sparse matrix representing the
         // triangle graph adjacency matrix.
-        stag_int n = 3;
+        StagInt n = 3;
         SprsMat adj(n, n);
         adj.coeffRef(0, 1) = 1;
         adj.coeffRef(0, 2) = 1;
@@ -222,7 +222,7 @@ int main() {
     // Create an Erdos-Renyi random graph with
     // 100 vertices and edge pobability 0.1.
     double p = 0.1;
-    stag_int n = 100;
+    StagInt n = 100;
     stag::Graph myGraph = stag::erdos_renyi(n, p);
     
     // Display the adjacency matrix of the graph
@@ -232,7 +232,7 @@ int main() {
     // with two clusters of size 100, internal edge probability 0.1
     // and external edge probability 0.01
     n = 200;
-    stag_int k = 2
+    StagInt k = 2
     double q = 0.01;
     stag::Graph sbmGraph = stag::sbm(n, k, p, q);
     
@@ -259,8 +259,8 @@ STAG provides a simple spectral clustering interface which is demonstrated in th
 int main() {
   // Construct a graph with 5 clusters using the 
   // stochastic block model.
-  stag_int n = 1000;
-  stag_int k = 5;
+  StagInt n = 1000;
+  StagInt k = 5;
   stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
 
   // Find the clusters
@@ -301,7 +301,7 @@ int main() {
   stag::Graph myGraph = stag::sbm(2000, 4, 0.9, 0.01);
 
   // Find a cluster containing the vertex 0
-  std::vector<stag_int> cluster = stag::local_cluster(
+  std::vector<StagInt> cluster = stag::local_cluster(
     &myGraph, 0, myGraph.total_volume() / 4);
  
   // Display the vertices in the found cluster 

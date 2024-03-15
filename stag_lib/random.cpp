@@ -21,12 +21,12 @@
  *                      probabilities.
  * @return an Eigen vector with the neighbour estimates.
  */
-Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
+Eigen::VectorXi estimate_sbm_neighbours(std::vector<StagInt>& cluster_sizes,
                                         DenseMat probabilities) {
   // Get the total number of vertices in the graph
-  auto k = (stag_int) cluster_sizes.size();
-  stag_int n = 0;
-  for (stag_int s : cluster_sizes) n += s;
+  auto k = (StagInt) cluster_sizes.size();
+  StagInt n = 0;
+  for (StagInt s : cluster_sizes) n += s;
 
   // Create the vector which we'll return
   Eigen::VectorXi neighbours(n);
@@ -35,7 +35,7 @@ Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
   // This is basically the matrix product of probabilities with cluster_sizes
   Eigen::VectorXi cluster_neighbours(k);
   for (auto i = 0; i < k; i++) {
-    stag_int this_cluster_neighbours = 0;
+    StagInt this_cluster_neighbours = 0;
     for (auto j = 0; j < k; j++) {
       this_cluster_neighbours += cluster_sizes.at(j) * probabilities(i, j);
     }
@@ -45,9 +45,9 @@ Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
   }
 
   // Now add the neighbour estimates for each actual node
-  stag_int current_idx = 0;
-  for (stag_int i = 0; i < k; i++) {
-    for (stag_int j = 0; j < cluster_sizes.at(i); j++) {
+  StagInt current_idx = 0;
+  for (StagInt i = 0; i < k; i++) {
+    for (StagInt j = 0; j < cluster_sizes.at(i); j++) {
       neighbours.coeffRef(current_idx) = cluster_neighbours(i);
       current_idx++;
     }
@@ -73,21 +73,21 @@ Eigen::VectorXi estimate_sbm_neighbours(std::vector<stag_int>& cluster_sizes,
  */
 void sample_edges_directly(SprsMat* adj_mat,
                            std::ostream* edgelist_os,
-                           stag_int cluster_idx,
-                           stag_int other_cluster_idx,
-                           stag_int this_cluster_vertices,
-                           stag_int other_cluster_vertices,
-                           stag_int this_cluster_start_idx,
-                           stag_int other_cluster_start_idx,
+                           StagInt cluster_idx,
+                           StagInt other_cluster_idx,
+                           StagInt this_cluster_vertices,
+                           StagInt other_cluster_vertices,
+                           StagInt this_cluster_start_idx,
+                           StagInt other_cluster_start_idx,
                            double p) {
   // Prepare the random number generator
   std::random_device dev;
   std::mt19937 prng(dev());
   std::bernoulli_distribution sampleDist(p);
 
-  for (stag_int i = this_cluster_start_idx;
+  for (StagInt i = this_cluster_start_idx;
       i < this_cluster_start_idx + this_cluster_vertices; i++) {
-    for (stag_int j = other_cluster_start_idx;
+    for (StagInt j = other_cluster_start_idx;
         j < other_cluster_start_idx + other_cluster_vertices; j++) {
       // If we are in the same cluster, then don't double sample
       if (cluster_idx == other_cluster_idx && j <= i) continue;
@@ -120,16 +120,16 @@ void sample_edges_directly(SprsMat* adj_mat,
  */
 void sample_edges_binomial(SprsMat* adj_mat,
                            std::ostream* edgelist_os,
-                           stag_int this_cluster_vertices,
-                           stag_int other_cluster_vertices,
-                           stag_int this_cluster_start_idx,
-                           stag_int other_cluster_start_idx,
+                           StagInt this_cluster_vertices,
+                           StagInt other_cluster_vertices,
+                           StagInt this_cluster_start_idx,
+                           StagInt other_cluster_start_idx,
                            double p) {
   // Validate the function inputs
   assert(0 <= p && p <= 1);
 
   // Get the total number of possible edges and the expected number of edges
-  stag_int max_edges = this_cluster_vertices * other_cluster_vertices;
+  StagInt max_edges = this_cluster_vertices * other_cluster_vertices;
   if (this_cluster_start_idx == other_cluster_start_idx) max_edges /= 2;
   double expected_num_edges = p * ((double) max_edges);
 
@@ -145,17 +145,17 @@ void sample_edges_binomial(SprsMat* adj_mat,
   assert(sqrt(1 - p) * expected_num_edges > 0);
   std::normal_distribution<double> numEdgesDist(expected_num_edges,
                                                 sqrt((1 - p) * expected_num_edges));
-  std::uniform_int_distribution<stag_int> thisVertexDist(0, this_cluster_vertices - 1);
-  std::uniform_int_distribution<stag_int> otherVertexDist(0, other_cluster_vertices - 1);
+  std::uniform_int_distribution<StagInt> thisVertexDist(0, this_cluster_vertices - 1);
+  std::uniform_int_distribution<StagInt> otherVertexDist(0, other_cluster_vertices - 1);
 
   // Decide how many edges to sample based on the 'binomial' distribution
-  auto raw_sample = (stag_int) floor(numEdgesDist(prng));
-  stag_int numEdges = std::max((stag_int) 0, std::min(max_edges, raw_sample));
+  auto raw_sample = (StagInt) floor(numEdgesDist(prng));
+  StagInt numEdges = std::max((StagInt) 0, std::min(max_edges, raw_sample));
 
   // Sample the specific vertices
-  stag_int randU = 0;
-  stag_int randV = 0;
-  for (stag_int i = 0; i < numEdges; i++) {
+  StagInt randU = 0;
+  StagInt randV = 0;
+  for (StagInt i = 0; i < numEdges; i++) {
     // Choose two random vertices in the cluster
     randU = 0;
     randV = 0;
@@ -176,11 +176,11 @@ void sample_edges_binomial(SprsMat* adj_mat,
   }
 }
 
-stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q) {
+stag::Graph stag::sbm(StagInt n, StagInt k, double p, double q) {
   return stag::sbm(n, k, p, q, false);
 }
 
-stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q, bool exact) {
+stag::Graph stag::sbm(StagInt n, StagInt k, double p, double q, bool exact) {
   if (n < 1) throw std::invalid_argument("Number of vertices must be at least 1.");
   if (k < 1 || k > n/2) {
     throw std::invalid_argument("Number of clusters must be between 1 and n/2.");
@@ -193,7 +193,7 @@ stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q, bool exact) {
   }
 
   // Create the cluster size vector and probabilities matrix
-  std::vector<stag_int> cluster_sizes;
+  std::vector<StagInt> cluster_sizes;
   DenseMat probabilities(k, k);
   for (auto i = 0; i < k; i++) {
     cluster_sizes.push_back(floor(((double) n) / ((double) k)));
@@ -210,13 +210,13 @@ stag::Graph stag::sbm(stag_int n, stag_int k, double p, double q, bool exact) {
 
 void general_sbm_internal(SprsMat* adj_mat,
                           std::ostream* edgelist_os,
-                          std::vector<stag_int>& cluster_sizes,
+                          std::vector<StagInt>& cluster_sizes,
                           DenseMat& probabilities, bool exact) {
   // The number of clusters is the length of the cluster_sizes vector
-  stag_int k = cluster_sizes.size();
+  StagInt k = cluster_sizes.size();
 
   // Check that the input parameters make sense.
-  for (stag_int size : cluster_sizes) {
+  for (StagInt size : cluster_sizes) {
     if (size < 1) throw std::invalid_argument("Number of vertices in each cluster must be at least 1.");
   }
   if (probabilities.rows() != k || probabilities.cols() != k) {
@@ -239,16 +239,16 @@ void general_sbm_internal(SprsMat* adj_mat,
   }
 
   // Iterate through the clusters
-  stag_int this_cluster_start_idx = 0;
-  for (stag_int cluster_idx = 0; cluster_idx < k; cluster_idx++) {
+  StagInt this_cluster_start_idx = 0;
+  for (StagInt cluster_idx = 0; cluster_idx < k; cluster_idx++) {
     // Get the number of vertices in the current cluster
-    stag_int this_cluster_vertices = cluster_sizes.at(cluster_idx);
+    StagInt this_cluster_vertices = cluster_sizes.at(cluster_idx);
 
-    stag_int other_cluster_start_idx = this_cluster_start_idx;
-    for (stag_int other_cluster_idx = cluster_idx;
+    StagInt other_cluster_start_idx = this_cluster_start_idx;
+    for (StagInt other_cluster_idx = cluster_idx;
          other_cluster_idx < k; other_cluster_idx++){
       // Get the number of vertices in the other cluster
-      stag_int other_cluster_vertices = cluster_sizes.at(other_cluster_idx);
+      StagInt other_cluster_vertices = cluster_sizes.at(other_cluster_idx);
 
       // Get the sampling probability between the two clusters
       double prob = probabilities(cluster_idx, other_cluster_idx);
@@ -289,9 +289,9 @@ void general_sbm_internal(SprsMat* adj_mat,
   if (adj_mat != nullptr) adj_mat->makeCompressed();
 }
 
-stag::Graph stag::general_sbm(std::vector<stag_int> &cluster_sizes,
+stag::Graph stag::general_sbm(std::vector<StagInt> &cluster_sizes,
                               DenseMat &probabilities, bool exact) {
-  stag_int n = 0;
+  StagInt n = 0;
   for (auto s : cluster_sizes) n += s;
 
   // Initialise a sparse adjacency matrix, and use a null pointer for the
@@ -306,21 +306,21 @@ stag::Graph stag::general_sbm(std::vector<stag_int> &cluster_sizes,
   return stag::Graph(adj_mat);
 }
 
-stag::Graph stag::general_sbm(std::vector<stag_int>& cluster_sizes,
+stag::Graph stag::general_sbm(std::vector<StagInt>& cluster_sizes,
                               DenseMat& probabilities) {
   return stag::general_sbm(cluster_sizes, probabilities, false);
 }
 
-stag::Graph stag::erdos_renyi(stag_int n, double p) {
+stag::Graph stag::erdos_renyi(StagInt n, double p) {
   return stag::erdos_renyi(n, p, false);
 }
 
-stag::Graph stag::erdos_renyi(stag_int n, double p, bool exact) {
+stag::Graph stag::erdos_renyi(StagInt n, double p, bool exact) {
   return stag::sbm(n, 1, p, 0, exact);
 }
 
 void stag::general_sbm_edgelist(std::string &filename,
-                                std::vector<stag_int> &cluster_sizes,
+                                std::vector<StagInt> &cluster_sizes,
                                 DenseMat &probabilities,
                                 bool exact) {
   SprsMat* adj_mat = nullptr;
@@ -333,8 +333,8 @@ void stag::general_sbm_edgelist(std::string &filename,
 
   // Write a header to the output stream giving the parameters of the
   // SBM model.
-  stag_int k = cluster_sizes.size();
-  stag_int n = 0;
+  StagInt k = cluster_sizes.size();
+  StagInt n = 0;
   for (auto size: cluster_sizes) n += size;
   os << "# This graph was generated from a stochastic block model with the ";
   os << "following parameters." << std::endl;
@@ -343,7 +343,7 @@ void stag::general_sbm_edgelist(std::string &filename,
 
   if (k <= 20) {
     os << "#    cluster sizes = ";
-    for (stag_int size : cluster_sizes) os << size << " ";
+    for (StagInt size : cluster_sizes) os << size << " ";
     os << std::endl;
     os << "#    probability matrix = " << std::endl;
     for (auto i = 0; i < k; i++) {
@@ -365,19 +365,19 @@ void stag::general_sbm_edgelist(std::string &filename,
 }
 
 void stag::general_sbm_edgelist(std::string &filename,
-                                std::vector<stag_int> &cluster_sizes,
+                                std::vector<StagInt> &cluster_sizes,
                                 DenseMat &probabilities) {
   stag::general_sbm_edgelist(filename, cluster_sizes, probabilities, false);
 }
 
-std::vector<stag_int> stag::sbm_gt_labels(stag_int n, stag_int k) {
+std::vector<StagInt> stag::sbm_gt_labels(StagInt n, StagInt k) {
   if (n < 1) throw std::invalid_argument("Number of vertices must be at least 1.");
   if (k < 1 || k > n/2) {
     throw std::invalid_argument("Number of clusters must be between 1 and n/2.");
   }
 
   // Create the cluster size vector
-  std::vector<stag_int> cluster_sizes;
+  std::vector<StagInt> cluster_sizes;
   for (auto i = 0; i < k; i++) {
     cluster_sizes.push_back(floor(((double) n) / ((double) k)));
   }
@@ -385,14 +385,14 @@ std::vector<stag_int> stag::sbm_gt_labels(stag_int n, stag_int k) {
   return general_sbm_gt_labels(cluster_sizes);
 }
 
-std::vector<stag_int> stag::general_sbm_gt_labels(std::vector<stag_int>& cluster_sizes) {
-  for (stag_int size : cluster_sizes) {
+std::vector<StagInt> stag::general_sbm_gt_labels(std::vector<StagInt>& cluster_sizes) {
+  for (StagInt size : cluster_sizes) {
     if (size < 1) throw std::invalid_argument("Number of vertices in each cluster must be at least 1.");
   }
 
-  std::vector<stag_int> labels;
+  std::vector<StagInt> labels;
 
-  stag_int current_cluster = 0;
+  StagInt current_cluster = 0;
   for (auto this_size : cluster_sizes) {
     for (auto j = 0; j < this_size; j++) {
       labels.push_back(current_cluster);

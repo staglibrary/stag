@@ -12,7 +12,7 @@
 
 
 stag::EigenSystem stag::compute_eigensystem(
-    const SprsMat* mat, stag_int num, Spectra::SortRule sort) {
+    const SprsMat* mat, StagInt num, Spectra::SortRule sort) {
   if (num < 1 || num >= mat->rows()) {
     throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
   }
@@ -20,7 +20,7 @@ stag::EigenSystem stag::compute_eigensystem(
   stag::SprsMatOp op(*mat);
 
   // Construct eigen solver object, requesting the smallest k eigenvalues
-  long ncv = std::min<stag_int>(20 * num, mat->rows());
+  long ncv = std::min<StagInt>(20 * num, mat->rows());
   Spectra::SymEigsSolver<SprsMatOp> eigs(op, num, ncv);
 
   // Initialize and compute
@@ -41,25 +41,25 @@ stag::EigenSystem stag::compute_eigensystem(
   return {eigenvalues, eigenvectors};
 }
 
-stag::EigenSystem stag::compute_eigensystem(const SprsMat *mat, stag_int num) {
+stag::EigenSystem stag::compute_eigensystem(const SprsMat *mat, StagInt num) {
   return stag::compute_eigensystem(mat, num, Spectra::SortRule::SmallestMagn);
 }
 
-Eigen::VectorXd stag::compute_eigenvalues(const SprsMat *mat, stag_int num,
+Eigen::VectorXd stag::compute_eigenvalues(const SprsMat *mat, StagInt num,
                                           Spectra::SortRule sort) {
   return get<0>(stag::compute_eigensystem(mat, num, sort));
 }
 
-Eigen::VectorXd stag::compute_eigenvalues(const SprsMat *mat, stag_int num) {
+Eigen::VectorXd stag::compute_eigenvalues(const SprsMat *mat, StagInt num) {
   return stag::compute_eigenvalues(mat, num, Spectra::SortRule::SmallestMagn);
 }
 
-Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, stag_int num,
+Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, StagInt num,
                                            Spectra::SortRule sort) {
   return get<1>(stag::compute_eigensystem(mat, num, sort));
 }
 
-Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, stag_int num) {
+Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, StagInt num) {
   return stag::compute_eigenvectors(mat, num, Spectra::SortRule::SmallestMagn);
 }
 
@@ -69,7 +69,7 @@ Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, stag_int num) {
  * @param dimension the dimension of the random vector.
  * @return a random unit vector in \f$\mathbb{R}^d\f$.
  */
-Eigen::VectorXd random_unit_vector(stag_int dimension) {
+Eigen::VectorXd random_unit_vector(StagInt dimension) {
   // We can generate a random unit vector by generating a vector with
   // each entry drawn from the standard normal distribution and then
   // normalising the resulting vector.
@@ -86,7 +86,7 @@ Eigen::VectorXd random_unit_vector(stag_int dimension) {
   return random_vector;
 }
 
-Eigen::VectorXd stag::power_method(const SprsMat *mat, stag_int num_iterations,
+Eigen::VectorXd stag::power_method(const SprsMat *mat, StagInt num_iterations,
                                    Eigen::VectorXd initial_vector) {
   if (num_iterations < 0) throw std::invalid_argument("Number of iterations must be non-negative.");
   if (mat->rows() != mat->cols()) throw std::invalid_argument("Matrix must be square.");
@@ -102,12 +102,12 @@ Eigen::VectorXd stag::power_method(const SprsMat *mat, stag_int num_iterations,
 
 Eigen::VectorXd stag::power_method(const SprsMat *mat,
                                    Eigen::VectorXd initial_vector) {
-  stag_int n = mat->rows();
-  stag_int t = 10 * ((int) ceil(log((double) n)));
+  StagInt n = mat->rows();
+  StagInt t = 10 * ((int) ceil(log((double) n)));
   return stag::power_method(mat, t, std::move(initial_vector));
 }
 
-Eigen::VectorXd stag::power_method(const SprsMat *mat, stag_int num_iterations) {
+Eigen::VectorXd stag::power_method(const SprsMat *mat, StagInt num_iterations) {
   return stag::power_method(mat, num_iterations, random_unit_vector(mat->rows()));
 }
 

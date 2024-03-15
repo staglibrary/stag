@@ -42,8 +42,8 @@ from the stochastic block model.
 ...
 // Construct a graph with 5 clusters using the 
 // stochastic block model.
-stag_int n = 1000;
-stag_int k = 5;
+StagInt n = 1000;
+StagInt k = 5;
 stag::Graph myGraph = stag::sbm(n, k, 0.6, 0.1);
 ```
 

@@ -20,13 +20,13 @@
 /**
  * The integer type used throughout the library.
  */
-typedef long long stag_int;
+typedef int64_t StagInt;
 
 /**
  * The fundamental datatype used in this library is the sparse matrix.
  * We use the `Eigen::SparseMatrix` class in column-major format.
  */
-typedef Eigen::SparseMatrix<double, Eigen::ColMajor, stag_int> SprsMat;
+typedef Eigen::SparseMatrix<double, Eigen::ColMajor, StagInt> SprsMat;
 
 /**
  *  Occasionally, it is more efficient to use a dense matrix, such as when
@@ -40,7 +40,7 @@ typedef Eigen::MatrixXd DenseMat;
  * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value
  * of an entry in a graph adjacency matrix.
  */
-typedef Eigen::Triplet<double, stag_int> EdgeTriplet;
+typedef Eigen::Triplet<double, StagInt> EdgeTriplet;
 
 /**
  * \cond
@@ -63,12 +63,12 @@ namespace stag {
     /**
      * The first vertex in the edge.
      */
-    stag_int v1;
+    StagInt v1;
 
     /**
      * The second vertex in the edge.
      */
-    stag_int v2;
+    StagInt v2;
 
     /**
      * The weight of the edge.
@@ -93,13 +93,13 @@ namespace stag {
        * A self-loop of weight \f$1\f$ contributes \f$2\f$ to the vertex's
        * degree.
        */
-      virtual double degree(stag_int v) = 0;
+      virtual double degree(StagInt v) = 0;
 
       /**
        * Given a vertex v, return its unweighted degree. That is, the number
        * of neighbors of v, ignoring the edge weights.
        */
-      virtual stag_int degree_unweighted(stag_int v) = 0;
+      virtual StagInt degree_unweighted(StagInt v) = 0;
 
       /**
        * Given a vertex v, return a vector of edges representing the
@@ -111,7 +111,7 @@ namespace stag {
        * @param v an int representing some vertex in the graph
        * @return an edge vector containing the neighborhood information
        */
-      virtual std::vector<edge> neighbors(stag_int v) = 0;
+      virtual std::vector<edge> neighbors(StagInt v) = 0;
 
       /**
        * Given a vertex v, return a vector containing the neighbors of v.
@@ -121,7 +121,7 @@ namespace stag {
        * @param v an int representing some vertex in the graph
        * @return an int vector giving the neighbors of v
        */
-      virtual std::vector<stag_int> neighbors_unweighted(stag_int v) = 0;
+      virtual std::vector<StagInt> neighbors_unweighted(StagInt v) = 0;
 
       /**
        * Given a list of vertices, return the degrees of each vertex in the
@@ -135,7 +135,7 @@ namespace stag {
        *                 queried.
        * @return a vector of degrees
        */
-      virtual std::vector<double> degrees(std::vector<stag_int> vertices) = 0;
+      virtual std::vector<double> degrees(std::vector<StagInt> vertices) = 0;
 
       /**
        * Given a list of vertices, return their unweighted degrees.
@@ -144,7 +144,7 @@ namespace stag {
        *                 queried.
        * @return a vector of integer degrees
        */
-      virtual std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) = 0;
+      virtual std::vector<StagInt> degrees_unweighted(std::vector<StagInt> vertices) = 0;
 
       /**
        * Given a vertex ID, returns true or false to indicate whether the vertex exists
@@ -153,7 +153,7 @@ namespace stag {
        * @param v the vertex index to check
        * @return a boolean indicating whether there exists a vertex with the given index
        */
-       virtual bool vertex_exists(stag_int v) = 0;
+       virtual bool vertex_exists(StagInt v) = 0;
 
       /**
        * Destructor for the LocalGraph object.
@@ -235,7 +235,7 @@ namespace stag {
        *                     matrix
        * @param values the values of each non-zero element in the matrix
        */
-      Graph(std::vector<stag_int> &outerStarts, std::vector<stag_int> &innerIndices,
+      Graph(std::vector<StagInt> &outerStarts, std::vector<StagInt> &innerIndices,
             std::vector<double> &values);
 
       /**
@@ -375,7 +375,7 @@ namespace stag {
       /**
        * The number of vertices in the graph.
        */
-      stag_int number_of_vertices() const;
+      StagInt number_of_vertices() const;
 
       /**
        * The number of edges in the graph.
@@ -383,7 +383,7 @@ namespace stag {
        * This is defined based on the number of non-zero elements in the
        * adjacency matrix, and ignores the weights of the edges.
        */
-       stag_int number_of_edges() const;
+       StagInt number_of_edges() const;
 
        /**
         * Returns a boolean indicating whether this graph contains self loops.
@@ -407,7 +407,7 @@ namespace stag {
         * @return a new stag::Graph object representing the subgraph induced by
         *         the given vertices
         */
-       Graph subgraph(std::vector<stag_int>& vertices);
+       Graph subgraph(std::vector<StagInt>& vertices);
 
        /**
         * Construct and return the disjoint union of this graph and another.
@@ -422,13 +422,13 @@ namespace stag {
        Graph disjoint_union(Graph& other);
 
        // Override the abstract methods in the LocalGraph base class.
-       double degree(stag_int v) override;
-       stag_int degree_unweighted(stag_int v) override;
-       std::vector<edge> neighbors(stag_int v) override;
-       std::vector<stag_int> neighbors_unweighted(stag_int v) override;
-       std::vector<double> degrees(std::vector<stag_int> vertices) override;
-       std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
-       bool vertex_exists(stag_int v) override;
+       double degree(StagInt v) override;
+       StagInt degree_unweighted(StagInt v) override;
+       std::vector<edge> neighbors(StagInt v) override;
+       std::vector<StagInt> neighbors_unweighted(StagInt v) override;
+       std::vector<double> degrees(std::vector<StagInt> vertices) override;
+       std::vector<StagInt> degrees_unweighted(std::vector<StagInt> vertices) override;
+       bool vertex_exists(StagInt v) override;
        ~Graph() override = default;
 
     private:
@@ -493,14 +493,14 @@ namespace stag {
        *
        * @throws std::invalid_argument if the check does not pass
        */
-       void check_vertex_argument(stag_int v);
+       void check_vertex_argument(StagInt v);
 
        /**
         * \endcond
         */
 
       // The number of vertices in the constructed graph.
-      stag_int number_of_vertices_;
+      StagInt number_of_vertices_;
 
       // The ground truth definition of the graph object is the adjacency
       // matrix, stored in a sparse format. The adj_init_ variable is used to
@@ -578,13 +578,13 @@ namespace stag {
     AdjacencyListLocalGraph(const std::string& filename);
 
     // Override the abstract methods in the LocalGraph base class.
-    double degree(stag_int v) override;
-    stag_int degree_unweighted(stag_int v) override;
-    std::vector<edge> neighbors(stag_int v) override;
-    std::vector<stag_int> neighbors_unweighted(stag_int v) override;
-    std::vector<double> degrees(std::vector<stag_int> vertices) override;
-    std::vector<stag_int> degrees_unweighted(std::vector<stag_int> vertices) override;
-    bool vertex_exists(stag_int v) override;
+    double degree(StagInt v) override;
+    StagInt degree_unweighted(StagInt v) override;
+    std::vector<edge> neighbors(StagInt v) override;
+    std::vector<StagInt> neighbors_unweighted(StagInt v) override;
+    std::vector<double> degrees(std::vector<StagInt> vertices) override;
+    std::vector<StagInt> degrees_unweighted(std::vector<StagInt> vertices) override;
+    bool vertex_exists(StagInt v) override;
     ~AdjacencyListLocalGraph() override;
 
   private:
@@ -597,7 +597,7 @@ namespace stag {
      *
      * @return the node ID of the next content line
      */
-    stag_int goto_next_content_line();
+    StagInt goto_next_content_line();
 
     /**
      * Perform a binary search to find the given vertex in the adjacencylist
@@ -610,7 +610,7 @@ namespace stag {
      *
      * @param v the vertex to search for
      */
-    void find_vertex(stag_int v);
+    void find_vertex(StagInt v);
 
     // The input file stream corresponding to the adjacencylist file backing
     // this graph. The implementation makes random access to this file to
@@ -622,10 +622,10 @@ namespace stag {
     // information in the graph, we cache the node ids corresponding to certain
     // locations in the file. The cached locations will correspond to the binary
     // search locations for the nodes we've queried.
-    std::unordered_map<stag_int, stag_int> fileloc_to_node_id_;
+    std::unordered_map<StagInt, StagInt> fileloc_to_node_id_;
 
     // We also store the full adjacency list of the graph queried so far.
-    std::unordered_map<stag_int, std::vector<edge>> node_id_to_edgelist_;
+    std::unordered_map<StagInt, std::vector<edge>> node_id_to_edgelist_;
   };
 
   /**
@@ -634,7 +634,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing a cycle graph
    */
-  stag::Graph cycle_graph(stag_int n);
+  stag::Graph cycle_graph(StagInt n);
 
   /**
    * Construct a complete graph on n vertices.
@@ -642,7 +642,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing a complete graph
    */
-  stag::Graph complete_graph(stag_int n);
+  stag::Graph complete_graph(StagInt n);
 
   /**
    * Construct a barbell graph. The barbell graph consists of 2 cliques on n
@@ -652,7 +652,7 @@ namespace stag {
    *          The returned graph will have \f$2n\f$ vertices.
    * @return a stag::Graph object representing the barbell graph
    */
-  stag::Graph barbell_graph(stag_int n);
+  stag::Graph barbell_graph(StagInt n);
 
   /**
    * Construct a star graph. The star graph consists of one central vertex
@@ -661,7 +661,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing the star graph
    */
-   stag::Graph star_graph(stag_int n);
+   stag::Graph star_graph(StagInt n);
 
   /**
    * Construct the 'identity graph'. The identity graph consists of \f$n\f$
@@ -673,7 +673,7 @@ namespace stag {
    * @param n the number of vertices in the constructed graph
    * @return a stag::Graph object representing the identity graph
    */
-  stag::Graph identity_graph(stag_int n);
+  stag::Graph identity_graph(StagInt n);
 
   /**
    * \cond

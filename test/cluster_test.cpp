@@ -24,16 +24,16 @@
 
 TEST(ClusterTest, SpectralCluster) {
   // Construct a test graph from the SBM
-  stag_int n = 1000;
-  stag_int k = 5;
+  StagInt n = 1000;
+  StagInt k = 5;
   stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
 
   // Find the clusters
   auto clusters = stag::spectral_cluster(&testGraph, k);
 
   // There should be approximately the same number of each cluster
-  stag_int c1 = 0;
-  stag_int c2 = 0;
+  StagInt c1 = 0;
+  StagInt c2 = 0;
 
   for (auto c : clusters) {
     if (c == 1) c1++;
@@ -44,12 +44,12 @@ TEST(ClusterTest, SpectralCluster) {
 
 TEST(ClusterTest, SCArguments) {
   // Construct a test graph
-  stag_int n = 100;
+  StagInt n = 100;
   stag::Graph testGraph = stag::erdos_renyi(n, 0.1);
 
   // Passing an invalid number of clusters to the spectral clustering
   // algorithm should return an error.
-  stag_int k = -1;
+  StagInt k = -1;
   EXPECT_THROW(stag::spectral_cluster(&testGraph, k), std::invalid_argument);
 
   k = 0;
@@ -64,16 +64,16 @@ TEST(ClusterTest, SCArguments) {
 
 TEST(ClusterTest, SpectralClusterSparse) {
   // Construct a very sparse test graph from the SBM
-  stag_int n = 10000;
-  stag_int k = 5;
+  StagInt n = 10000;
+  StagInt k = 5;
   stag::Graph testGraph = stag::sbm(n, k, 0.06, 0.01);
 
   // Find the clusters
   auto clusters = stag::spectral_cluster(&testGraph, k);
 
   // There should be approximately the same number of each cluster
-  stag_int c1 = 0;
-  stag_int c2 = 0;
+  StagInt c1 = 0;
+  StagInt c2 = 0;
 
   for (auto c : clusters) {
     if (c == 1) c1++;
@@ -86,16 +86,16 @@ TEST(ClusterTest, SpectralClusterSparse) {
 
 TEST(ClusterTest, SpectralClusterDisconnected) {
   // Construct a sparse disconnected graph from the SBM
-  stag_int n = 1000;
-  stag_int k = 2;
+  StagInt n = 1000;
+  StagInt k = 2;
   stag::Graph testGraph = stag::sbm(n, k, 0.5, 0);
 
   // Find the clusters
   auto clusters = stag::spectral_cluster(&testGraph, k);
 
   // There should be exactly the same number of each cluster
-  stag_int c0 = 0;
-  stag_int c1 = 0;
+  StagInt c0 = 0;
+  StagInt c1 = 0;
 
   for (auto c : clusters) {
     if (c == 0) c0++;
@@ -107,8 +107,8 @@ TEST(ClusterTest, SpectralClusterDisconnected) {
 
 TEST(ClusterTest, ApproxPageRank) {
   // Construct a test graph
-  std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
-  std::vector<stag_int> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
+  std::vector<StagInt> rowStarts = {0, 2, 4, 6, 8};
+  std::vector<StagInt> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
   std::vector<double> values = {1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2};
   stag::Graph testGraph(rowStarts, colIndices, values);
 
@@ -129,8 +129,8 @@ TEST(ClusterTest, ApproxPageRankNoPush) {
   // This happens when the degree of the starting vertex is greater than 1/eps.
 
   // Construct a test graph
-  std::vector<stag_int> rowStarts = {0, 3, 5, 7, 10};
-  std::vector<stag_int> colIndices = {1, 2, 3, 0, 3, 0, 3, 0, 1, 2};
+  std::vector<StagInt> rowStarts = {0, 3, 5, 7, 10};
+  std::vector<StagInt> colIndices = {1, 2, 3, 0, 3, 0, 3, 0, 1, 2};
   std::vector<double> values = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
   stag::Graph testGraph(rowStarts, colIndices, values);
 
@@ -140,13 +140,13 @@ TEST(ClusterTest, ApproxPageRankNoPush) {
   std::tuple<SprsMat, SprsMat> apr = stag::approximate_pagerank(&testGraph, seed, 1./3, 1./2);
 
   // Define the expected pagerank vector - this is the empty sparse matrix.
-  std::vector<stag_int> colStarts = {0, 0};
-  std::vector<stag_int> rowIndices;
-  std::vector<stag_int> valuesVec;
+  std::vector<StagInt> colStarts = {0, 0};
+  std::vector<StagInt> rowIndices;
+  std::vector<StagInt> valuesVec;
 
   // Check that the pagerank vector has the form that we expect
-  std::vector<stag_int> newStarts = stag::sprsMatOuterStarts(&std::get<0>(apr));
-  std::vector<stag_int> newIndices = stag::sprsMatInnerIndices(&std::get<0>(apr));
+  std::vector<StagInt> newStarts = stag::sprsMatOuterStarts(&std::get<0>(apr));
+  std::vector<StagInt> newIndices = stag::sprsMatInnerIndices(&std::get<0>(apr));
   std::vector<double> newValues = stag::sprsMatValues(&std::get<0>(apr));
   EXPECT_EQ(colStarts, newStarts);
   EXPECT_EQ(rowIndices, newIndices);
@@ -158,12 +158,12 @@ TEST(ClusterTest, ACL) {
   stag::Graph testGraph = stag::barbell_graph(10);
 
   // Run the acl clustering method
-  std::vector<stag_int> cluster = stag::local_cluster_acl(&testGraph, 0, 0.8,
-                                                          0.0001);
+  std::vector<StagInt> cluster = stag::local_cluster_acl(&testGraph, 0, 0.8,
+                                                         0.0001);
   std::stable_sort(cluster.begin(), cluster.end());
 
   // Check that we found one of the clusters.
-  std::vector<stag_int> expected_cluster = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  std::vector<StagInt> expected_cluster = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   EXPECT_EQ(cluster, expected_cluster);
 }
 
@@ -196,7 +196,7 @@ TEST(ClusterTest, localSBM) {
   stag::Graph testGraph = stag::sbm(2000, 4, 0.9, 0.01);
 
   // Find a cluster using the default local clustering algorithm
-  std::vector<stag_int> cluster = stag::local_cluster(&testGraph, 0, testGraph.total_volume() / 4);
+  std::vector<StagInt> cluster = stag::local_cluster(&testGraph, 0, testGraph.total_volume() / 4);
   std::stable_sort(cluster.begin(), cluster.end());
 
   // Check the number of returned vertices
@@ -205,7 +205,7 @@ TEST(ClusterTest, localSBM) {
 
   // Let's say that 50% of the found cluster should lie inside the first cluster
   // in the SBM graph
-  stag_int inside = 0;
+  StagInt inside = 0;
   for (auto v : cluster) {
     if (v < 500) inside++;
   }
@@ -214,11 +214,11 @@ TEST(ClusterTest, localSBM) {
 
 TEST(ClusterTest, LocalClusterArguments) {
   // Create a test graph
-  stag_int n = 100;
+  StagInt n = 100;
   stag::Graph testGraph = stag::cycle_graph(n);
 
   // Check vertex is valid
-  stag_int v = -1;
+  StagInt v = -1;
   double target_vol = 100;
   EXPECT_THROW(stag::local_cluster(&testGraph, v, target_vol), std::invalid_argument);
 
@@ -240,11 +240,11 @@ TEST(ClusterTest, LocalClusterArguments) {
 
 TEST(ClusterTest, ACLArguments) {
   // Create a test graph
-  stag_int n = 100;
+  StagInt n = 100;
   stag::Graph testGraph = stag::cycle_graph(n);
 
   // Check vertex is valid
-  stag_int v = -1;
+  StagInt v = -1;
   double alpha = 0.1;
   double eps = 0.1;
   EXPECT_THROW(stag::local_cluster_acl(&testGraph, v, alpha, eps), std::invalid_argument);
@@ -271,7 +271,7 @@ TEST(ClusterTest, ACLArguments) {
 
 TEST(ClusterTest, PageRankArguments) {
   // Create a test graph
-  stag_int n = 100;
+  StagInt n = 100;
   stag::Graph testGraph = stag::cycle_graph(n);
 
   // Check seed vector is valid
@@ -315,31 +315,31 @@ TEST(ClusterTest, sweepSet) {
   vec.makeCompressed();
 
   // Compute the sweep set
-  std::vector<stag_int> sweep_set = stag::sweep_set_conductance(&testGraph, vec);
+  std::vector<StagInt> sweep_set = stag::sweep_set_conductance(&testGraph, vec);
   std::stable_sort(sweep_set.begin(), sweep_set.end());
 
   // Test the result
-  std::vector<stag_int> expected_sweep = {0, 1, 2, 3};
+  std::vector<StagInt> expected_sweep = {0, 1, 2, 3};
   EXPECT_EQ(sweep_set, expected_sweep);
 }
 
 TEST(ClusterTest, ARI) {
-  std::vector<stag_int> gt_labels {0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
-  std::vector<stag_int> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
+  std::vector<StagInt> gt_labels {0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<StagInt> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
 
   double expected_ari = 0.31257344;
   double actual_ari = stag::adjusted_rand_index(gt_labels, labels);
   EXPECT_NEAR(actual_ari, expected_ari, 0.0001);
 
-  std::vector<stag_int> labels2   {1, 1, 2, 2, 2, 2, 0, 0, 0, 0};
+  std::vector<StagInt> labels2   {1, 1, 2, 2, 2, 2, 0, 0, 0, 0};
   expected_ari = 1;
   actual_ari = stag::adjusted_rand_index(gt_labels, labels2);
   EXPECT_NEAR(actual_ari, expected_ari, 0.0001);
 }
 
 TEST(ClusterTest, ARIArguments) {
-  std::vector<stag_int> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
-  std::vector<stag_int> labels    { 0,  1, 0, 1, 1, 2, 2, 2, 2, 2};
+  std::vector<StagInt> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<StagInt> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
 
   gt_labels.at(0) = 0;
@@ -349,22 +349,22 @@ TEST(ClusterTest, ARIArguments) {
 }
 
 TEST(ClusterTest, NMI) {
-  std::vector<stag_int> gt_labels {0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
-  std::vector<stag_int> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
+  std::vector<StagInt> gt_labels {0, 0, 1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<StagInt> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
 
   double expected_nmi = 0.4558585;
   double actual_nmi = stag::normalised_mutual_information(gt_labels, labels);
   EXPECT_NEAR(actual_nmi, expected_nmi, 0.0001);
 
-  std::vector<stag_int> labels2   {1, 1, 2, 2, 2, 2, 0, 0, 0, 0};
+  std::vector<StagInt> labels2   {1, 1, 2, 2, 2, 2, 0, 0, 0, 0};
   expected_nmi = 1;
   actual_nmi = stag::adjusted_rand_index(gt_labels, labels2);
   EXPECT_NEAR(actual_nmi, expected_nmi, 0.0001);
 }
 
 TEST(ClusterTest, NMIArguments) {
-  std::vector<stag_int> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
-  std::vector<stag_int> labels    { 0,  1, 0, 1, 1, 2, 2, 2, 2, 2};
+  std::vector<StagInt> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<StagInt> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
   EXPECT_THROW(stag::normalised_mutual_information(gt_labels, labels), std::invalid_argument);
 
   gt_labels.at(0) = 0;
@@ -378,9 +378,9 @@ TEST(ClusterTest, ALLGLocalClustering) {
   stag::AdjacencyListLocalGraph testGraph(filename);
 
   // Find a cluster using the default local clustering algorithm
-  std::vector<stag_int> cluster = stag::local_cluster(&testGraph,
-                                                      500000,
-                                                      10000);
+  std::vector<StagInt> cluster = stag::local_cluster(&testGraph,
+                                                     500000,
+                                                     10000);
 
   // Check the number of returned vertices
   EXPECT_GE(cluster.size(), 100);
@@ -392,13 +392,13 @@ TEST(ClusterTest, ALLGLocalClusteringConsistent) {
   std::string edge_filename = "output.edgelist";
 
   // Create a graph from the SBM
-  stag_int n = 500;
-  stag_int k = 5;
+  StagInt n = 500;
+  StagInt k = 5;
   double p = 0.1;
   double q = 0.01;
 
   // Create the general sbm parameters
-  std::vector<stag_int> cluster_sizes;
+  std::vector<StagInt> cluster_sizes;
   DenseMat probabilities(k, k);
   for (auto i = 0; i < k; i++) {
     cluster_sizes.push_back(floor(((double) n) / ((double) k)));
@@ -419,12 +419,12 @@ TEST(ClusterTest, ALLGLocalClusteringConsistent) {
   stag::AdjacencyListLocalGraph adjGraph(adj_filename);
 
   // Clustering on the graph loaded into memory should give the same result.
-  std::vector<stag_int> adj_cluster = stag::local_cluster(&adjGraph,
+  std::vector<StagInt> adj_cluster = stag::local_cluster(&adjGraph,
+                                                         0,
+                                                         1500);
+  std::vector<StagInt> full_cluster = stag::local_cluster(&fullGraph,
                                                           0,
                                                           1500);
-  std::vector<stag_int> full_cluster = stag::local_cluster(&fullGraph,
-                                                           0,
-                                                           1500);
   std::stable_sort(adj_cluster.begin(), adj_cluster.end());
   std::stable_sort(full_cluster.begin(), full_cluster.end());
 
@@ -433,13 +433,13 @@ TEST(ClusterTest, ALLGLocalClusteringConsistent) {
 
 TEST(ClusterTest, Conductance) {
   // Construct a test graph
-  std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
-  std::vector<stag_int> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
+  std::vector<StagInt> rowStarts = {0, 2, 4, 6, 8};
+  std::vector<StagInt> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
   std::vector<double> values = {1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2};
   stag::Graph testGraph(rowStarts, colIndices, values);
 
   // Check the conductance
-  std::vector<stag_int> cluster = {0, 3};
+  std::vector<StagInt> cluster = {0, 3};
   double cond = stag::conductance(&testGraph, cluster);
   EXPECT_NEAR(cond, 1, 0.00001);
 
@@ -462,24 +462,24 @@ TEST(ClusterTest, Conductance) {
 
 TEST(ClusterTest, ConductanceArguments) {
   // Construct a test graph
-  std::vector<stag_int> rowStarts = {0, 2, 4, 6, 8};
-  std::vector<stag_int> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
+  std::vector<StagInt> rowStarts = {0, 2, 4, 6, 8};
+  std::vector<StagInt> colIndices = {1, 2, 0, 3, 0, 3, 1, 2};
   std::vector<double> values = {1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2, 1./2};
   stag::Graph testGraph(rowStarts, colIndices, values);
 
   // Negative integers in the cluster should throw an argument exception
-  std::vector<stag_int> cluster = {0, -1};
+  std::vector<StagInt> cluster = {0, -1};
   EXPECT_THROW(stag::conductance(&testGraph, cluster), std::invalid_argument);
 }
 
 TEST(ClusterTest, SymmetricDifference) {
   // Construct some sets
-  std::vector<stag_int> S = {0, 3, 2, 6};
-  std::vector<stag_int> T = {3, 1, 5, 2};
+  std::vector<StagInt> S = {0, 3, 2, 6};
+  std::vector<StagInt> T = {3, 1, 5, 2};
 
   // Compute the symmetric difference
-  std::vector<stag_int> calculated_difference = stag::symmetric_difference(S, T);
-  std::vector<stag_int> expected_difference = {0, 1, 5, 6};
+  std::vector<StagInt> calculated_difference = stag::symmetric_difference(S, T);
+  std::vector<StagInt> expected_difference = {0, 1, 5, 6};
   EXPECT_EQ(calculated_difference, expected_difference);
 
   // If a value appears twice, the duplicates should be ignored
@@ -499,14 +499,14 @@ TEST(ClusterTest, SymmetricDifference) {
 
 TEST(ClusterTest, ConnComp) {
   // Create a disconnected graph
-  stag_int n = 10;
-  stag_int k = 2;
+  StagInt n = 10;
+  StagInt k = 2;
   stag::Graph testGraph = stag::sbm(n, k, 1, 0);
 
   // Check the connected components
-  std::vector<stag_int> comp = stag::connected_component(&testGraph, 0);
+  std::vector<StagInt> comp = stag::connected_component(&testGraph, 0);
   std::sort(comp.begin(), comp.end());
-  std::vector<stag_int> expected_comp = {0, 1, 2, 3, 4};
+  std::vector<StagInt> expected_comp = {0, 1, 2, 3, 4};
   EXPECT_EQ(comp, expected_comp);
 
   comp = stag::connected_component(&testGraph, 7);
@@ -515,7 +515,7 @@ TEST(ClusterTest, ConnComp) {
   EXPECT_EQ(comp, expected_comp);
 
   // Find the connected components by the full decomposition algorithm
-  std::vector<std::vector<stag_int>> components = stag::connected_components(
+  std::vector<std::vector<StagInt>> components = stag::connected_components(
       &testGraph);
   comp = components.at(0);
   std::sort(comp.begin(), comp.end());
@@ -532,9 +532,9 @@ TEST(ClusterTest, ConnCompALLG){
   stag::AdjacencyListLocalGraph testGraph(filename);
 
   // Check the connected components
-  std::vector<stag_int> comp = stag::connected_component(&testGraph, 2);
+  std::vector<StagInt> comp = stag::connected_component(&testGraph, 2);
   std::sort(comp.begin(), comp.end());
-  std::vector<stag_int> expected_comp = {1, 2, 3};
+  std::vector<StagInt> expected_comp = {1, 2, 3};
   EXPECT_EQ(comp, expected_comp);
 
   comp = stag::connected_component(&testGraph, 6);
@@ -545,16 +545,16 @@ TEST(ClusterTest, ConnCompALLG){
 
 TEST(ClusterTest, CheegerCut){
   // Construct a test graph from the SBM
-  stag_int n = 1000;
-  stag_int k = 2;
+  StagInt n = 1000;
+  StagInt k = 2;
   stag::Graph testGraph = stag::sbm(n, k, 0.6, 0.1);
 
   // Find the clusters
   auto clusters = stag::cheeger_cut(&testGraph);
 
   // There should be approximately the same number of each cluster
-  stag_int c0 = 0;
-  stag_int c1 = 0;
+  StagInt c0 = 0;
+  StagInt c1 = 0;
 
   for (auto c : clusters) {
     if (c == 0) c0++;
@@ -567,14 +567,14 @@ TEST(ClusterTest, CheegerCut){
 
 TEST(ClusterTest, CheegerCutComplete){
   // Construct a complete graph
-  stag_int n = 200;
+  StagInt n = 200;
   stag::Graph testGraph = stag::complete_graph(n);
 
   // Find the cheeger cut of the graph
-  std::vector<stag_int> clusters = stag::cheeger_cut(&testGraph);
+  std::vector<StagInt> clusters = stag::cheeger_cut(&testGraph);
 
   // There should be exactly n / 2 vertices in one cluster.
-  stag_int c0 = 0;
+  StagInt c0 = 0;
   for (auto c : clusters) {
     if (c == 0) c0++;
   }

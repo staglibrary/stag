@@ -57,7 +57,7 @@ namespace stag {
    * A. Ng, M. Jordan, Y. Weiss.
    * On spectral clustering: Analysis and an algorithm. NeurIPS'01
    */
-  std::vector<stag_int> spectral_cluster(stag::Graph* graph, stag_int k);
+  std::vector<StagInt> spectral_cluster(stag::Graph* graph, StagInt k);
 
   /**
    * Find the Cheeger cut in a graph.
@@ -87,7 +87,7 @@ namespace stag {
    *         Each entry in the vector is either \f$0\f$ or \f$1\f$ to indicate
    *         which side of the cut the vertex belongs to.
    */
-  std::vector<stag_int> cheeger_cut(stag::Graph* graph);
+  std::vector<StagInt> cheeger_cut(stag::Graph* graph);
 
   /**
    * Local clustering algorithm based on personalised Pagerank.
@@ -107,7 +107,7 @@ namespace stag {
    * R. Andersen, F. Chung, K. Lang.
    * Local graph partitioning using pagerank vectors. FOCS'06
    */
-  std::vector<stag_int> local_cluster(stag::LocalGraph* graph, stag_int seed_vertex, double target_volume);
+  std::vector<StagInt> local_cluster(stag::LocalGraph* graph, StagInt seed_vertex, double target_volume);
 
   /**
    * The ACL local clustering algorithm. Given a graph and starting vertex,
@@ -130,12 +130,12 @@ namespace stag {
    * R. Andersen, F. Chung, K. Lang.
    * Local graph partitioning using pagerank vectors. FOCS'06
    */
-  std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality, double error);
+  std::vector<StagInt> local_cluster_acl(stag::LocalGraph* graph, StagInt seed_vertex, double locality, double error);
 
   /**
    * \overload
    */
-  std::vector<stag_int> local_cluster_acl(stag::LocalGraph* graph, stag_int seed_vertex, double locality);
+  std::vector<StagInt> local_cluster_acl(stag::LocalGraph* graph, StagInt seed_vertex, double locality);
 
   /**
    * Compute the approximate Pagerank vector.
@@ -201,14 +201,14 @@ namespace stag {
    * @return a vector containing the indices of vec which give the minimum
    *         conductance in the given graph
    */
-  std::vector<stag_int> sweep_set_conductance(stag::LocalGraph* graph,
-                                              SprsMat& vec);
+  std::vector<StagInt> sweep_set_conductance(stag::LocalGraph* graph,
+                                             SprsMat& vec);
 
   /**
    * @overload
    */
-  std::vector<stag_int> sweep_set_conductance(stag::Graph* graph,
-                                              SprsMat& vec);
+  std::vector<StagInt> sweep_set_conductance(stag::Graph* graph,
+                                             SprsMat& vec);
 
   /**
    * Return the vertex indices of every vertex in the same connected
@@ -224,7 +224,7 @@ namespace stag {
    * @return a vector containing the vertex ids of every vertex in the
    *         connected component corresponding to v
    */
-  std::vector<stag_int> connected_component(stag::LocalGraph* g, stag_int v);
+  std::vector<StagInt> connected_component(stag::LocalGraph* g, StagInt v);
 
   /**
    * Return a vector of the connected components in the specified graph.
@@ -232,7 +232,7 @@ namespace stag {
    * @param g a stag::Graph instance
    * @return a vector containing the connected components of the graph
    */
-  std::vector<std::vector<stag_int>> connected_components(stag::Graph* g);
+  std::vector<std::vector<StagInt>> connected_components(stag::Graph* g);
 
   /**
    * Compute the Adjusted Rand Index between two label vectors.
@@ -246,8 +246,8 @@ namespace stag {
    * Objective criteria for the evaluation of clustering methods.
    * Journal of the American Statistical Association. 66 (336): 846–850. 1971.
    */
-  double adjusted_rand_index(std::vector<stag_int>& gt_labels,
-                             std::vector<stag_int>& labels);
+  double adjusted_rand_index(std::vector<StagInt>& gt_labels,
+                             std::vector<StagInt>& labels);
 
   /**
    * Compute the Mutual Information between two label vectors.
@@ -256,8 +256,8 @@ namespace stag {
    * @param labels the candidate labels whose MI should be calculated
    * @return the MI between the two labels vectors
    */
-  double mutual_information(std::vector<stag_int>& gt_labels,
-                            std::vector<stag_int>& labels);
+  double mutual_information(std::vector<StagInt>& gt_labels,
+                            std::vector<StagInt>& labels);
 
   /**
    * Compute the Normalised Mutual Information between two label vectors.
@@ -271,8 +271,8 @@ namespace stag {
    * Information theoretic measures for clusterings comparison.
    * 26th Annual International Conference on Machine Learning (ICML ‘09).
    */
-  double normalised_mutual_information(std::vector<stag_int>& gt_labels,
-                                       std::vector<stag_int>& labels);
+  double normalised_mutual_information(std::vector<StagInt>& gt_labels,
+                                       std::vector<StagInt>& labels);
 
   /**
    * Compute the conductance of the given cluster in a graph.
@@ -293,7 +293,7 @@ namespace stag {
    * @return the conductance \f$\phi_G(S)\f$.
    */
   double conductance(stag::LocalGraph* graph,
-                     std::vector<stag_int>& cluster);
+                     std::vector<StagInt>& cluster);
 
   /**
    * Compute the symmetric difference of two sets of integers.
@@ -313,8 +313,8 @@ namespace stag {
    * @return a vector containing the integers in the symmetric difference of S
    *         and T.
    */
-  std::vector<stag_int> symmetric_difference(std::vector<stag_int>& S,
-                                             std::vector<stag_int>& T);
+  std::vector<StagInt> symmetric_difference(std::vector<StagInt>& S,
+                                            std::vector<StagInt>& T);
 }
 
 #endif //STAG_TEST_CLUSTER_H
