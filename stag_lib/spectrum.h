@@ -1,10 +1,7 @@
-//
-// Methods relating to the spectrum of the graph matrices. Includes methods for
-// computing the eigenvectors and eigenvalues of the graph matrices.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file spectrum.h

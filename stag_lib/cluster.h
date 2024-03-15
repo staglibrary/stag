@@ -1,9 +1,7 @@
-//
-// Graph clustering algorithms based on spectral methods.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file cluster.h

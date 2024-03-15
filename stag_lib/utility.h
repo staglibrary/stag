@@ -1,9 +1,7 @@
-//
-// Definitions of utility methods for dealing with sparse matrices.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file utility.h

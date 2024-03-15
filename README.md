@@ -117,6 +117,19 @@ If you find the STAG library useful in your research, please cite our [technical
 }
 ```
 
+## Licensing
+The source code for the STAG library is available freely for use and modification.
+The code is licenced under the GPL license, which requires that derivative works
+are also released with the same license. 
+
+## Acknowledgements
+
+STAG includes open-source code developed by others. We are grateful to the following people for their contributions of
+open-source code.
+
+- Michael C. Hughes for the C++ implementation of the k-means algorithm available [here](https://github.com/michaelchughes/KMeansRex/).
+- Alexandr Andoni and Piotr Indyk for their theoretical work and open source implementation of the Euclidean LSH algorithm, available [here](https://www.mit.edu/~andoni/LSH/).
+
 ## Contact
 
 If you have any questions about using the STAG library, please contact a member of the STAG

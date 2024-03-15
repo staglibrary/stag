@@ -1,10 +1,7 @@
-//
-// Definitions related to the core Graph object used to represent graphs within
-// the library.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file graph.h
