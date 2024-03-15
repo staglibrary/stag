@@ -13,6 +13,9 @@
 #include <definitions.h>
 #include <lsh.h>
 
+#define TWO_ROOT_TWOPI 5.0132565
+#define TWO_ROOT_TWO 2.828427124
+
 // Returns TRUE iff |p1-p2|_2^2 <= threshold
 inline bool isDistanceSqrLeq(StagUInt dimension, const stag::DataPoint& p1,
                              const stag::DataPoint& p2, StagReal threshold){
@@ -94,6 +97,14 @@ StagUInt stag::LSHFunction::apply(const DataPoint& point) {
   return (StagUInt) floor((value + b) / LSH_PARAMETER_W);
 }
 
+StagReal stag::LSHFunction::collision_probability(StagReal c) {
+  StagReal eight_over_c_squared = 8 / SQR(c);
+  return - ((1 / TWO_ROOT_TWOPI)
+            * c
+            * exp(-eight_over_c_squared)
+            * (exp(eight_over_c_squared) - 1))
+         + erf(TWO_ROOT_TWO / c);
+}
 
 //------------------------------------------------------------------------------
 // Implementation of the E2LSH class.

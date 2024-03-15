@@ -59,3 +59,36 @@ TEST(LSHTest, DataPointVectorInit) {
   }
 }
 
+TEST(LSHTest, LSHFunction) {
+  // Create two data vectors
+  StagInt dim = 3;
+  DenseMat data_mat {{0, 1, 1}, {1, 0, 0}};
+  stag::DataPoint x1(data_mat, 0);
+  stag::DataPoint x2(data_mat, 1);
+
+  // The distance between these vectors is root 3.
+  StagReal distance = sqrt(dim);
+
+  // Get the collision probability under the LSH function.
+  StagReal prob = stag::LSHFunction::collision_probability(distance);
+
+  // Construct 1000 LSH functions
+  StagInt num_functions = 1000;
+  std::vector<stag::LSHFunction> functions;
+  for (StagInt i = 0; i < num_functions; i++) {
+    functions.emplace_back(dim);
+  }
+
+  // Compute the number for which the given vectors collide
+  StagUInt num_collisions = 0;
+  for (auto fun : functions) {
+    if (fun.apply(x1) == fun.apply(x2)) {
+      num_collisions++;
+    }
+  }
+
+  // Check that the proportion of collisions is close to the expected number
+  EXPECT_LE(num_collisions, 1.2 * prob * num_functions);
+  EXPECT_GE(num_collisions, 0.8 * prob * num_functions);
+}
+
