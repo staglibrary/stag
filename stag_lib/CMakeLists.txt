@@ -9,6 +9,8 @@ set(STAG_PUBLIC_HEADERS
         cluster.h
         spectrum.h
         lsh.h
+        definitions.h
+        LSHTable.h
         )
 
 set(HEADER_FILES
@@ -16,8 +18,6 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCore.h
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
-        definitions.h
-        LSHTable.h
         )
 
 set(SOURCE_FILES
