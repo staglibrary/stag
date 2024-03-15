@@ -13,9 +13,15 @@
 #include <Eigen/Sparse>
 #include <cstdint>
 
+/**
+ * \cond
+ */
 // Define some mathematical operations.
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define SQR(a) ((a) * (a))
+/**
+ * \endcond
+ */
 
 /**
  * The integer type used throughout the library.
@@ -39,12 +45,10 @@ typedef double StagReal;
 typedef Eigen::SparseMatrix<StagReal, Eigen::ColMajor, StagInt> SprsMat;
 
 /**
- *  Occasionally, it is more efficient to use a dense matrix, such as when
- *  the matrix is very small.
- *
- *  In this case, we use the `Eigen::MatrixXd` class.
+ *  The Dense Matrix data type used in the STAG library.
  */
-typedef Eigen::MatrixXd DenseMat;
+typedef Eigen::Matrix<StagReal, Eigen::Dynamic,
+                      Eigen::Dynamic, Eigen::RowMajor> DenseMat;
 
 /**
  * An Eigen::Triplet representing an edge in a graph. Stores the row, column, and value

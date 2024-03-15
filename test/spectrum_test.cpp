@@ -1,6 +1,9 @@
 /**
  * Tests for the methods in the spectrum.h header file. Includes methods for
  * computing eigenvalues and eigenvectors.
+ *
+ * This file is provided as part of the STAG library and released under the GPL
+ * license.
  */
 #include <stdexcept>
 #include <iostream>

@@ -1,7 +1,7 @@
 /**
  * Tests for the clustering methods in cluster.h.
  *
- * This file is provided as part of the STAG library and released under the MIT
+ * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
 #include <iostream>

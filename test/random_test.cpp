@@ -2,7 +2,7 @@
  * Tests for the methods in the random.h header file. Includes methods for
  * generating random graphs.
  *
- * This file is provided as part of the STAG library and released under the MIT
+ * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
 #include <iostream>

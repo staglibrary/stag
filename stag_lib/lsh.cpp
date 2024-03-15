@@ -13,30 +13,20 @@
 #include <definitions.h>
 #include <lsh.h>
 
-// Generate a random integer in the range [rangeStart,
-// rangeEnd]. Inputs must satisfy: rangeStart <= rangeEnd.
-StagInt genRandomInt(StagInt rangeStart, StagInt rangeEnd){
-  assert(rangeStart <= rangeEnd);
+// Returns TRUE iff |p1-p2|_2^2 <= threshold
+inline bool isDistanceSqrLeq(StagUInt dimension, const stag::DataPoint& p1,
+                             const stag::DataPoint& p2, StagReal threshold){
+  StagReal result = 0;
 
-  StagInt r;
-  r = rangeStart + (StagInt)((rangeEnd - rangeStart + 1.0) * random() / (RAND_MAX + 1.0));
+  for (StagUInt i = 0; i < dimension; i++){
+    StagReal temp = p1.coordinates[i] - p2.coordinates[i];
+    result += SQR(temp);
+    if (result > threshold){
+      return false;
+    }
+  }
 
-  assert(r >= rangeStart && r <= rangeEnd);
-  return r;
-}
-
-// Generate a random 32-bits unsigned (Uns32T) in the range
-// [rangeStart, rangeEnd]. Inputs must satisfy: rangeStart <=
-// rangeEnd.
-StagUInt genRandomUInt(StagUInt rangeStart, StagUInt rangeEnd){
-  assert(rangeStart <= rangeEnd);
-  assert(RAND_MAX >= rangeEnd - rangeStart);
-
-  StagUInt r;
-  r = rangeStart + (StagUInt)((rangeEnd - rangeStart + 1.0) * random() / (RAND_MAX + 1.0));
-
-  assert(r >= rangeStart && r <= rangeEnd);
-  return r;
+  return true;
 }
 
 // Generate a random real distributed uniformly in [rangeStart,
@@ -44,10 +34,8 @@ StagUInt genRandomUInt(StagUInt rangeStart, StagUInt rangeEnd){
 // granularity of generated random reals is given by RAND_MAX.
 StagReal genUniformRandom(StagReal rangeStart, StagReal rangeEnd){
   assert(rangeStart <= rangeEnd);
-
   StagReal r;
   r = rangeStart + ((rangeEnd - rangeStart) * (StagReal)random() / (StagReal)RAND_MAX);
-
   assert(r >= rangeStart && r <= rangeEnd);
   return r;
 }
@@ -66,136 +54,17 @@ StagReal genGaussianRandom(){
   return z;
 }
 
-// Generate a random real from Cauchy distribution N(0,1).
-StagReal genCauchyRandom(){
-  StagReal x, y;
-  x = genGaussianRandom();
-  y = genGaussianRandom();
-  if (abs(y) < 0.0000001) {
-    y = 0.0000001;
-  }
-  return x / y;
-}
-
 //------------------------------------------------------------------------------
-// Implementation of the LSHBucket class
+// Implementation of the DataPoint class.
 //------------------------------------------------------------------------------
-void stag::LSHBucket::add_point(StagInt new_point) {
-  points.push_back(new_point);
+stag::DataPoint::DataPoint(DenseMat& all_data, StagInt row_index) {
+  dimension = all_data.cols();
+  coordinates = all_data.row(row_index).data();
 }
 
-//------------------------------------------------------------------------------
-// Implementation of the LSHTable class
-//------------------------------------------------------------------------------
-
-// Creates a new hash table (initializes the hash table and the hash
-// functions used).
-stag::LSHTable::LSHTable(StagUInt hashTableSize, StagUInt bucketVectorLength) {
-  tableSize = hashTableSize;
-  nHashedPoints = 0;
-
-  prime = UH_PRIME_DEFAULT;
-  hashedDataLength = bucketVectorLength;
-
-  hashTable.resize(tableSize);
-
-  // Initializing the main hash function.
-  mainHashA.resize(hashedDataLength);
-  for(StagUInt i = 0; i < hashedDataLength; i++){
-    mainHashA[i] = genRandomUInt(1, MAX_HASH_RND);
-  }
-
-  // Initializing the control hash functions.
-  controlHash1.resize(hashedDataLength);
-  for(StagUInt i = 0; i < hashedDataLength; i++){
-    controlHash1[i] = genRandomUInt(1, MAX_HASH_RND);
-  }
-}
-
-// Computes (a.b)mod UH_PRIME_DEFAULT.
-inline StagUInt compute_product_mod_prime(const std::vector<StagUInt>& a,
-                                          const std::vector<StagUInt>& b){
-  assert(a.size() == b.size());
-
-  StagUInt h = 0;
-  for(StagUInt i = 0; i < a.size(); i++){
-    h = h + (StagUInt)a[i] * (StagUInt)b[i];
-    h = (h & TWO_TO_32_MINUS_1) + 5 * (h >> 32);
-    if (h >= UH_PRIME_DEFAULT) {
-      h = h - UH_PRIME_DEFAULT;
-    }
-  }
-  return h;
-}
-
-// Compute fuction ((rndVector . data)mod prime)mod hashTableSize
-inline StagUInt compute_uhash_function(const std::vector<StagUInt>& rndVector,
-                                       const std::vector<StagUInt>& data,
-                                       StagUInt hashTableSize){
-  assert(rndVector.size() == data.size());
-  StagUInt h = compute_product_mod_prime(rndVector, data) % hashTableSize;
-
-  assert(h < hashTableSize);
-  return h;
-}
-
-// Adds the bucket entry (a point <point>) to the bucket defined by
-// the given index. If no such bucket exists, then it is first created.
-void stag::LSHTable::add_bucket_entry(const BucketHashingIndexT& bucketIndex,
-                                      StagInt pointIndex){
-  bool found = false;
-  for (auto& b : hashTable[bucketIndex.main_index]) {
-    if (b.controlValue1 == bucketIndex.control_index) {
-      b.add_point(pointIndex);
-      found = true;
-      break;
-    }
-  }
-
-  // If we didn't find a bucket with the correct control value, add one to
-  // the end of the hash table vector.
-  if (!found) {
-    hashTable[bucketIndex.main_index].emplace_back(bucketIndex.control_index);
-    hashTable[bucketIndex.main_index].back().add_point(pointIndex);
-  }
-
-  // Keep statistics on number of hashed points.
-  nHashedPoints++;
-}
-
-// Returns the bucket defined by the given bucket index.
-stag::LSHBucket* stag::LSHTable::get_bucket(const BucketHashingIndexT& bucketIndex) {
-  for (StagUInt i = 0; i < hashTable[bucketIndex.main_index].size(); i++) {
-    if (hashTable[bucketIndex.main_index][i].controlValue1 == bucketIndex.control_index) {
-      return &hashTable[bucketIndex.main_index][i];
-    }
-  }
-
-  // We have failed to find a bucket - calling code must check for this.
-  return nullptr;
-}
-
-stag::BucketHashingIndexT stag::LSHTable::compute_bucket_index(
-    const std::vector<StagUInt>& uVector){
-  StagUInt main = compute_uhash_function(mainHashA, uVector, tableSize);
-  StagUInt control = compute_product_mod_prime(controlHash1, uVector);
-  return {main, control};
-}
-
-// Returns TRUE iff |p1-p2|_2^2 <= threshold
-inline bool isDistanceSqrLeq(StagUInt dimension, const stag::LSHDataPointT& p1,
-                             const stag::LSHDataPointT& p2, StagReal threshold){
-  StagReal result = 0;
-
-  for (StagUInt i = 0; i < dimension; i++){
-    StagReal temp = p1.coordinates[i] - p2.coordinates[i];
-    result += SQR(temp);
-    if (result > threshold){
-      return false;
-    }
-  }
-
-  return true;
+stag::DataPoint::DataPoint(std::vector<StagReal>& point_vector) {
+  dimension = point_vector.size();
+  coordinates = &point_vector[0];
 }
 
 //------------------------------------------------------------------------------
@@ -214,7 +83,7 @@ stag::LSHFunction::LSHFunction(StagUInt dimension) {
   b = genUniformRandom(0, LSH_PARAMETER_W);
 }
 
-StagUInt stag::LSHFunction::apply(const LSHDataPointT& point) {
+StagUInt stag::LSHFunction::apply(const DataPoint& point) {
   assert(point.dimension == dim);
 
   StagReal value = 0;
@@ -230,7 +99,7 @@ StagUInt stag::LSHFunction::apply(const LSHDataPointT& point) {
 // Implementation of the E2LSH class.
 //------------------------------------------------------------------------------
 stag::E2LSH::E2LSH(RNNParametersT algParameters, StagUInt nPoints,
-                   std::vector<LSHDataPointT>& dataSet){
+                   std::vector<DataPoint>& dataSet){
   initialise_fields_from_parameters(algParameters, nPoints);
 
   // Set the fields <nPoints> and <points>.
@@ -285,7 +154,7 @@ void stag::E2LSH::initialise_fields_from_parameters(RNNParametersT algParameters
   markedPointsIndices.resize(sizeMarkedPoints);
 }
 
-std::vector<StagUInt> stag::E2LSH::compute_lsh(StagUInt gNumber, const LSHDataPointT& point) {
+std::vector<StagUInt> stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint& point) {
   std::vector<StagUInt> result(parameterK);
   for(StagUInt i = 0; i < parameterK; i++){
     result[i] = lshFunctions[gNumber][i].apply(point);
@@ -293,8 +162,8 @@ std::vector<StagUInt> stag::E2LSH::compute_lsh(StagUInt gNumber, const LSHDataPo
   return result;
 }
 
-std::vector<stag::LSHDataPointT> stag::E2LSH::get_near_neighbors(const LSHDataPointT& query) {
-  std::vector<LSHDataPointT> near_points;
+std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& query) {
+  std::vector<DataPoint> near_points;
 
   StagUInt nMarkedPoints = 0;// the number of marked points
   for(StagUInt l = 0; l < parameterL; l++){
@@ -305,7 +174,7 @@ std::vector<stag::LSHDataPointT> stag::E2LSH::get_near_neighbors(const LSHDataPo
     // circle through the bucket and add to <result> the points that are near.
     if (bucket != nullptr) {
       for (StagInt candidatePIndex : bucket->points) {
-        LSHDataPointT candidatePoint = points[candidatePIndex];
+        DataPoint candidatePoint = points[candidatePIndex];
         if (!checkDistanceWhenReturning ||
             isDistanceSqrLeq(dimension, query, candidatePoint, parameterR2)){
           if (!markedPoints[candidatePIndex]) {

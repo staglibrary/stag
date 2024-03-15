@@ -7,116 +7,88 @@
    This file is provided as part of the STAG library and released under the GPL
    license.
 */
-
+/**
+ * @file lsh.h
+ * \brief Provides an implementation of Euclidean locality-sensitive hashing.
+ */
 #ifndef STAG_LIBRARY_LSH_H
 #define STAG_LIBRARY_LSH_H
 
 #include <vector>
 
 #include <definitions.h>
+#include <LSHTable.h>
 
+/**
+ * \cond
+ */
 // The value for algorithm parameter W.
 #define LSH_PARAMETER_W 4.0
+/**
+ * \endcond
+ */
 
 namespace stag {
 
-  typedef struct BucketHashingIndexT {
-    StagUInt main_index;
-    StagUInt control_index;
-    BucketHashingIndexT(StagUInt main, StagUInt control)
-        : main_index(main), control_index(control) {};
-    BucketHashingIndexT() : main_index(0), control_index(0) {};
-  } BucketHashingIndexT;
-
-  // The type definition for an LSH bucket. A bucket is a container for points
-  // which has all been hashed to the same value for some hash function g. The
-  // function g is a vector of K LSH functions.
-  //
-  // In the bucket array, the points are referred to only as indices in the larger
-  // LSH structure.
-  class LSHBucket {
+  /**
+   * \brief A data point in d-dimensional space.
+   *
+   * A point is defined by its dimension, and a pointer to a C-style array
+   * of coordinates. This structure uses C arrays in order that the calling code
+   * can use any structure desired to store the underlying data.
+   *
+   * The calling code is always responsible for the underlying data, and
+   * ensuring that for the life of the DataPoint object, the underlying data
+   * array does not move.
+   *
+   * For example, the data can be stored in C++ vectors or an Eigen matrix.
+   */
+  class DataPoint {
   public:
-    explicit LSHBucket(StagUInt cv) : controlValue1(cv) {};
+    /**
+     * Initialise a data point with an explicit dimension, and a pointer to the
+     * data array.
+     *
+     * @param d the dimension of the data point
+     * @param coords a pointer to the array of coordinates
+     */
+    DataPoint(StagUInt d, StagReal* coords) : dimension(d), coordinates(coords) {};
 
-    void add_point(StagInt new_point);
+    /**
+     * Initialise a data point to point to a given row of a dense matrix.
+     *
+     * @param all_data a dense matrix containing a full data set
+     * @param row_index the index of the row containing this data point
+     */
+    DataPoint(DenseMat& all_data, StagInt row_index);
 
-    // These controlValues are used instead of the full k-vector (value
-    // of the hash function g) describing the bucket. With a high
-    // probability all buckets will have different pairs of
-    // controlValues.
-    StagUInt controlValue1;
+    /**
+     * Initialise a data point to point to the data array of a given vector.
+     *
+     * @param point_vector a vector containing one data point.
+     */
+    DataPoint(std::vector<StagReal>& point_vector);
 
-    // We store only the point indices in the hash buckets - these indices
-    // correspond to the indices of the points in the overall hashtable structure.
-    std::vector<StagInt> points;
-  };
-
-  // 4294967291 = 2^32-5
-  #define UH_PRIME_DEFAULT 4294967291U
-
-  // 2^29
-  #define MAX_HASH_RND 536870912U
-
-  // 2^32-1
-  #define TWO_TO_32_MINUS_1 4294967295U
-
-  // An universal hash table with collision solved by chaining. The
-  // chains and the buckets are stored using either singly linked lists
-  // or static arrays (depending on the value of the field <typeHT>).
-  class LSHTable {
-  public:
-    LSHTable() {};
-
-    LSHTable(StagUInt hashTableSize, StagUInt bucketVectorLength);
-
-    void add_bucket_entry(const BucketHashingIndexT& bucketIndex,
-                          StagInt pointIndex);
-
-    LSHBucket* get_bucket(const BucketHashingIndexT& bucketIndex);
-
-    BucketHashingIndexT compute_bucket_index(const std::vector<StagUInt>& uVector);
-
-  private:
-    // The array containing the hash slots of the universal hashing.
-    std::vector<std::vector<LSHBucket>> hashTable;
-
-    // The size of hashTable.
-    StagUInt tableSize;
-
-    StagUInt nHashedPoints;
-
-    StagUInt prime; // the prime used for the universal hash functions.
-    StagUInt hashedDataLength;// the number of IntT's in an element from U (U is the set of values to hash).
-
-    // The hash functions used for the universal hashing.
-
-    // The main hash function (that defines the index
-    // of the slot in the table).
-    // The type of the hash function is: h_{a}(k) = ((a\cdot k)mod p)mod hashTableSize.
-    std::vector<StagUInt> mainHashA;
-
-    // Control hash functions: used to compute/check the <controlValue>s
-    // of <GBucket>s.
-    // The type of the hash function is: h_{a}(k) = (a\cdot k)mod p
-    std::vector<StagUInt> controlHash1;
-  };
-
-  // A simple point in d-dimensional space. A point is defined by a
-  // vector of coordinates.
-  // We use a basic C array in order that the calling code can use any stucture
-  // desired to store the underlying data - eg C++ vectors or an Eigen matrix.
-  typedef struct LSHDataPointT {
+    /**
+     * The dimension of the data point.
+     */
     StagUInt dimension;
-    StagReal *coordinates;
-    LSHDataPointT(StagInt d, StagReal* coords) : dimension(d), coordinates(coords) {};
-  } LSHDataPointT;
 
+    /**
+     * A pointer to a C-style array containing the data point.
+     */
+    StagReal *coordinates;
+  };
+
+  /**
+   * \cond
+   */
   // A function drawn from the locality-sensitive family of hash functions.
   class LSHFunction {
   public:
     explicit LSHFunction(StagUInt dimension);
 
-    StagUInt apply(const LSHDataPointT& point);
+    StagUInt apply(const DataPoint& point);
 
   private:
     std::vector<StagReal> a;
@@ -138,16 +110,16 @@ namespace stag {
     E2LSH() {};
 
     E2LSH(RNNParametersT algParameters, StagUInt nPoints,
-          std::vector<LSHDataPointT>& dataSet);
+          std::vector<DataPoint>& dataSet);
 
-    std::vector<LSHDataPointT> get_near_neighbors(const LSHDataPointT& query);
+    std::vector<DataPoint> get_near_neighbors(const DataPoint& query);
 
   private:
     void initialise_fields_from_parameters(RNNParametersT algParameters,
                                            StagUInt nPointsEstimate);
     void initialise_hash_functions();
 
-    std::vector<StagUInt> compute_lsh(StagUInt gNumber, const LSHDataPointT& point);
+    std::vector<StagUInt> compute_lsh(StagUInt gNumber, const DataPoint& point);
 
     StagUInt dimension; // dimension of points.
     StagUInt parameterK; // parameter K of the algorithm.
@@ -162,7 +134,7 @@ namespace stag {
     // structure. Some types of this structure (of UHashStructureT,
     // actually) use indices in this array to refer to points (as
     // opposed to using pointers).
-    std::vector<LSHDataPointT> points;
+    std::vector<DataPoint> points;
 
     // This table stores the LSH functions. There are <nHFTuples> rows
     // of <hfTuplesLength> LSH functions.
@@ -188,6 +160,10 @@ namespace stag {
     // the size of <markedPoints> and of <markedPointsIndeces>
     StagUInt sizeMarkedPoints;
   };
+
+  /**
+   * \endcond
+   */
 }
 
 #endif //STAG_LIBRARY_LSH_H

@@ -17,6 +17,7 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
         definitions.h
+        LSHTable.h
         )
 
 set(SOURCE_FILES
@@ -27,6 +28,7 @@ set(SOURCE_FILES
         cluster.cpp
         spectrum.cpp
         lsh.cpp
+        LSHTable.cpp
         KMeansRex/KMeansRexCore.cpp
         )
 

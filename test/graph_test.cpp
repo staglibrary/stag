@@ -1,6 +1,9 @@
 /**
  * Tests for the methods in the graph.h header file. Includes the main Graph
  * object.
+ *
+ * This file is provided as part of the STAG library and released under the GPL
+ * license.
  */
 #include <stdexcept>
 #include <gtest/gtest.h>

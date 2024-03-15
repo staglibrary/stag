@@ -1,8 +1,8 @@
 /**
-* Tests for the graphio.h header. Includes methods for reading and writing
+ * Tests for the graphio.h header. Includes methods for reading and writing
  * graphs to disk.
  *
- * This file is provided as part of the STAG library and released under the MIT
+ * This file is provided as part of the STAG library and released under the GPL
  * license.
 */
 #include <iostream>
