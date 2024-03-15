@@ -2,6 +2,10 @@
    This file is provided as part of the STAG library and released under the GPL
    license.
 */
+/**
+ * @file definitions.h
+ * \brief Definitions of data types used throughout the library.
+ */
 
 #ifndef STAG_LIBRARY_DEFINITIONS_H
 #define STAG_LIBRARY_DEFINITIONS_H
