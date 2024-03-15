@@ -13,6 +13,10 @@
 #include <Eigen/Sparse>
 #include <cstdint>
 
+// Define some mathematical operations.
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define SQR(a) ((a) * (a))
+
 /**
  * The integer type used throughout the library.
  */
