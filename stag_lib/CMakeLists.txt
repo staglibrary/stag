@@ -8,6 +8,9 @@ set(STAG_PUBLIC_HEADERS
         random.h
         cluster.h
         spectrum.h
+        lsh.h
+        definitions.h
+        LSHTable.h
         )
 
 set(HEADER_FILES
@@ -24,6 +27,8 @@ set(SOURCE_FILES
         random.cpp
         cluster.cpp
         spectrum.cpp
+        lsh.cpp
+        LSHTable.cpp
         KMeansRex/KMeansRexCore.cpp
         )
 

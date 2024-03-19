@@ -1,6 +1,9 @@
 /**
  * Tests for the methods in the spectrum.h header file. Includes methods for
  * computing eigenvalues and eigenvectors.
+ *
+ * This file is provided as part of the STAG library and released under the GPL
+ * license.
  */
 #include <stdexcept>
 #include <iostream>
@@ -13,7 +16,7 @@
 
 TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
   // Create a small complete graph
-  stag_int n = 10;
+  StagInt n = 10;
   stag::Graph testGraph = stag::complete_graph(n);
 
   // Extract the normalised laplacian matrix
@@ -21,7 +24,7 @@ TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
 
   // Compute the first few eigenvalues and eigenvectors - there should be no exceptions
   // thrown.
-  stag_int k = 4;
+  StagInt k = 4;
   stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
 
   // The eigenvalues should be equal to 0, and (n-1) copies of n/(n-1).
@@ -36,7 +39,7 @@ TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
 
 TEST(SpectrumTest, RandomGraphSpectrum) {
     // Create a graph from the SBM
-    stag_int n = 100;
+    StagInt n = 100;
     stag::Graph testGraph = stag::sbm(n, 2, 0.5, 0.01);
 
     // Extract the normalised laplacian matrix
@@ -44,7 +47,7 @@ TEST(SpectrumTest, RandomGraphSpectrum) {
 
     // Compute the first few eigenvalues and eigenvectors - there should be no exceptions
     // thrown.
-    stag_int k = 3;
+    StagInt k = 3;
     stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
 
     // The eigenvalues should be equal to 0, something 'small' and something 'large'.
@@ -62,8 +65,8 @@ TEST(SpectrumTest, DisconnectedGraph) {
     //     2 0 0 0
     //     0 0 0 1
     //     0 0 1 0
-    std::vector<stag_int> rowStarts = {0, 1, 2, 3, 4};
-    std::vector<stag_int> colIndices = {1, 0, 3, 2};
+    std::vector<StagInt> rowStarts = {0, 1, 2, 3, 4};
+    std::vector<StagInt> colIndices = {1, 0, 3, 2};
     std::vector<double> values = {2, 2, 1, 1};
 
     // Create the stag Graph object
@@ -73,7 +76,7 @@ TEST(SpectrumTest, DisconnectedGraph) {
     const SprsMat* lap = testGraph.laplacian();
 
     // Compute the first 3 eigenvalues and eigenvectors.
-    stag_int k = 3;
+    StagInt k = 3;
     stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
 
     // The eigenvalues should be equal to 0, 0, and something else.
@@ -94,16 +97,16 @@ TEST(SpectrumTest, HugeGraph) {
   const SprsMat* lap = graph.laplacian();
 
   // Compute the first 3 eigenvalues and eigenvectors.
-  stag_int k = 3;
+  StagInt k = 3;
   stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
 }
 
 TEST(SpectrumTest, ArgumentChecking) {
-  stag_int n = 10;
+  StagInt n = 10;
   stag::Graph testGraph = stag::complete_graph(n);
   const SprsMat* lap = testGraph.laplacian();
 
-  stag_int k = -1;
+  StagInt k = -1;
   EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
 
   k = 0;
@@ -200,6 +203,6 @@ TEST(SpectrumTest, PowerMethodArguments) {
   // The number of iterations must be non-negative.
   testGraph = stag::complete_graph(4);
   lap = testGraph.laplacian();
-  stag_int t = -1;
+  StagInt t = -1;
   EXPECT_THROW(stag::power_method(lap, t), std::invalid_argument);
 }

@@ -1,10 +1,7 @@
-//
-// Methods relating to the spectrum of the graph matrices. Includes methods for
-// computing the eigenvectors and eigenvalues of the graph matrices.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file spectrum.h
@@ -28,7 +25,7 @@ namespace stag {
    *
    * Undocumented by doxygen.
    */
-  typedef Spectra::SparseSymMatProd<double, Eigen::Upper, Eigen::ColMajor, stag_int> SprsMatOp;
+  typedef Spectra::SparseSymMatProd<StagReal, Eigen::Upper, Eigen::ColMajor, StagInt> SprsMatOp;
   /**
    * \endcond
    */
@@ -80,13 +77,13 @@ namespace stag {
    * @returns a stag::EigenSystem object containing the computed eigenvalues and eigenvectors
    * @throws std::runtime_error if the eigenvalue calculation does not converge
    */
-  stag::EigenSystem compute_eigensystem(const SprsMat* mat, stag_int num,
+  stag::EigenSystem compute_eigensystem(const SprsMat* mat, StagInt num,
                                         Spectra::SortRule sort);
 
   /**
    * \overload
    */
-  stag::EigenSystem compute_eigensystem(const SprsMat* mat, stag_int num);
+  stag::EigenSystem compute_eigensystem(const SprsMat* mat, StagInt num);
 
   /**
    * Compute the eigenvalues of a given matrix.
@@ -106,13 +103,13 @@ namespace stag {
    * @returns an Eigen::VectorXd object containing the computed eigenvalues
    * @throws std::runtime_error if the eigenvalue calculation does not converge
    */
-  Eigen::VectorXd compute_eigenvalues(const SprsMat* mat, stag_int num,
+  Eigen::VectorXd compute_eigenvalues(const SprsMat* mat, StagInt num,
                                       Spectra::SortRule sort);
 
   /**
    * \overload
    */
-  Eigen::VectorXd compute_eigenvalues(const SprsMat* mat, stag_int num);
+  Eigen::VectorXd compute_eigenvalues(const SprsMat* mat, StagInt num);
 
   /**
    * Compute the eigenvectors of a given matrix.
@@ -133,13 +130,13 @@ namespace stag {
    * @returns an Eigen::MatrixXd object containing the computed eigenvectors
    * @throws std::runtime_error if the eigenvector calculation does not converge
    */
-  Eigen::MatrixXd compute_eigenvectors(const SprsMat* mat, stag_int num,
-                                      Spectra::SortRule sort);
+  Eigen::MatrixXd compute_eigenvectors(const SprsMat* mat, StagInt num,
+                                       Spectra::SortRule sort);
 
   /**
    * \overload
    */
-  Eigen::MatrixXd compute_eigenvectors(const SprsMat* mat, stag_int num);
+  Eigen::MatrixXd compute_eigenvectors(const SprsMat* mat, StagInt num);
 
   /**
    * Apply the power method to compute the dominant eigenvector of a matrix.
@@ -167,13 +164,13 @@ namespace stag {
    *                       vector will be used.
    * @return the vector \f$v_t\f$ computed by repeated multiplication with \f$M\f$.
    */
-  Eigen::VectorXd power_method(const SprsMat* mat, stag_int num_iterations,
+  Eigen::VectorXd power_method(const SprsMat* mat, StagInt num_iterations,
                                Eigen::VectorXd initial_vector);
 
   /**
    * \overload
    */
-  Eigen::VectorXd power_method(const SprsMat* mat, stag_int num_iterations);
+  Eigen::VectorXd power_method(const SprsMat* mat, StagInt num_iterations);
 
   /**
    * \overload
@@ -199,7 +196,7 @@ namespace stag {
    * @param vec a vector \f$v \in \mathbb{R}^n\f$.
    * @return the Rayleigh quotient \f$R(M, v)\f$.
    */
-  double rayleigh_quotient(const SprsMat* mat, Eigen::VectorXd& vec);
+  StagReal rayleigh_quotient(const SprsMat* mat, Eigen::VectorXd& vec);
 }
 
 

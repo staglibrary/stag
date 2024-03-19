@@ -1,7 +1,7 @@
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -26,10 +26,10 @@ stag::edge parse_edgelist_content_line(std::string line) {
   // Split the line to extract the edge information
   // The weight defaults to 1 if it is not otherwise updated by the information
   // in the line.
-  int num_tokens_found = 0;
-  int u = -1;
-  int v = -1;
-  double weight = 1;
+  StagUInt num_tokens_found = 0;
+  StagInt u = -1;
+  StagInt v = -1;
+  StagReal weight = 1;
 
   // Try splitting by each delimiter in turn
   size_t split_pos = 0;
@@ -101,7 +101,7 @@ stag::Graph stag::load_edgelist(std::string &filename) {
   std::vector<EdgeTriplet> non_zero_entries;
 
   // Read the file in one line at a time
-  stag_int number_of_vertices = 0;
+  StagInt number_of_vertices = 0;
   std::string line;
   stag::edge this_edge;
   while (stag::safeGetline(is, line)) {
@@ -218,8 +218,8 @@ void stag::copy_edgelist_duplicate_edges(std::string& infile, std::string& outfi
  * This has running time O(n) where n is the number of lines in the edgelist
  * file.
  */
-void get_edgelist_lines_and_nodes(std::string& filename, stag_int& lines,
-                                  stag_int& max_id) {
+void get_edgelist_lines_and_nodes(std::string& filename, StagInt& lines,
+                                  StagInt& max_id) {
   // Open the input file
   std::ifstream is(filename);
   if (!is.is_open()) {
@@ -260,16 +260,16 @@ void get_edgelist_lines_and_nodes(std::string& filename, stag_int& lines,
  * files.
  */
 struct EdgelistSortInterval {
-  stag_int start_line;
-  stag_int end_line;
-  stag_int min_id;
-  stag_int max_id;
+  StagInt start_line;
+  StagInt end_line;
+  StagInt min_id;
+  StagInt max_id;
 };
 
 void stag::sort_edgelist(std::string &filename) {
   // Find the number of lines and the maximum node ID in the edgelist file
-  stag_int max_id = 0;
-  stag_int num_lines = 0;
+  StagInt max_id = 0;
+  StagInt num_lines = 0;
   get_edgelist_lines_and_nodes(filename, num_lines, max_id);
 
   // Initialise the vector of quicksort intervals
@@ -289,8 +289,8 @@ void stag::sort_edgelist(std::string &filename) {
 
     // Throughout the algorithm, we must maintain a record of which line of the
     // input and output file we are pointing at.
-    stag_int current_input_line = 0;
-    stag_int current_output_line = 0;
+    StagInt current_input_line = 0;
+    StagInt current_output_line = 0;
 
     // For each pass through the input file, output any header comment lines
     // verbatim
@@ -303,7 +303,7 @@ void stag::sort_edgelist(std::string &filename) {
     std::vector<EdgelistSortInterval> new_intervals;
     for (EdgelistSortInterval interval : intervals) {
       // The pivot index is half-way between the max and min.
-      stag_int double_pivot = interval.min_id + interval.max_id;
+      StagInt double_pivot = interval.min_id + interval.max_id;
       assert(double_pivot > 2 * interval.min_id);
       assert(double_pivot < 2 * interval.max_id);
 
@@ -318,9 +318,9 @@ void stag::sort_edgelist(std::string &filename) {
       std::streampos start_loc = ifs.tellg();
       assert(current_input_line == interval.start_line);
 
-      stag_int new_interval_start = current_output_line;
-      stag_int new_interval_min_id = interval.max_id;
-      stag_int new_interval_max_id = interval.min_id;
+      StagInt new_interval_start = current_output_line;
+      StagInt new_interval_min_id = interval.max_id;
+      StagInt new_interval_max_id = interval.min_id;
 
       while (current_input_line < interval.end_line) {
         stag::safeGetline(ifs, line);
@@ -353,7 +353,7 @@ void stag::sort_edgelist(std::string &filename) {
       }
 
       assert(new_interval_max_id >= new_interval_min_id);
-      stag_int new_interval_end = current_output_line;
+      StagInt new_interval_end = current_output_line;
       if (new_interval_end - new_interval_start > 1 &&
           new_interval_max_id > new_interval_min_id) {
         new_intervals.push_back({new_interval_start,
@@ -432,9 +432,9 @@ void stag::sort_edgelist(std::string &filename) {
 // Adjacency List processing
 //------------------------------------------------------------------------------
 
-stag::edge parse_adjacencylist_edge(std::string token, stag_int source_node) {
-  stag_int neighbour;
-  double weight;
+stag::edge parse_adjacencylist_edge(std::string token, StagInt source_node) {
+  StagInt neighbour;
+  StagReal weight;
 
   // Try to split on ':' to get a weight
   size_t split_pos = token.find(':');
@@ -470,7 +470,7 @@ std::vector<stag::edge> stag::parse_adjacencylist_content_line(std::string line)
     throw std::invalid_argument("Couldn't extract ID on adjacencylist line.");
   }
   std::string token = line.substr(0, split_pos);
-  stag_int source_node_id = std::stoi(token);
+  StagInt source_node_id = std::stoi(token);
   line.erase(0, split_pos + 1);
 
   // Now, repeatedly split the rest of the line on spaces to find the neighbours.
@@ -512,7 +512,7 @@ stag::Graph stag::load_adjacencylist(std::string &filename) {
   std::vector<EdgeTriplet> non_zero_entries;
 
   // Read the file in one line at a time
-  stag_int number_of_vertices = 0;
+  StagInt number_of_vertices = 0;
   std::string line;
   std::vector<stag::edge> neighbours;
   while (stag::safeGetline(is, line)) {
@@ -569,7 +569,7 @@ void stag::save_adjacencylist(stag::Graph &graph, std::string &filename) {
 
   // Iterate through the nodes in the graph, and write
   // the adjacencylist file
-  for (stag_int node = 0; node < graph.number_of_vertices(); node++) {
+  for (StagInt node = 0; node < graph.number_of_vertices(); node++) {
     os << node << ":";
 
     for (stag::edge e: graph.neighbors(node)) {
@@ -644,7 +644,7 @@ void stag::edgelist_to_adjacencylist(std::string &edgelist_fname,
   bool written_content = false;
 
   // Iterate through the edgelist file
-  stag_int current_node = -1;
+  StagInt current_node = -1;
   std::string line;
   while (stag::safeGetline(is, line)) {
     if (line[0] != '#' && line[0] != '/' && line.length() > 0) {

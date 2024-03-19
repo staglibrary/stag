@@ -34,7 +34,7 @@ int main(int argc, char** args) {
 
   // Extract the command line arguments.
   std::string edge_fname;
-  stag_int n, k;
+  StagInt n, k;
   double p, q;
   try {
     edge_fname = std::string(args[1]);
@@ -48,8 +48,8 @@ int main(int argc, char** args) {
   }
 
   // Prepare the general SBM arguments
-  stag_int cluster_size = floor(((double) n) / ((double) k));
-  std::vector<stag_int> cluster_sizes;
+  StagInt cluster_size = floor(((double) n) / ((double) k));
+  std::vector<StagInt> cluster_sizes;
   DenseMat probabilities(k, k);
   for (auto i = 0; i < k; i++) {
     cluster_sizes.push_back(cluster_size);

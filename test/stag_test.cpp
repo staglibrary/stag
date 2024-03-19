@@ -2,7 +2,7 @@
  * Tests for the stag.h header. Includes configuration information about the
  * library.
  *
- * This file is provided as part of the STAG library and released under the MIT
+ * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
 #include <gtest/gtest.h>

@@ -59,7 +59,9 @@ add_executable(
         test/graphio_test.cpp
         test/random_test.cpp
         test/cluster_test.cpp
-        test/spectrum_test.cpp)
+        test/spectrum_test.cpp
+        test/lsh_test.cpp
+        )
 
 target_link_libraries(
         stagt

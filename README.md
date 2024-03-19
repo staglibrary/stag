@@ -42,8 +42,8 @@ from the stochastic block model.
 ...
 // Construct a graph with 5 clusters using the 
 // stochastic block model.
-stag_int n = 1000;
-stag_int k = 5;
+StagInt n = 1000;
+StagInt k = 5;
 stag::Graph myGraph = stag::sbm(n, k, 0.6, 0.1);
 ```
 
@@ -116,6 +116,19 @@ If you find the STAG library useful in your research, please cite our [technical
     eprint       = {2304.03170},
 }
 ```
+
+## Licensing
+The source code for the STAG library is available freely for use and modification.
+The code is licenced under the GPL license, which requires that derivative works
+are also released with the same license. 
+
+## Acknowledgements
+
+STAG includes open-source code developed by others. We are grateful to the following people for their contributions of
+open-source code.
+
+- Michael C. Hughes for the C++ implementation of the k-means algorithm available [here](https://github.com/michaelchughes/KMeansRex/).
+- Alexandr Andoni and Piotr Indyk for their theoretical work and open source implementation of the Euclidean LSH algorithm, available [here](https://www.mit.edu/~andoni/LSH/).
 
 ## Contact
 

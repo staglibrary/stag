@@ -1,54 +1,54 @@
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 #include <iterator>
 #include <filesystem>
 #include "utility.h"
 
-std::vector<stag_int> stag::sprsMatInnerIndices(const SprsMat *matrix) {
+std::vector<StagInt> stag::sprsMatInnerIndices(const SprsMat *matrix) {
   // Make sure that the given matrix is compressed
   assert(matrix->isCompressed());
 
   // Return the required indices vector
-  const stag_int *indexPtr = matrix->innerIndexPtr();
-  stag_int nonZeros = matrix->nonZeros();
+  const StagInt *indexPtr = matrix->innerIndexPtr();
+  StagInt nonZeros = matrix->nonZeros();
   return {indexPtr, indexPtr + nonZeros};
 }
 
-std::vector<stag_int> stag::sprsMatOuterStarts(const SprsMat* matrix) {
+std::vector<StagInt> stag::sprsMatOuterStarts(const SprsMat* matrix) {
   // Make sure that the given matrix is compressed
   assert(matrix->isCompressed());
 
   // Return the required indices vector
-  const stag_int *indexPtr = matrix->outerIndexPtr();
-  stag_int outerSize = matrix->outerSize();
+  const StagInt *indexPtr = matrix->outerIndexPtr();
+  StagInt outerSize = matrix->outerSize();
   return {indexPtr, indexPtr + outerSize + 1};
 }
 
-std::vector<double> stag::sprsMatValues(const SprsMat* matrix) {
+std::vector<StagReal> stag::sprsMatValues(const SprsMat* matrix) {
   // Make sure that the given matrix is compressed
   assert(matrix->isCompressed());
 
   // Return the required indices vector
-  const double *valuePtr = matrix->valuePtr();
-  stag_int nonZeros = matrix->nonZeros();
+  const StagReal *valuePtr = matrix->valuePtr();
+  StagInt nonZeros = matrix->nonZeros();
   return {valuePtr, valuePtr + nonZeros};
 }
 
-std::vector<double> stag::sprsMatToVec(const SprsMat* matrix) {
+std::vector<StagReal> stag::sprsMatToVec(const SprsMat* matrix) {
   // If the number of dimensions is not given, use the dimension of the sparse
   // matrix.
   return stag::sprsMatToVec(matrix, matrix->rows());
 }
 
-std::vector<double> stag::sprsMatToVec(const SprsMat* matrix, stag_int n) {
+std::vector<StagReal> stag::sprsMatToVec(const SprsMat* matrix, StagInt n) {
   if (n < 1) throw std::invalid_argument("Dimension n must be at least 1.");
 
   // Initialise the solution vector.
-  std::vector<double> dense_vec;
+  std::vector<StagReal> dense_vec;
 
-  for (stag_int i = 0; i < n; i++) {
+  for (StagInt i = 0; i < n; i++) {
     if (i < matrix->rows()) {
       // Get the i-th entry of the sparse matrix
       dense_vec.push_back(matrix->coeff(i, 0));
@@ -60,9 +60,9 @@ std::vector<double> stag::sprsMatToVec(const SprsMat* matrix, stag_int n) {
   return dense_vec;
 }
 
-SprsMat stag::sprsMatFromVectors(std::vector<stag_int>& column_starts,
-                                 std::vector<stag_int>& row_indices,
-                                 std::vector<double>& values) {
+SprsMat stag::sprsMatFromVectors(std::vector<StagInt>& column_starts,
+                                 std::vector<StagInt>& row_indices,
+                                 std::vector<StagReal>& values) {
   // The length of the row_indices and values vectors should be the same
   if (row_indices.size() != values.size()) {
     throw std::invalid_argument("Sparse matrix indices and values array length mismatch.");
@@ -70,13 +70,13 @@ SprsMat stag::sprsMatFromVectors(std::vector<stag_int>& column_starts,
 
   // The last value in the column_starts vector should be equal to the length
   // of the data vectors.
-  if (column_starts.back() != (stag_int) row_indices.size()) {
+  if (column_starts.back() != (StagInt) row_indices.size()) {
     throw std::invalid_argument("Final column starts entry should equal size of data vectors.");
   }
 
-  SprsMat constructed_mat = Eigen::Map<SprsMat>((stag_int) column_starts.size() - 1,
-                                                (stag_int) column_starts.size() - 1,
-                                                (stag_int) values.size(),
+  SprsMat constructed_mat = Eigen::Map<SprsMat>((StagInt) column_starts.size() - 1,
+                                                (StagInt) column_starts.size() - 1,
+                                                (StagInt) values.size(),
                                                 column_starts.data(),
                                                 row_indices.data(),
                                                 values.data());

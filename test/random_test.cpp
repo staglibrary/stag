@@ -2,7 +2,7 @@
  * Tests for the methods in the random.h header file. Includes methods for
  * generating random graphs.
  *
- * This file is provided as part of the STAG library and released under the MIT
+ * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
 #include <iostream>
@@ -26,15 +26,15 @@ TEST(RandomTest, SBMComplete) {
 
   stag::Graph referenceGraph = stag::complete_graph(10);
 
-  std::vector<stag_int> refStarts = stag::sprsMatOuterStarts(
+  std::vector<StagInt> refStarts = stag::sprsMatOuterStarts(
       referenceGraph.laplacian());
-  std::vector<stag_int> testStarts = stag::sprsMatOuterStarts(
+  std::vector<StagInt> testStarts = stag::sprsMatOuterStarts(
       testGraph.laplacian());
   EXPECT_EQ(refStarts, testStarts);
 
-  std::vector<stag_int> refIndices= stag::sprsMatInnerIndices(
+  std::vector<StagInt> refIndices= stag::sprsMatInnerIndices(
       referenceGraph.laplacian());
-  std::vector<stag_int> testIndices = stag::sprsMatInnerIndices(
+  std::vector<StagInt> testIndices = stag::sprsMatInnerIndices(
       testGraph.laplacian());
   EXPECT_EQ(refIndices, testIndices);
 
@@ -46,7 +46,7 @@ TEST(RandomTest, SBMComplete) {
 }
 
 TEST(RandomTest, GeneralSBM) {
-  std::vector<stag_int> cluster_sizes = {1000, 100, 10};
+  std::vector<StagInt> cluster_sizes = {1000, 100, 10};
   DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
   stag::Graph testGraph = stag::general_sbm(cluster_sizes, prob_mat);
   EXPECT_EQ(testGraph.number_of_vertices(), 1110);
@@ -54,7 +54,7 @@ TEST(RandomTest, GeneralSBM) {
 
 TEST(RandomTest, GeneralSBMEdgelist) {
   std::string filename = "output.edgelist";
-  std::vector<stag_int> cluster_sizes = {100, 100, 10};
+  std::vector<StagInt> cluster_sizes = {100, 100, 10};
   DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
   stag::general_sbm_edgelist(filename, cluster_sizes, prob_mat);
   stag::Graph testGraph = stag::load_edgelist(filename);
@@ -62,7 +62,7 @@ TEST(RandomTest, GeneralSBMEdgelist) {
 }
 
 TEST(RandomTest, GeneralSBMArguments) {
-  std::vector<stag_int> cluster_sizes = {1000, 100, 10};
+  std::vector<StagInt> cluster_sizes = {1000, 100, 10};
   DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 1.7, 0}, {0.1, 0, 1}};
   EXPECT_THROW(stag::general_sbm(cluster_sizes, prob_mat), std::invalid_argument);
 
@@ -94,8 +94,8 @@ TEST(RandomTest, ErdosRenyi) {
 }
 
 TEST(RandomTest, SBMArguments) {
-  stag_int n = -1;
-  stag_int k = 2;
+  StagInt n = -1;
+  StagInt k = 2;
   double p = 0.5;
   double q = 0.5;
   EXPECT_THROW(stag::sbm(n, k, p, q), std::invalid_argument);
@@ -129,7 +129,7 @@ TEST(RandomTest, SBMArguments) {
 }
 
 TEST(RandomTest, ErdosRenyiArguments) {
-  stag_int n = -1;
+  StagInt n = -1;
   double p = 0.5;
   EXPECT_THROW(stag::erdos_renyi(n, p), std::invalid_argument);
 
@@ -145,30 +145,30 @@ TEST(RandomTest, ErdosRenyiArguments) {
 }
 
 TEST(RandomTest, SBMLabels) {
-  stag_int n = 6;
-  stag_int k = 3;
+  StagInt n = 6;
+  StagInt k = 3;
   stag::Graph myGraph = stag::sbm(n, k, 0.8, 0.1);
 
-  std::vector<stag_int> gt_labels = stag::sbm_gt_labels(n, k);
-  std::vector<stag_int> expected_labels {0, 0, 1, 1, 2, 2};
+  std::vector<StagInt> gt_labels = stag::sbm_gt_labels(n, k);
+  std::vector<StagInt> expected_labels {0, 0, 1, 1, 2, 2};
 
   EXPECT_EQ(gt_labels, expected_labels);
 }
 
 TEST(RandomTest, GeneralSBMLabels) {
-  std::vector<stag_int> cluster_sizes = {4, 2};
+  std::vector<StagInt> cluster_sizes = {4, 2};
   DenseMat prob_mat {{0.4, 0.1}, {0.1, 0.7}};
   stag::Graph myGraph = stag::general_sbm(cluster_sizes, prob_mat);
 
-  std::vector<stag_int> gt_labels = stag::general_sbm_gt_labels(cluster_sizes);
-  std::vector<stag_int> expected_labels {0, 0, 0, 0, 1, 1};
+  std::vector<StagInt> gt_labels = stag::general_sbm_gt_labels(cluster_sizes);
+  std::vector<StagInt> expected_labels {0, 0, 0, 0, 1, 1};
 
   EXPECT_EQ(gt_labels, expected_labels);
 }
 
 TEST(RandomTest, SBMLabelsArguments) {
-  stag_int n = -1;
-  stag_int k = 2;
+  StagInt n = -1;
+  StagInt k = 2;
   EXPECT_THROW(stag::sbm_gt_labels(n, k), std::invalid_argument);
 
   n = 0;
@@ -186,7 +186,7 @@ TEST(RandomTest, SBMLabelsArguments) {
 }
 
 TEST(RandomTest, GeneralSBMLabelsArguments) {
-  std::vector<stag_int> cluster_sizes = {1000, 100, 0};
+  std::vector<StagInt> cluster_sizes = {1000, 100, 0};
   EXPECT_THROW(stag::general_sbm_gt_labels(cluster_sizes), std::invalid_argument);
 
   cluster_sizes.at(2) = -10;
