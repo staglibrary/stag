@@ -92,3 +92,137 @@ TEST(LSHTest, LSHFunction) {
   EXPECT_GE(num_collisions, 0.8 * prob * num_functions);
 }
 
+TEST(LSHTest, E2LSH11) {
+  // Check that an E2LSH table with K=1 and L=1 behaves like a single
+  // LSHFunction.
+
+  // Create two data vectors
+  StagInt dim = 3;
+  DenseMat data_mat {{0, 1, 1}, {1, 0, 0}};
+  stag::DataPoint x1(data_mat, 0);
+  stag::DataPoint x2(data_mat, 1);
+
+  // The 'data' vector for the E2LSH function will be just one of the vectors.
+  std::vector<stag::DataPoint> dataset = {x1};
+
+  // Construct 1000 E2LSH tables
+  StagInt num_tables = 1000;
+  std::vector<stag::E2LSH> tables;
+  for (StagInt i = 0; i < num_tables; i++) {
+    tables.emplace_back(1, 1, dataset);
+  }
+
+  // Compute the number for which the given vectors collide
+  StagUInt num_collisions = 0;
+  for (auto tab : tables) {
+    std::vector<stag::DataPoint> results = tab.get_near_neighbors(x2);
+    if (!results.empty()) {
+      num_collisions++;
+    }
+  }
+
+  // Get the collision probability under the LSH function.
+  StagReal distance = sqrt((StagReal) dim);
+  StagReal prob = stag::LSHFunction::collision_probability(distance);
+
+  EXPECT_EQ(prob, stag::E2LSH::collision_probability(1, 1, distance));
+
+  // Check that the proportion of collisions is close to the expected number
+  EXPECT_LE(num_collisions, 1.2 * prob * num_tables);
+  EXPECT_GE(num_collisions, 0.8 * prob * num_tables);
+}
+
+
+TEST(LSHTest, E2LSH1010) {
+  // Check that an E2LSH table with K=10 and L=10 creates the correct number of
+  // collisions.
+  StagUInt K = 10;
+  StagUInt L = 10;
+
+  // Create two data vectors
+  StagInt dim = 3;
+  DenseMat data_mat {{0, 1, 1}, {1, 0, 0}};
+  stag::DataPoint x1(data_mat, 0);
+  stag::DataPoint x2(data_mat, 1);
+
+  // The 'data' vector for the E2LSH function will be just one of the vectors.
+  std::vector<stag::DataPoint> dataset = {x1};
+
+  // Construct 1000 E2LSH tables
+  StagInt num_tables = 1000;
+  std::vector<stag::E2LSH> tables;
+  for (StagInt i = 0; i < num_tables; i++) {
+    tables.emplace_back(K, L, dataset);
+  }
+
+  // Compute the number for which the given vectors collide
+  StagUInt num_collisions = 0;
+  for (auto tab : tables) {
+    std::vector<stag::DataPoint> results = tab.get_near_neighbors(x2);
+    if (!results.empty()) {
+      num_collisions++;
+    }
+  }
+
+  // Get the collision probability under the LSH function.
+  StagReal distance = sqrt((StagReal) dim);
+  StagReal prob = stag::E2LSH::collision_probability(K, L, distance);
+
+  // Check that the proportion of collisions is close to the expected number
+  EXPECT_LE(num_collisions, 1.2 * prob * num_tables);
+  EXPECT_GE(num_collisions, 0.8 * prob * num_tables);
+}
+
+TEST(LSHTest, E2LSHMoreData) {
+  // Check that an E2LSH table with K=10 and L=10 creates the correct number of
+  // collisions for different data points.
+  StagUInt K = 1;
+  StagUInt L = 1;
+
+  // Create data vectors
+  DenseMat data_mat {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}};
+  stag::DataPoint x1(data_mat, 0);
+  stag::DataPoint x2(data_mat, 1);
+  stag::DataPoint x3(data_mat, 2);
+  stag::DataPoint x4(data_mat, 3);
+
+  // The 'data' vector for the E2LSH function.
+  std::vector<stag::DataPoint> dataset = {x2, x3, x4};
+
+  // Construct 1000 E2LSH tables
+  StagInt num_tables = 1000;
+  std::vector<stag::E2LSH> tables;
+  for (StagInt i = 0; i < num_tables; i++) {
+    tables.emplace_back(K, L, dataset);
+  }
+
+  // Compute the number for which the given vectors collide
+  std::vector<StagUInt> num_collisions = {0, 0, 0};
+  for (auto tab : tables) {
+    std::vector<stag::DataPoint> results = tab.get_near_neighbors(x1);
+    for (auto res : results) {
+      if (res.coordinates[2] == 1) {
+        num_collisions[2]++;
+      } else if (res.coordinates[1] == 1) {
+        num_collisions[1]++;
+      } else if (res.coordinates[0] == 1) {
+        num_collisions[0]++;
+      } else {
+        // Should never get here.
+        assert(false);
+      }
+    }
+  }
+
+  for (auto i = 1; i <= 3; i++) {
+    // Get the collision probability for each data vector
+    StagReal distance = sqrt((StagReal) i);
+    StagReal prob = stag::E2LSH::collision_probability(K, L, distance);
+
+    // Check that the proportion of collisions is close to the expected number
+    EXPECT_LE(num_collisions[i-1], 1.2 * prob * num_tables);
+    EXPECT_GE(num_collisions[i-1], 0.8 * prob * num_tables);
+  }
+}
+
+

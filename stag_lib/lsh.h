@@ -105,6 +105,9 @@ namespace stag {
    * where \f$f(\cdot)\f$ is the probability density function of the Gaussian
    * distribution. The stag::LSHFunction::collision_probability function
    * computes this value.
+   *
+   * Typical STAG users will use the stag::E2LSH hash table rather than these
+   * the LSHFunction class directly.
    */
   class LSHFunction {
   public:
@@ -156,29 +159,83 @@ namespace stag {
   };
 
   /**
-   * \cond
+   * \brief A Euclidean locality sensitive hash table.
+   *
+   * The E2LSH hash table is constructed with some set of data points, which are
+   * hashed with several copies of the stag::LSHFunction.
+   *
+   * Then, for any query point, the data structure returns the points in the
+   * original dataset which are close to the query point.
+   * The probability that a given point \f$x\f$ in the data set is returned for
+   * query \f$q\f$ is dependent on the distance between \f$q\f$ and \f$x\f$.
+   *
+   * The E2LSH hash table takes two parameters, K and L, which control the
+   * probability that two points will collide in the hash table.
+   * For query point \f$q\f$, a data point \f$x\f$ at distance \f$c \in \mathbb{R}\f$
+   * from \f$q\f$ is returned with probability
+   * \f[
+   *    1 - (1 - p(c)^K)^L,
+   * \f]
+   * where \f$p(c)\f$ is the probability that a single stag::LSHFunction will
+   * hash \f$q\f$ and \f$x\f$ to the same value.
+   * This probability can be computed with the stag::E2LSH::collision_probability
+   * method.
+   *
+   * Larger values of K and L will increase both the construction and query time
+   * of the hash table.
    */
-  typedef struct RNNParametersT {
-    StagUInt dimension; // dimension of points.
-    StagReal parameterR2; // = parameterR^2
-    bool checkDistance; // whether to check the query distance is less than R
-    StagUInt parameterK; // parameter K of the algorithm.
-    StagUInt parameterL; // parameter L of the algorithm.
-  } RNNParametersT;
-
-
   class E2LSH {
   public:
     E2LSH() {};
 
-    E2LSH(RNNParametersT algParameters, StagUInt nPoints,
+    /**
+     * Initialise the E2LSH hash table.
+     *
+     * @param K parameter K of the hash table
+     * @param L parameter L of the hash table
+     * @param dataSet a reference to the dataSet to be hashed into the hash
+     *                table. The actual data should be stored and controlled by
+     *                the calling code, and this vector of data point pointers
+     *                will be used by the LSH table.
+     */
+    E2LSH(StagUInt K,
+          StagUInt L,
           std::vector<DataPoint>& dataSet);
 
+    /**
+     * Query the LSH table to find the near neighbors of a given query point.
+     *
+     * Each point in the dataset will be returned with some probability
+     * dependent on the distance to the query point and the parameters K and L.
+     *
+     * @param query the data point to be queried.
+     * @return
+     */
     std::vector<DataPoint> get_near_neighbors(const DataPoint& query);
 
+    /**
+     * Compute the probability that a data point at a given distance from a query
+     * point will be returned by this hash table.
+     *
+     * @param distance the distance between a query point and data point
+     * @return
+     */
+    StagReal collision_probability(StagReal distance);
+
+    /**
+     * For a given value of K and L, return the probability that a point at a
+     * given distance from a query point will be returned by an E2LSH table
+     * with the given parameters.
+     *
+     * @param K the parameter K of the ELSH table
+     * @param L the parameter L of the E2LSH table
+     * @param distance the distance between a query point and data point
+     * @return
+     */
+    static StagReal collision_probability(StagUInt K, StagUInt L,
+                                          StagReal distance);
+
   private:
-    void initialise_fields_from_parameters(RNNParametersT algParameters,
-                                           StagUInt nPointsEstimate);
     void initialise_hash_functions();
 
     std::vector<StagUInt> compute_lsh(StagUInt gNumber, const DataPoint& point);
@@ -186,11 +243,6 @@ namespace stag {
     StagUInt dimension; // dimension of points.
     StagUInt parameterK; // parameter K of the algorithm.
     StagUInt parameterL; // parameter L of the algorithm.
-    StagReal parameterR2; // = parameterR^2
-
-    // Whether to check the distance to the query point is less than R when
-    // returning points from the hash.
-    bool checkDistanceWhenReturning;
 
     // The array of pointers to the points that are contained in the
     // structure. Some types of this structure (of UHashStructureT,
@@ -222,10 +274,6 @@ namespace stag {
     // the size of <markedPoints> and of <markedPointsIndeces>
     StagUInt sizeMarkedPoints;
   };
-
-  /**
-   * \endcond
-   */
 }
 
 #endif //STAG_LIBRARY_LSH_H

@@ -105,11 +105,26 @@ StagReal stag::LSHFunction::collision_probability(StagReal c) {
 //------------------------------------------------------------------------------
 // Implementation of the E2LSH class.
 //------------------------------------------------------------------------------
-stag::E2LSH::E2LSH(RNNParametersT algParameters, StagUInt nPoints,
+stag::E2LSH::E2LSH(StagUInt K,
+                   StagUInt L,
                    std::vector<DataPoint>& dataSet){
-  initialise_fields_from_parameters(algParameters, nPoints);
+  if (dataSet.size() > 0) {
+    dimension = dataSet[0].dimension;
+  } else {
+    dimension = 1;
+  }
 
-  // Set the fields <nPoints> and <points>.
+  parameterK = K;
+  parameterL = L;
+  StagUInt nPoints = dataSet.size();
+
+  // create the hash functions
+  initialise_hash_functions();
+
+  sizeMarkedPoints = nPoints;
+  markedPoints.resize(nPoints, false);
+  markedPointsIndices.resize(sizeMarkedPoints);
+
   points = dataSet;
 
   // Given the number of points, let's set the hash table size to be 1/100 the
@@ -142,25 +157,6 @@ void stag::E2LSH::initialise_hash_functions() {
   }
 }
 
-void stag::E2LSH::initialise_fields_from_parameters(RNNParametersT algParameters, StagUInt nPointsEstimate) {
-  parameterR2 = algParameters.parameterR2;
-  checkDistanceWhenReturning = algParameters.checkDistance;
-  parameterK = algParameters.parameterK;
-  parameterL = algParameters.parameterL;
-  dimension = algParameters.dimension;
-
-  // create the hash functions
-  initialise_hash_functions();
-
-  // init fields that are used only in operations ("temporary" variables for operations).
-
-  // init the vector and the vector
-  // <precomputedHashesOfULSHs>
-  sizeMarkedPoints = nPointsEstimate;
-  markedPoints.resize(nPointsEstimate, false);
-  markedPointsIndices.resize(sizeMarkedPoints);
-}
-
 std::vector<StagUInt> stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint& point) {
   std::vector<StagUInt> result(parameterK);
   for(StagUInt i = 0; i < parameterK; i++){
@@ -182,14 +178,11 @@ std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& qu
     if (bucket != nullptr) {
       for (StagInt candidatePIndex : bucket->points) {
         DataPoint candidatePoint = points[candidatePIndex];
-        if (!checkDistanceWhenReturning ||
-            isDistanceSqrLeq(dimension, query, candidatePoint, parameterR2)){
-          if (!markedPoints[candidatePIndex]) {
-            near_points.push_back(candidatePoint);
-            markedPointsIndices[nMarkedPoints] = candidatePIndex;
-            markedPoints[candidatePIndex] = true; // do not include more points with the same index
-            nMarkedPoints++;
-          }
+        if (!markedPoints[candidatePIndex]) {
+          near_points.push_back(candidatePoint);
+          markedPointsIndices[nMarkedPoints] = candidatePIndex;
+          markedPoints[candidatePIndex] = true; // do not include more points with the same index
+          nMarkedPoints++;
         }
       }
     }
@@ -202,4 +195,14 @@ std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& qu
   }
 
   return near_points;
+}
+
+StagReal stag::E2LSH::collision_probability(StagUInt K, StagUInt L,
+                                            StagReal distance) {
+  StagReal pc = stag::LSHFunction::collision_probability(distance);
+  return 1 - pow(1.0 - pow(pc, (double) K), (double) L);
+}
+
+StagReal stag::E2LSH::collision_probability(StagReal distance) {
+  return stag::E2LSH::collision_probability(parameterK, parameterL, distance);
 }
