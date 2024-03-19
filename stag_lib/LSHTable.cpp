@@ -10,15 +10,16 @@
 
 #include "LSHTable.h"
 
+#include "random.h"
+
 // Generate a random 32-bits unsigned (Uns32T) in the range
 // [rangeStart, rangeEnd]. Inputs must satisfy: rangeStart <=
 // rangeEnd.
 StagUInt genRandomUInt(StagUInt rangeStart, StagUInt rangeEnd){
   assert(rangeStart <= rangeEnd);
-  assert(RAND_MAX >= rangeEnd - rangeStart);
 
-  StagUInt r;
-  r = rangeStart + (StagUInt)((rangeEnd - rangeStart + 1.0) * random() / (RAND_MAX + 1.0));
+  std::uniform_int_distribution<StagUInt> dist(rangeStart, rangeEnd);
+  StagUInt r = dist(*stag::get_global_rng());
 
   assert(r >= rangeStart && r <= rangeEnd);
   return r;

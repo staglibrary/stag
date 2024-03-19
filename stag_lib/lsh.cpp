@@ -12,6 +12,7 @@
 
 #include <definitions.h>
 #include <lsh.h>
+#include <random.h>
 
 #define TWO_ROOT_TWOPI 5.0132565
 #define TWO_ROOT_TWO 2.828427124
@@ -37,23 +38,18 @@ inline bool isDistanceSqrLeq(StagUInt dimension, const stag::DataPoint& p1,
 // granularity of generated random reals is given by RAND_MAX.
 StagReal genUniformRandom(StagReal rangeStart, StagReal rangeEnd){
   assert(rangeStart <= rangeEnd);
-  StagReal r;
-  r = rangeStart + ((rangeEnd - rangeStart) * (StagReal)random() / (StagReal)RAND_MAX);
+
+  std::uniform_real_distribution<StagReal> dist(rangeStart, rangeEnd);
+  StagReal r = dist(*stag::get_global_rng());
+
   assert(r >= rangeStart && r <= rangeEnd);
   return r;
 }
 
 // Generate a random real from normal distribution N(0,1).
 StagReal genGaussianRandom(){
-  // Use Box-Muller transform to generate a point from normal
-  // distribution.
-  StagReal x1, x2;
-  do{
-    x1 = genUniformRandom(0.0, 1.0);
-  } while (x1 == 0); // cannot take log of 0.
-  x2 = genUniformRandom(0.0, 1.0);
-  StagReal z;
-  z = sqrt(-2.0 * log(x1)) * cos(2.0 * M_PI * x2);
+  std::normal_distribution<StagReal> dist(0, 1);
+  StagReal z = dist(*stag::get_global_rng());
   return z;
 }
 

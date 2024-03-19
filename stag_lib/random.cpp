@@ -10,11 +10,11 @@
 std::random_device dev_g;
 std::mt19937_64 rng_g(dev_g());
 
-std::mt19937_64* get_global_rng() {
+std::mt19937_64* stag::get_global_rng() {
   return &rng_g;
 }
 
-std::mt19937_64 create_rng() {
+std::mt19937_64 stag::create_rng() {
   std::random_device local_dev;
   std::mt19937_64 local_rng(local_dev());
   return local_rng;
@@ -106,7 +106,7 @@ void sample_edges_directly(SprsMat* adj_mat,
       if (cluster_idx == other_cluster_idx && j <= i) continue;
 
       // Toss a coin
-      if (sampleDist(*get_global_rng())) {
+      if (sampleDist(*stag::get_global_rng())) {
         if (adj_mat != nullptr) {
           adj_mat->insert(i, j) = 1;
           adj_mat->insert(j, i) = 1;
@@ -160,7 +160,7 @@ void sample_edges_binomial(SprsMat* adj_mat,
   std::uniform_int_distribution<StagInt> otherVertexDist(0, other_cluster_vertices - 1);
 
   // Decide how many edges to sample based on the 'binomial' distribution
-  auto raw_sample = (StagInt) floor(numEdgesDist(*get_global_rng()));
+  auto raw_sample = (StagInt) floor(numEdgesDist(*stag::get_global_rng()));
   StagInt numEdges = std::max((StagInt) 0, std::min(max_edges, raw_sample));
 
   // Sample the specific vertices
@@ -172,8 +172,8 @@ void sample_edges_binomial(SprsMat* adj_mat,
     randV = 0;
     while (randU == randV) {
       // Ignore the edge if u and v are identical
-      randU = this_cluster_start_idx + thisVertexDist(*get_global_rng());
-      randV = other_cluster_start_idx + otherVertexDist(*get_global_rng());
+      randU = this_cluster_start_idx + thisVertexDist(*stag::get_global_rng());
+      randV = other_cluster_start_idx + otherVertexDist(*stag::get_global_rng());
     }
 
     // Add this vertex to the adjacency matrix
