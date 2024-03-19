@@ -2,11 +2,23 @@
    This file is provided as part of the STAG library and released under the GPL
    license.
 */
-#include <random>
 #include <iostream>
 
 #include "random.h"
 #include "graph.h"
+
+std::random_device dev_g;
+std::mt19937_64 rng_g(dev_g());
+
+std::mt19937_64* get_global_rng() {
+  return &rng_g;
+}
+
+std::mt19937_64 create_rng() {
+  std::random_device local_dev;
+  std::mt19937_64 local_rng(local_dev());
+  return local_rng;
+}
 
 /**
  * Get an upper estimate on the number of neighbours of each node in a
@@ -84,8 +96,6 @@ void sample_edges_directly(SprsMat* adj_mat,
   assert(0 <= p && p <= 1);
 
   // Prepare the random number generator
-  std::random_device dev;
-  std::mt19937 prng(dev());
   std::bernoulli_distribution sampleDist(p);
 
   for (StagInt i = this_cluster_start_idx;
@@ -96,7 +106,7 @@ void sample_edges_directly(SprsMat* adj_mat,
       if (cluster_idx == other_cluster_idx && j <= i) continue;
 
       // Toss a coin
-      if (sampleDist(prng)) {
+      if (sampleDist(*get_global_rng())) {
         if (adj_mat != nullptr) {
           adj_mat->insert(i, j) = 1;
           adj_mat->insert(j, i) = 1;
@@ -143,8 +153,6 @@ void sample_edges_binomial(SprsMat* adj_mat,
 
   // Prepare the random number generator. We will approximate the binomial
   // distribution with the normal distribution
-  std::random_device dev;
-  std::mt19937 prng(dev());
   assert(sqrt(1 - p) * expected_num_edges > 0);
   std::normal_distribution<StagReal> numEdgesDist(expected_num_edges,
                                                   sqrt((1 - p) * expected_num_edges));
@@ -152,7 +160,7 @@ void sample_edges_binomial(SprsMat* adj_mat,
   std::uniform_int_distribution<StagInt> otherVertexDist(0, other_cluster_vertices - 1);
 
   // Decide how many edges to sample based on the 'binomial' distribution
-  auto raw_sample = (StagInt) floor(numEdgesDist(prng));
+  auto raw_sample = (StagInt) floor(numEdgesDist(*get_global_rng()));
   StagInt numEdges = std::max((StagInt) 0, std::min(max_edges, raw_sample));
 
   // Sample the specific vertices
@@ -164,8 +172,8 @@ void sample_edges_binomial(SprsMat* adj_mat,
     randV = 0;
     while (randU == randV) {
       // Ignore the edge if u and v are identical
-      randU = this_cluster_start_idx + thisVertexDist(prng);
-      randV = other_cluster_start_idx + otherVertexDist(prng);
+      randU = this_cluster_start_idx + thisVertexDist(*get_global_rng());
+      randV = other_cluster_start_idx + otherVertexDist(*get_global_rng());
     }
 
     // Add this vertex to the adjacency matrix

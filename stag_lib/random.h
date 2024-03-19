@@ -11,9 +11,27 @@
 #ifndef STAG_TEST_RANDOM_H
 #define STAG_TEST_RANDOM_H
 
+#include <random>
 #include "graph.h"
 
 namespace stag {
+
+  /**
+   * \cond
+   * Get the random number generator that is common to the main thread of the
+   * program.
+   */
+  std::mt19937_64* get_global_rng();
+
+  /**
+   * Create a random number generator, for example, for use within sub-threads
+   * of the main program.
+   */
+  std::mt19937_64 create_rng();
+  /**
+   * \endcond
+   */
+
   /**
    * Generate a graph from the symmetric stochastic block model.
    *
