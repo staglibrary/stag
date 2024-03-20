@@ -9,6 +9,7 @@ set(STAG_PUBLIC_HEADERS
         cluster.h
         spectrum.h
         lsh.h
+        kde.h
         definitions.h
         LSHTable.h
         )
@@ -30,6 +31,7 @@ set(SOURCE_FILES
         lsh.cpp
         LSHTable.cpp
         KMeansRex/KMeansRexCore.cpp
+        kde.cpp
         )
 
 # Generate correct files on windows

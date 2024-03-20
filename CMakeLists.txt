@@ -61,6 +61,7 @@ add_executable(
         test/cluster_test.cpp
         test/spectrum_test.cpp
         test/lsh_test.cpp
+        test/kde_test.cpp
         )
 
 target_link_libraries(
