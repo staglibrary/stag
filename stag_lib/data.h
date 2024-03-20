@@ -54,7 +54,7 @@ namespace stag{
      *
      * @param point_vector a vector containing one data point.
      */
-    DataPoint(std::vector<StagReal>& point_vector);
+    explicit DataPoint(std::vector<StagReal>& point_vector);
 
     /**
      * The dimension of the data point.
@@ -66,6 +66,30 @@ namespace stag{
      */
     StagReal *coordinates;
   };
+
+  /**
+   * Load data into a matrix from a file.
+   *
+   * Each line of the file corresponds to a row in the matrix. On each row,
+   * matrix entries should be separated by blank spaces, or commas.
+   * Every row in the file must contain the same number of entries.
+   *
+   * Lines beginning with '#' or '//' are ignored.
+   *
+   * @param filename the name of the file containing the data
+   * @return a DenseMat containing the data from the file
+   * @throws std::runtime_error if the file doesn't exist or cannot be parsed
+   */
+  DenseMat load_matrix(std::string& filename);
+
+  /**
+   * Save a data matrix to a text file.
+   *
+   * @param data the matrix to be saved
+   * @param filename the name of the file to save the data to
+   * @throws std::runtime_error if the file cannot be opened for writing
+   */
+  void save_matrix(DenseMat& data, std::string& filename);
 
   /**
    * Convert data in an eigen matrix to an array of data point pointers.
