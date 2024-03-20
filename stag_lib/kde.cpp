@@ -372,3 +372,82 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* q) {
 
   return results;
 }
+
+//------------------------------------------------------------------------------
+// Exact Gaussian KDE Implementation
+//------------------------------------------------------------------------------
+stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param) {
+  all_data = stag::matrix_to_datapoints(data);
+  a = param;
+}
+
+StagReal gaussian_kde_exact(StagReal a,
+                            const std::vector<stag::DataPoint>& data,
+                            const stag::DataPoint& query) {
+  StagReal total = 0;
+  for (const auto& i : data) {
+    total += gaussian_kernel(a, query, i);
+  }
+  return total / (double) data.size();
+}
+
+std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query) {
+  std::vector<StagReal> results(query->cols());
+
+  std::vector<stag::DataPoint> query_points = stag::matrix_to_datapoints(query);
+
+  StagInt num_threads = std::thread::hardware_concurrency();
+
+  // Split the query into num_threads chunks.
+  if (query->rows() < num_threads) {
+    for (auto i = 0; i < query->rows(); i++) {
+      results[i] = gaussian_kde_exact(a, all_data, query_points[i]);
+    }
+  } else {
+    // Start the thread pool
+    ctpl::thread_pool pool(num_threads);
+
+    StagInt chunk_size = floor(query->rows() / num_threads);
+
+    // The query size is large enough to be worth splitting.
+    std::vector<std::future<std::vector<StagReal>>> futures;
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      futures.push_back(
+          pool.push(
+              [&, query, chunk_size, chunk_id,
+               num_threads, query_points] (int id) {
+                ignore_warning(id);
+                StagInt this_chunk_start = chunk_id * chunk_size;
+                StagInt this_chunk_end = this_chunk_start + chunk_size;
+                if (chunk_id == num_threads - 1) {
+                  this_chunk_end = query->rows();
+                }
+                std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
+
+                for (auto i = this_chunk_start; i < this_chunk_end; i++) {
+                  chunk_results[i - this_chunk_start] = gaussian_kde_exact(
+                      a, all_data, query_points[i]);
+                }
+
+                return chunk_results;
+              }
+          )
+      );
+    }
+
+    StagInt next_index = 0;
+    for (StagInt chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      std::vector<StagReal> chunk_results = futures[chunk_id].get();
+
+      for (auto res : chunk_results) {
+        results[next_index] = res;
+        next_index++;
+      }
+    }
+
+    pool.stop();
+  }
+
+  return results;
+
+}

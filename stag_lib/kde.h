@@ -225,6 +225,7 @@ namespace stag {
 
   private:
     std::vector<stag::DataPoint> all_data;
+    StagReal a;
   };
 }
 
