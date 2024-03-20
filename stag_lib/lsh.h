@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <definitions.h>
+#include <data.h>
 #include <LSHTable.h>
 
 /**
@@ -29,56 +30,6 @@
  */
 
 namespace stag {
-
-  /**
-   * \brief A data point in d-dimensional space.
-   *
-   * A point is defined by its dimension, and a pointer to a C-style array
-   * of coordinates. This structure uses C arrays in order that the calling code
-   * can use any structure desired to store the underlying data.
-   *
-   * The calling code is always responsible for the underlying data, and
-   * ensuring that for the life of the DataPoint object, the underlying data
-   * array does not move.
-   *
-   * For example, the data can be stored in C++ vectors or an Eigen matrix.
-   */
-  class DataPoint {
-  public:
-    /**
-     * Initialise a data point with an explicit dimension, and a pointer to the
-     * data array.
-     *
-     * @param d the dimension of the data point
-     * @param coords a pointer to the array of coordinates
-     */
-    DataPoint(StagUInt d, StagReal* coords) : dimension(d), coordinates(coords) {};
-
-    /**
-     * Initialise a data point to point to a given row of a dense matrix.
-     *
-     * @param all_data a dense matrix containing a full data set
-     * @param row_index the index of the row containing this data point
-     */
-    DataPoint(DenseMat& all_data, StagInt row_index);
-
-    /**
-     * Initialise a data point to point to the data array of a given vector.
-     *
-     * @param point_vector a vector containing one data point.
-     */
-    DataPoint(std::vector<StagReal>& point_vector);
-
-    /**
-     * The dimension of the data point.
-     */
-    StagUInt dimension;
-
-    /**
-     * A pointer to a C-style array containing the data point.
-     */
-    StagReal *coordinates;
-  };
 
   /**
    * @brief A Euclidean locality-sensitive hash function.

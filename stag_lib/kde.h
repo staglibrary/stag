@@ -42,8 +42,8 @@
  * KDE estimates in time \f$O(\epsilon^{-2} n^{0.25})\f$ for each query.
  */
 
-#ifndef STAG_TEST_KDE_H
-#define STAG_TEST_KDE_H
+#ifndef STAG_LIBRARY_KDE_H
+#define STAG_LIBRARY_KDE_H
 
 #include <definitions.h>
 #include <lsh.h>
@@ -229,4 +229,4 @@ namespace stag {
 }
 
 
-#endif //STAG_TEST_KDE_H
+#endif //STAG_LIBRARY_KDE_H

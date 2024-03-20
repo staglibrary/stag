@@ -12,6 +12,7 @@ set(STAG_PUBLIC_HEADERS
         kde.h
         definitions.h
         LSHTable.h
+        data.h
         )
 
 set(HEADER_FILES
@@ -19,6 +20,7 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCore.h
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
+        multithreading/ctpl_stl.h
         )
 
 set(SOURCE_FILES
@@ -32,6 +34,7 @@ set(SOURCE_FILES
         LSHTable.cpp
         KMeansRex/KMeansRexCore.cpp
         kde.cpp
+        data.cpp
         )
 
 # Generate correct files on windows

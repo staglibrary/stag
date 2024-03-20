@@ -54,19 +54,6 @@ StagReal genGaussianRandom(){
 }
 
 //------------------------------------------------------------------------------
-// Implementation of the DataPoint class.
-//------------------------------------------------------------------------------
-stag::DataPoint::DataPoint(DenseMat& all_data, StagInt row_index) {
-  dimension = all_data.cols();
-  coordinates = all_data.row(row_index).data();
-}
-
-stag::DataPoint::DataPoint(std::vector<StagReal>& point_vector) {
-  dimension = point_vector.size();
-  coordinates = &point_vector[0];
-}
-
-//------------------------------------------------------------------------------
 // Implementation of the LSHFunction class.
 //------------------------------------------------------------------------------
 stag::LSHFunction::LSHFunction(StagUInt dimension) {
