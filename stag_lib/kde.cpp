@@ -373,6 +373,39 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* q) {
   return results;
 }
 
+StagReal stag::CKNSGaussianKDE::query(stag::DataPoint &q) {
+  // Iterate through possible values of mu , until we find a correct one for
+  // the query.
+  for (auto log_nmu_iter = num_log_nmu_iterations - 1;
+       log_nmu_iter >= 0;
+       log_nmu_iter--) {
+    StagInt log_nmu = log_nmu_iter * 2;
+    StagInt J = ckns_J(n, log_nmu);
+    StagReal this_mu_estimate;
+
+    // Get an estimate from k1 copies of the CKNS data structure.
+    // Take the median one to be the true estimate.
+    std::vector<StagReal> iter_estimates(k1, 0);
+    for (auto iter = 0; iter < k1; iter++) {
+      // Iterate through the shells for each value of j
+      for (auto j = 1; j <= J; j++) {
+        iter_estimates[iter] += hash_units[log_nmu_iter][iter][j - 1].query(q);
+      }
+    }
+
+    this_mu_estimate = median(iter_estimates);
+
+    // Check whether the estimate is at least mu, in which case we
+    // return it.
+    if (log(this_mu_estimate) >= (StagReal) log_nmu) {
+      return this_mu_estimate / (StagReal) n;
+    }
+  }
+
+  // Didn't find a good answer, return 1/n.
+  return 1 / (StagReal) n;
+}
+
 //------------------------------------------------------------------------------
 // Exact Gaussian KDE Implementation
 //------------------------------------------------------------------------------
@@ -381,52 +414,50 @@ stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param) {
   a = param;
 }
 
-StagReal gaussian_kde_exact(StagReal a,
-                            const std::vector<stag::DataPoint>& data,
-                            const stag::DataPoint& query) {
+StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
   StagReal total = 0;
-  for (const auto& i : data) {
-    total += gaussian_kernel(a, query, i);
+  for (const auto& i : all_data) {
+    total += gaussian_kernel(a, q, i);
   }
-  return total / (double) data.size();
+  return total / (double) all_data.size();
 }
 
-std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query) {
-  std::vector<StagReal> results(query->cols());
+std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
+  std::vector<StagReal> results(query_mat->cols());
 
-  std::vector<stag::DataPoint> query_points = stag::matrix_to_datapoints(query);
+  std::vector<stag::DataPoint> query_points = stag::matrix_to_datapoints(
+      query_mat);
 
   StagInt num_threads = std::thread::hardware_concurrency();
 
   // Split the query into num_threads chunks.
-  if (query->rows() < num_threads) {
-    for (auto i = 0; i < query->rows(); i++) {
-      results[i] = gaussian_kde_exact(a, all_data, query_points[i]);
+  if (query_mat->rows() < num_threads) {
+    for (auto i = 0; i < query_mat->rows(); i++) {
+      results[i] = query(query_points[i]);
     }
   } else {
     // Start the thread pool
     ctpl::thread_pool pool(num_threads);
 
-    StagInt chunk_size = floor(query->rows() / num_threads);
+    StagInt chunk_size = floor(query_mat->rows() / num_threads);
 
     // The query size is large enough to be worth splitting.
     std::vector<std::future<std::vector<StagReal>>> futures;
     for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
       futures.push_back(
           pool.push(
-              [&, query, chunk_size, chunk_id,
+              [&, query_mat, chunk_size, chunk_id,
                num_threads, query_points] (int id) {
                 ignore_warning(id);
                 StagInt this_chunk_start = chunk_id * chunk_size;
                 StagInt this_chunk_end = this_chunk_start + chunk_size;
                 if (chunk_id == num_threads - 1) {
-                  this_chunk_end = query->rows();
+                  this_chunk_end = query_mat->rows();
                 }
                 std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
 
                 for (auto i = this_chunk_start; i < this_chunk_end; i++) {
-                  chunk_results[i - this_chunk_start] = gaussian_kde_exact(
-                      a, all_data, query_points[i]);
+                  chunk_results[i - this_chunk_start] = query(query_points[i]);
                 }
 
                 return chunk_results;

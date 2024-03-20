@@ -223,6 +223,18 @@ namespace stag {
      */
     std::vector<StagReal> query(DenseMat* q);
 
+    /**
+     * Calculate the exact kernel density for the given query point.
+     *
+     * \note
+     * If you would like to obtain a kernel density for many query points, you
+     * should use the other query method to pass them all simultaneously.
+     *
+     * @param q the query data point
+     * @return the kernel density for the given query point
+     */
+    StagReal query(const stag::DataPoint& q);
+
   private:
     std::vector<stag::DataPoint> all_data;
     StagReal a;
