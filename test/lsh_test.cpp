@@ -16,7 +16,7 @@
 TEST(LSHTest, DataPointDirectInit) {
   // Create an underlying array
   StagUInt dim = 10;
-  StagReal data[dim];
+  StagReal data[10];
 
   // Initialise the data point
   stag::DataPoint data_point(dim, data);

@@ -45,6 +45,8 @@
 #ifndef STAG_LIBRARY_KDE_H
 #define STAG_LIBRARY_KDE_H
 
+#include <mutex>
+
 #include "definitions.h"
 #include "lsh.h"
 
