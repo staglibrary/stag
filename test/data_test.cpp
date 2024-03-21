@@ -94,3 +94,18 @@ TEST(DataTest, SaveMatrix) {
 
   EXPECT_MATRICES_EQ(data, new_data);
 }
+
+TEST(DataTest, MatrixToDataPoints) {
+  // Create a matrix
+  DenseMat data {{1, 0}, {3, 5}, {2, 6}};
+
+  // Convert it to an array of data point objects
+  std::vector<stag::DataPoint> datapoints = stag::matrix_to_datapoints(&data);
+
+  // Check that each point is correct
+  for (auto i = 0; i < datapoints.size(); i++) {
+    for (auto j = 0; j < datapoints[i].dimension; j++) {
+      EXPECT_EQ(data.coeff(i, j), datapoints[i].coordinates[j]);
+    }
+  }
+}
