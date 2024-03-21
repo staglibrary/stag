@@ -107,6 +107,8 @@ configure_file(test/data/test7.adjacencylist test/data/test7.adjacencylist COPYO
 configure_file(test/data/test8.adjacencylist test/data/test8.adjacencylist COPYONLY)
 configure_file(test/data/badgraph.adjacencylist test/data/badgraph.adjacencylist COPYONLY)
 configure_file(test/data/hugegraph.adjacencylist test/data/hugegraph.adjacencylist COPYONLY)
+configure_file(test/data/moons.txt test/data/moons.txt COPYONLY)
+configure_file(test/data/mnist.txt test/data/mnist.txt COPYONLY)
 
 # Create the STAG tools
 add_executable(

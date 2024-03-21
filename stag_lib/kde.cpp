@@ -15,8 +15,8 @@
 
 // The CKNS algorithm has a couple of 'magic constants' which control the
 // probability guarantee and variance bounds.
-#define K2_CONSTANT 1       // K_2 = C log(n) p^{-k_j}
-#define K1_CONSTANT 0.2     // K_1 = C log(n) / eps^2
+#define K2_CONSTANT 5       // K_2 = C log(n) p^{-k_j}
+#define K1_CONSTANT 1     // K_1 = C log(n) / eps^2
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
@@ -66,7 +66,7 @@ StagReal stag::gaussian_kernel(StagReal a, const stag::DataPoint& u,
  */
 StagInt ckns_J(StagInt n, StagInt log_nmu) {
   assert(log_nmu < log2(n));
-  return ((StagInt) ceil(log2(n))) - log_nmu;
+  return ((StagInt) ceil(log2((StagReal) n))) - log_nmu;
 }
 
 /**
@@ -409,21 +409,27 @@ StagReal stag::CKNSGaussianKDE::query(stag::DataPoint &q) {
 //------------------------------------------------------------------------------
 // Exact Gaussian KDE Implementation
 //------------------------------------------------------------------------------
+StagReal gaussian_kde_exact(StagReal a,
+                            const std::vector<stag::DataPoint>& data,
+                            const stag::DataPoint& query) {
+  StagReal total = 0;
+  for (const auto& i : data) {
+    total += gaussian_kernel(a, query, i);
+  }
+  return total / (double) data.size();
+}
+
 stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param) {
   all_data = stag::matrix_to_datapoints(data);
   a = param;
 }
 
 StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
-  StagReal total = 0;
-  for (const auto& i : all_data) {
-    total += gaussian_kernel(a, q, i);
-  }
-  return total / (double) all_data.size();
+  return gaussian_kde_exact(a, all_data, q);
 }
 
 std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
-  std::vector<StagReal> results(query_mat->cols());
+  std::vector<StagReal> results(query_mat->rows());
 
   std::vector<stag::DataPoint> query_points = stag::matrix_to_datapoints(
       query_mat);
@@ -433,11 +439,11 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
   // Split the query into num_threads chunks.
   if (query_mat->rows() < num_threads) {
     for (auto i = 0; i < query_mat->rows(); i++) {
-      results[i] = query(query_points[i]);
+      results[i] = this->query(query_points.at(i));
     }
   } else {
     // Start the thread pool
-    ctpl::thread_pool pool(num_threads);
+    ctpl::thread_pool pool((int) num_threads);
 
     StagInt chunk_size = floor(query_mat->rows() / num_threads);
 
@@ -446,18 +452,24 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
     for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
       futures.push_back(
           pool.push(
-              [&, query_mat, chunk_size, chunk_id,
-               num_threads, query_points] (int id) {
+              [&, chunk_size, chunk_id, num_threads, query_points] (int id) {
                 ignore_warning(id);
+                assert(chunk_id < num_threads);
                 StagInt this_chunk_start = chunk_id * chunk_size;
                 StagInt this_chunk_end = this_chunk_start + chunk_size;
                 if (chunk_id == num_threads - 1) {
                   this_chunk_end = query_mat->rows();
                 }
+
+                assert(this_chunk_start <= (StagInt) query_points.size());
+                assert(this_chunk_end <= (StagInt) query_points.size());
+                assert(this_chunk_end >= this_chunk_start);
+
                 std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
 
                 for (auto i = this_chunk_start; i < this_chunk_end; i++) {
-                  chunk_results[i - this_chunk_start] = query(query_points[i]);
+                  chunk_results[i - this_chunk_start] = gaussian_kde_exact(
+                      a, all_data, query_points[i]);
                 }
 
                 return chunk_results;
@@ -467,11 +479,12 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
     }
 
     StagInt next_index = 0;
-    for (StagInt chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+    assert((StagInt) futures.size() == num_threads);
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
       std::vector<StagReal> chunk_results = futures[chunk_id].get();
 
       for (auto res : chunk_results) {
-        results[next_index] = res;
+        results.at(next_index) = res;
         next_index++;
       }
     }
