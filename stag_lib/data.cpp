@@ -48,8 +48,8 @@ void stag::save_matrix(DenseMat& data, std::string& filename) {
   }
 
   // Iterate through the entries in the matrix, and write the data file.
-  for (auto i = 0; i < data.cols(); i++) {
-    for (auto j = 0; j < data.rows(); j++) {
+  for (auto i = 0; i < data.rows(); i++) {
+    for (auto j = 0; j < data.cols(); j++) {
       os << data.coeffRef(i, j) << " ";
     }
     os << std::endl;
@@ -155,7 +155,7 @@ DenseMat stag::load_matrix(std::string& filename) {
 
       if (num_rows <= data.rows()) {
         for (auto i = 0; i < num_cols; i++) {
-          data.coeffRef(num_rows, i) = tokens[i];
+          data.coeffRef(num_rows-1, i) = tokens[i];
         }
       } else {
         // We need to resize the data matrix
@@ -163,7 +163,7 @@ DenseMat stag::load_matrix(std::string& filename) {
                                 Eigen::NoChange_t::NoChange);
 
         for (auto i = 0; i < num_cols; i++) {
-          data.coeffRef(num_rows, i) = tokens[i];
+          data.coeffRef(num_rows-1, i) = tokens[i];
         }
       }
     }
