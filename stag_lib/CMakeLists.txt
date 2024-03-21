@@ -11,7 +11,6 @@ set(STAG_PUBLIC_HEADERS
         KDE/lsh.h
         KDE/kde.h
         definitions.h
-        KDE/LSHTable.h
         KDE/data.h
         )
 
@@ -21,20 +20,21 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
         multithreading/ctpl_stl.h
+        KDE/LSHTable.h
         )
 
 set(SOURCE_FILES
-        Graph/graph.cpp
         utility.cpp
+        Graph/graph.cpp
         Graph/graphio.cpp
         Graph/random.cpp
-        Cluster/cluster.cpp
         Graph/spectrum.cpp
+        Cluster/cluster.cpp
         KDE/lsh.cpp
         KDE/LSHTable.cpp
-        KMeansRex/KMeansRexCore.cpp
         KDE/kde.cpp
         KDE/data.cpp
+        KMeansRex/KMeansRexCore.cpp
         )
 
 # Generate correct files on windows

@@ -46,7 +46,7 @@
 #define STAG_LIBRARY_KDE_H
 
 #include "definitions.h"
-#include "LSH/lsh.h"
+#include "lsh.h"
 
 namespace stag {
 
