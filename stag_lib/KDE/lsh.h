@@ -10,6 +10,18 @@
 /**
  * @file lsh.h
  * \brief Provides an implementation of Euclidean locality-sensitive hashing.
+ *
+ * Locality sensitive hashing is a primitive used for near-neighbour search.
+ * In particular, a locality sensitive hash function (see stag::LSHFunction)
+ * hashes vectors into buckets such that two vectors are more likely to be hashed
+ * to the same bucket if their Euclidean distance is small.
+ *
+ * The stag::E2LSH hash table implements a full approximate-near neighbour
+ * datastructure based on basic Euclidean locality sensitive hash functions.
+ *
+ * \par Reference
+ * Andoni, Alexandr, and Piotr Indyk. "Near-optimal hashing algorithms for approximate nearest neighbor in high
+ * dimensions." Communications of the ACM 51.1 (2008): 117-122.
  */
 #ifndef STAG_LIBRARY_LSH_H
 #define STAG_LIBRARY_LSH_H
