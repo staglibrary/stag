@@ -4,7 +4,7 @@
  */
 #include <iostream>
 #include <cerrno>
-#include "graphio.h"
+#include "Graph/graphio.h"
 
 
 void print_usage() {

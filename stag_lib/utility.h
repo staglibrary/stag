@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#include "graph.h"
+#include "Graph/graph.h"
 
 namespace stag {
 

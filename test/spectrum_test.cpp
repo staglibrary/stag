@@ -8,11 +8,11 @@
 #include <stdexcept>
 #include <iostream>
 #include <gtest/gtest.h>
-#include <graph.h>
+#include "Graph/graph.h"
 #include <utility.h>
-#include <random.h>
-#include <spectrum.h>
-#include <graphio.h>
+#include "Graph/random.h"
+#include "Graph/spectrum.h"
+#include "Graph/graphio.h"
 
 TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
   // Create a small complete graph

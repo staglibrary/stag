@@ -4,7 +4,7 @@
  */
 #include <iostream>
 #include <cerrno>
-#include "graphio.h"
+#include "Graph/graphio.h"
 
 void print_usage() {
   std::cout << "Usage: stag_adj2edge [adjacencylist] [edgelist]" << std::endl;
