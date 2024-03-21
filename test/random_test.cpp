@@ -7,10 +7,10 @@
  */
 #include <iostream>
 #include <gtest/gtest.h>
-#include <graph.h>
-#include <random.h>
+#include "Graph/graph.h"
+#include "Graph/random.h"
 #include <utility.h>
-#include <graphio.h>
+#include "Graph/graphio.h"
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \

@@ -10,11 +10,11 @@
 #include <cmath>
 #include <algorithm>
 #include <Eigen/Sparse>
-#include <graph.h>
-#include <cluster.h>
-#include <utility.h>
-#include <spectrum.h>
-#include <KMeansRex/KMeansRexCoreInterface.h>
+#include "Graph/graph.h"
+#include "cluster.h"
+#include "utility.h"
+#include "Graph/spectrum.h"
+#include "KMeansRex/KMeansRexCoreInterface.h"
 
 std::vector<StagInt> stag::spectral_cluster(stag::Graph *graph, StagInt k) {
   // Check that the number of clusters is valid.

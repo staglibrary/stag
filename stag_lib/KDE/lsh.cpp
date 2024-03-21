@@ -10,9 +10,9 @@
 
 #include <algorithm>
 
-#include <definitions.h>
-#include <lsh.h>
-#include <random.h>
+#include "definitions.h"
+#include "lsh.h"
+#include "Graph/random.h"
 
 #define TWO_ROOT_TWOPI 5.0132565
 #define TWO_ROOT_TWO 2.828427124

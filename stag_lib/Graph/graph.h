@@ -15,7 +15,7 @@
 #include <fstream>
 #include <unordered_map>
 
-#include <definitions.h>
+#include "definitions.h"
 
 
 namespace stag {

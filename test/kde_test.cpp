@@ -7,7 +7,7 @@
  */
 #include <stdexcept>
 #include <gtest/gtest.h>
-#include <kde.h>
+#include "KDE/kde.h"
 
 #define EXPECT_FLOATS_APPROX_EQ(expected, actual, error) \
         EXPECT_EQ(expected.size(), actual.size()) << "Array sizes differ.";\

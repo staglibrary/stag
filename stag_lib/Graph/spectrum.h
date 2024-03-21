@@ -15,7 +15,7 @@
 #include <Spectra/SymEigsSolver.h>
 #include <Spectra/MatOp/SparseSymMatProd.h>
 #include <tuple>
-#include "graph.h"
+#include "Graph/graph.h"
 
 
 namespace stag {

@@ -14,7 +14,7 @@
 #ifndef STAG_LIBRARY_DATA_H
 #define STAG_LIBRARY_DATA_H
 
-#include <definitions.h>
+#include "definitions.h"
 
 namespace stag{
   /**

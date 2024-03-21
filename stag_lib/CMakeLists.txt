@@ -2,17 +2,17 @@ project(stag)
 
 set(STAG_PUBLIC_HEADERS
         stag.h
-        graph.h
+        Graph/graph.h
         utility.h
-        graphio.h
-        random.h
-        cluster.h
-        spectrum.h
-        lsh.h
-        kde.h
+        Graph/graphio.h
+        Graph/random.h
+        Cluster/cluster.h
+        Graph/spectrum.h
+        KDE/lsh.h
+        KDE/kde.h
         definitions.h
-        LSHTable.h
-        data.h
+        KDE/LSHTable.h
+        KDE/data.h
         )
 
 set(HEADER_FILES
@@ -24,17 +24,17 @@ set(HEADER_FILES
         )
 
 set(SOURCE_FILES
-        graph.cpp
+        Graph/graph.cpp
         utility.cpp
-        graphio.cpp
-        random.cpp
-        cluster.cpp
-        spectrum.cpp
-        lsh.cpp
-        LSHTable.cpp
+        Graph/graphio.cpp
+        Graph/random.cpp
+        Cluster/cluster.cpp
+        Graph/spectrum.cpp
+        KDE/lsh.cpp
+        KDE/LSHTable.cpp
         KMeansRex/KMeansRexCore.cpp
-        kde.cpp
-        data.cpp
+        KDE/kde.cpp
+        KDE/data.cpp
         )
 
 # Generate correct files on windows

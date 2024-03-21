@@ -10,7 +10,7 @@
 
 #include "LSHTable.h"
 
-#include "random.h"
+#include "Graph/random.h"
 
 // Generate a random 32-bits unsigned (Uns32T) in the range
 // [rangeStart, rangeEnd]. Inputs must satisfy: rangeStart <=

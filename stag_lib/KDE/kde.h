@@ -45,8 +45,8 @@
 #ifndef STAG_LIBRARY_KDE_H
 #define STAG_LIBRARY_KDE_H
 
-#include <definitions.h>
-#include <lsh.h>
+#include "definitions.h"
+#include "LSH/lsh.h"
 
 namespace stag {
 
@@ -141,6 +141,16 @@ namespace stag {
      * Data should be a pointer to a matrix \f$X \in \mathbb{R}^{n \times d}\f$
      * where each row represents a data point.
      *
+     * The \f$\epsilon\f$ parameter is used to control the error guarantee of the
+     * CKNS data structure. A lower value of \f$\epsilon\f$ will give a more accurate
+     * estimate, at the cost of a higher processing time.
+     * The data structure should produce estimates which are within a
+     * \f$(1 \pm \epsilon)\f$ factor of the true kernel density.
+     *
+     * The initialisation time complexity of the data structure is
+     * \f$O(\epsilon^{-2} n^{1.25} \log^2(n))\f$ and the query time for each
+     * query point is \f$(O(\epsilon^{-2} n^{0.25} \log^2(n))\f$.
+     *
      * \note
      * The calling code is responsible for the memory management of the data
      * matrix, and it must be available throughout the life of the CKNS data
@@ -209,6 +219,8 @@ namespace stag {
      * Initialise the data structure with the given dataset and Gaussian kernel
      * parameter \f$a\f$.
      *
+     * The initialisation time for this data structure is \f$O(1)\f$.
+     *
      * @param data
      * @param a
      */
@@ -217,6 +229,8 @@ namespace stag {
     /**
      * Calculate the KDE value for each of the data points in
      * the query matrix.
+     *
+     * The query time complexity for each query point is \f$O(n)\f$.
      *
      * @param q
      * @return a vector of KDE values.

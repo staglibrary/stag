@@ -16,9 +16,9 @@
 
 #include <vector>
 
-#include <definitions.h>
-#include <data.h>
-#include <LSHTable.h>
+#include "definitions.h"
+#include "data.h"
+#include "LSHTable.h"
 
 /**
  * \cond

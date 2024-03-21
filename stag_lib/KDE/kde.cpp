@@ -5,9 +5,9 @@
 
 #include "kde.h"
 
-#include <random.h>
-#include <multithreading/ctpl_stl.h>
-#include <data.h>
+#include "Graph/random.h"
+#include "multithreading/ctpl_stl.h"
+#include "data.h"
 
 #define TWO_ROOT_TWO 2.828427124
 #define TWO_ROOT_TWOPI 5.0132565

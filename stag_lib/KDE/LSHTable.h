@@ -10,7 +10,7 @@
 #ifndef STAG_LIBRARY_LSHTABLE_H
 #define STAG_LIBRARY_LSHTABLE_H
 
-#include <definitions.h>
+#include "definitions.h"
 
 /**
  * \cond

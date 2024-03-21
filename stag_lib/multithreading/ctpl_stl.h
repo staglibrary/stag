@@ -27,6 +27,9 @@
 // where id is the index of the thread that runs the functor
 // ret is some return type
 
+/*
+ * \cond
+ */
 
 namespace ctpl {
 
@@ -237,5 +240,9 @@ namespace ctpl {
     };
 
 }
+
+/*
+ * \endcond
+ */
 
 #endif // __ctpl_stl_thread_pool_H__
