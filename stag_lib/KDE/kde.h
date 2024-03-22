@@ -187,7 +187,7 @@ namespace stag {
      * @param q the query data point
      * @return the KDE estimate for the given query point
      */
-    StagReal query(stag::DataPoint& q);
+    StagReal query(const stag::DataPoint& q);
 
   private:
     StagInt add_hash_unit(StagInt log_nmu_iter,

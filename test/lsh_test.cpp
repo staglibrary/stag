@@ -166,7 +166,7 @@ TEST(LSHTest, E2LSH1010) {
 
   // Get the collision probability under the LSH function.
   StagReal distance = sqrt((StagReal) dim);
-  StagReal prob = stag::E2LSH::collision_probability(K, L, distance);
+  StagReal prob = tables[0].collision_probability(distance);
 
   // Check that the proportion of collisions is close to the expected number
   EXPECT_LE(num_collisions, 1.2 * prob * num_tables);

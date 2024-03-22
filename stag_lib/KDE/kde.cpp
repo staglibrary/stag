@@ -290,90 +290,73 @@ StagReal median(std::vector<StagReal> &v)
   return v[n];
 }
 
-std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* q) {
-  std::vector<StagReal> results(q->rows());
+std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
+  std::vector<StagReal> results(query_mat->rows());
 
-  std::vector<stag::DataPoint> query_points = matrix_to_datapoints(q);
+  std::vector<stag::DataPoint> query_points = matrix_to_datapoints(
+      query_mat);
 
-  std::vector<std::vector<StagReal>> estimates(q->rows());
-  for (auto i = 0; i < q->rows(); i++) {
-    results[i] = 0;
-    estimates[i].resize(k1);
-  }
+  StagInt num_threads = std::thread::hardware_concurrency();
 
-  StagUInt num_threads = std::thread::hardware_concurrency();
-  ctpl::thread_pool pool((int) num_threads);
+  // Split the query into num_threads chunks.
+  if (query_mat->rows() < num_threads) {
+    for (auto i = 0; i < query_mat->rows(); i++) {
+      results[i] = this->query(query_points.at(i));
+    }
+  } else {
+    // Start the thread pool
+    ctpl::thread_pool pool((int) num_threads);
 
-  // Iterate through possible values of mu , until we find a correct one for
-  // each query.
-  for (auto log_nmu_iter = num_log_nmu_iterations - 1;
-       log_nmu_iter >= 0;
-       log_nmu_iter--) {
-    StagInt log_nmu = log_nmu_iter * 2;
-    StagInt J = ckns_J(n, log_nmu);
-    std::vector<StagReal> this_mu_estimates(q->rows());
+    StagInt chunk_size = floor(query_mat->rows() / num_threads);
 
-    // Get an estimate from k1 copies of the CKNS data structure.
-    // Take the median one to be the true estimate.
-    //
-    // For each iteration up to k1, we call a future which returns a vector
-    // of estimates for each query point.
+    // The query size is large enough to be worth splitting.
     std::vector<std::future<std::vector<StagReal>>> futures;
-    for (auto iter = 0; iter < k1; iter++) {
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
       futures.push_back(
           pool.push(
-              [&, estimates, iter, query_points, results, q, J, log_nmu_iter](int id) {
+              [&, chunk_size, chunk_id, num_threads, query_points] (int id) {
                 ignore_warning(id);
-                std::vector<StagReal> this_iter_estimates(q->rows(), 0);
-
-                // Iterate through the shells for each value of j
-                for (auto j = 1; j <= J; j++) {
-                  for (auto i = 0; i < q->rows(); i++) {
-                    if (results[i] > 0) continue;
-                    this_iter_estimates[i] += hash_units[log_nmu_iter][iter][j - 1]
-                        .query(query_points[i]);
-                  }
+                assert(chunk_id < num_threads);
+                StagInt this_chunk_start = chunk_id * chunk_size;
+                StagInt this_chunk_end = this_chunk_start + chunk_size;
+                if (chunk_id == num_threads - 1) {
+                  this_chunk_end = query_mat->rows();
                 }
 
-                // Return the estimates
-                return this_iter_estimates;
+                assert(this_chunk_start <= (StagInt) query_points.size());
+                assert(this_chunk_end <= (StagInt) query_points.size());
+                assert(this_chunk_end >= this_chunk_start);
+
+                std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
+
+                for (auto i = this_chunk_start; i < this_chunk_end; i++) {
+                  chunk_results[i - this_chunk_start] = this->query(query_points.at(i));
+                }
+
+                return chunk_results;
               }
           )
       );
     }
 
-    // Join the futures
-    std::vector<StagReal> iter_estimates(q->rows());
-    for (auto iter = 0; iter < k1; iter++) {
-      iter_estimates = futures[iter].get();
-      for (auto i = 0; i < q->rows(); i++) {
-        estimates[i][iter] = iter_estimates[i];
+    StagInt next_index = 0;
+    assert((StagInt) futures.size() == num_threads);
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      std::vector<StagReal> chunk_results = futures[chunk_id].get();
+
+      for (auto res : chunk_results) {
+        results.at(next_index) = res;
+        next_index++;
       }
     }
 
-    for (auto i = 0; i < q->rows(); i++) {
-      if (results[i] > 0) continue;
-
-      this_mu_estimates[i] = median(estimates[i]);
-
-      // Check whether the estimate is at least mu, in which case we
-      // return it.
-      if (log(this_mu_estimates[i]) >= (StagReal) log_nmu) {
-        results[i] = this_mu_estimates[i] / (StagReal) n;
-      }
-    }
+    pool.stop();
   }
-
-  for (auto i = 0; i < q->rows(); i++) {
-    if (results[i] == 0) results[i] = 1/ (StagReal) n;
-  }
-
-  pool.stop();
 
   return results;
 }
 
-StagReal stag::CKNSGaussianKDE::query(stag::DataPoint &q) {
+StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
   // Iterate through possible values of mu , until we find a correct one for
   // the query.
   for (auto log_nmu_iter = num_log_nmu_iterations - 1;

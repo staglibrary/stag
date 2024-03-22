@@ -219,23 +219,6 @@ namespace stag {
 
     // The set of non-empty buckets
     std::vector<LSHTable> hashTables;
-
-    // ***
-    // The following vectors are used only for temporary operations
-    // within this R-NN structure during a query operation.
-    // ***
-
-    // This vector is used for storing marked points in a query
-    // operation (for computing distances to a point at most once). If
-    // markedPoints[i]=TRUE then point <i> was examined already.
-    std::vector<bool> markedPoints;
-
-    // This vector stored the indices in the vector <markedPoints> of all
-    // TRUE entries.
-    std::vector<StagUInt> markedPointsIndices;
-
-    // the size of <markedPoints> and of <markedPointsIndeces>
-    StagUInt sizeMarkedPoints;
   };
 }
 
