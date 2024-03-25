@@ -8,6 +8,7 @@
 #include "Graph/random.h"
 #include "multithreading/ctpl_stl.h"
 #include "data.h"
+#include <iostream>
 
 #define TWO_ROOT_TWO 2.828427124
 #define TWO_ROOT_TWOPI 5.0132565
@@ -215,6 +216,9 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagReal min_mu,
                                        StagInt K1,
                                        StagReal K2_constant) {
+#ifndef NDEBUG
+  std::cout << "Warning: STAG in debug mode!" << std::endl;
+#endif
   n = data->rows();
   a = gaussian_param;
 
@@ -222,12 +226,16 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   //   log2(n * mu) ranges from 0 to floor(log2(n))
   //   i ranges from 1 to k1.
   //   j ranges from 1 to J.
-  min_log_nmu = (StagInt) floor(log2((StagReal) n * min_mu));
+  min_log_nmu = (StagInt) MAX(0, floor(log2((StagReal) n * min_mu)));
   max_log_nmu = (StagInt) ceil(log2((StagReal) n));
   num_log_nmu_iterations = ceil((StagReal) (max_log_nmu - min_log_nmu) / 2);
 
   k1 = K1;
   k2_constant = K2_constant;
+#ifndef NDEBUG
+  std::cout << "[STAG] k1: " << k1 << std::endl;
+  std::cout << "[STAG] k2_constant: " << k2_constant << std::endl;
+#endif
 
   hash_units.resize(num_log_nmu_iterations);
   for (StagInt log_nmu_iter = 0;
@@ -245,7 +253,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
     for (StagInt log_nmu_iter = 0;
          log_nmu_iter < num_log_nmu_iterations;
          log_nmu_iter++) {
-      StagInt log_nmu = min_log_nmu + log_nmu_iter * 2;
+      StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
       StagInt J = ckns_J(n, log_nmu);
       StagInt j = J - j_offset;
       if (j >= 1) {
@@ -428,8 +436,8 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
     }
   }
 
-  // Didn't find a good answer, return 1/n.
-  return 1 / (StagReal) n;
+  // Didn't find a good answer, return mu.
+  return exp((StagReal) min_log_nmu) / (StagReal) n;
 }
 
 //------------------------------------------------------------------------------

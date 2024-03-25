@@ -12,6 +12,7 @@ set(STAG_PUBLIC_HEADERS
         KDE/kde.h
         definitions.h
         KDE/data.h
+        KDE/LSHTable.h
         )
 
 set(HEADER_FILES
@@ -20,7 +21,6 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
         multithreading/ctpl_stl.h
-        KDE/LSHTable.h
         )
 
 set(SOURCE_FILES
