@@ -24,6 +24,12 @@
 // unit.
 #define HASH_UNIT_CUTOFF 1000
 
+#ifndef NDEBUG
+#  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
+#else
+#  define LOG_DEBUG(x)
+#endif
+
 /*
  * Used to disable compiler warning for unused variable.
  */
@@ -138,7 +144,7 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
 
   // Initialise the random number generator for the sampling of the
   // dataset
-  std::uniform_real_distribution<StagReal> uniform_distribution(0.0, 1.1);
+  std::uniform_real_distribution<StagReal> uniform_distribution(0.0, 1.0);
 
   // Create an array of PPointT structures which will be used to point to the
   // Eigen data matrix.
@@ -227,8 +233,11 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   //   i ranges from 1 to k1.
   //   j ranges from 1 to J.
   min_log_nmu = (StagInt) MAX(0, floor(log2((StagReal) n * min_mu)));
+  assert(min_log_nmu >= 0);
   max_log_nmu = (StagInt) ceil(log2((StagReal) n));
   num_log_nmu_iterations = ceil((StagReal) (max_log_nmu - min_log_nmu) / 2);
+  LOG_DEBUG("min_log_nmu: " << min_log_nmu << std::endl);
+  LOG_DEBUG("num_log_nmu_iterations: " << num_log_nmu_iterations << std::endl);
 
   k1 = K1;
   k2_constant = K2_constant;
@@ -258,6 +267,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
       StagInt j = J - j_offset;
       if (j >= 1) {
         for (StagInt iter = 0; iter < k1; iter++) {
+          LOG_DEBUG("Initialising j=" << j << " iter=" << iter << " log_nmu=" << log_nmu << std::endl);
           futures.push_back(
               pool.push(
                   [&, log_nmu_iter, log_nmu, iter, j](int id) {
@@ -436,8 +446,8 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
     }
   }
 
-  // Didn't find a good answer, return mu.
-  return exp((StagReal) min_log_nmu) / (StagReal) n;
+  // Didn't find a good answer, return 1/n.
+  return 1 / (StagReal) n;
 }
 
 //------------------------------------------------------------------------------
