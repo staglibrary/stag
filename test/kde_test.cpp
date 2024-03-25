@@ -87,6 +87,83 @@ TEST(KDETest, CKNSTwoMoons) {
   EXPECT_LE(avg_error, 0.5 * eps);
 }
 
+TEST(KDETest, CKNSDefaultConstructor) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator
+  StagReal a = 20;
+  stag::CKNSGaussianKDE ckns_kde(&data, a);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.25);
+}
+
+TEST(KDETest, CKNSMinMu) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator
+  StagReal a = 10;
+  StagReal eps = 0.5;
+  StagReal min_mu = 0.005;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, eps, min_mu);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5 * eps);
+}
+
+TEST(KDETest,CKNSExplicitConstants){
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator
+  StagReal a = 10;
+  StagInt K1 = 40;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 0.005;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.25);
+}
+
 TEST(KDETest, CKNSMnist) {
   // Load the two moons dataset
   std::string filename = "test/data/mnist.txt";

@@ -15,8 +15,9 @@
 
 // The CKNS algorithm has a couple of 'magic constants' which control the
 // probability guarantee and variance bounds.
-#define K2_CONSTANT 5       // K_2 = C log(n) p^{-k_j}
-#define K1_CONSTANT 1     // K_1 = C log(n) / eps^2
+#define K2_DEFAULT_CONSTANT 5       // K_2 = C log(n) p^{-k_j}
+#define K1_DEFAULT_CONSTANT 1       // K_1 = C log(n) / eps^2
+#define EPS_DEFAULT 0.5             // K_1 = C log(n) / eps^2
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
@@ -97,12 +98,12 @@ StagReal ckns_gaussian_rj_squared(StagInt j, StagReal a) {
  * @return the K and L parameters for this E2LSH table.
  */
 std::vector<StagUInt> ckns_gaussian_create_lsh_params(
-    StagInt J, StagInt j, StagInt n, StagReal a) {
+    StagInt J, StagInt j, StagReal a, StagReal K2_constant) {
   StagReal r_j = sqrt((StagReal) j * log(2) / a);
   StagReal p_j = stag::LSHFunction::collision_probability(r_j);
   StagReal phi_j = ceil((((StagReal) j)/((StagReal) J)) * (StagReal) (J - j + 1));
   StagUInt k_j = MAX(1, floor(- phi_j / log2(p_j)));
-  StagUInt K_2 = ceil(K2_CONSTANT * log2((StagReal) n) * pow(2, phi_j));
+  StagUInt K_2 = ceil(K2_constant * pow(2, phi_j));
   return {
       k_j, // parameter K
       K_2, // parameter L
@@ -122,7 +123,8 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 // the index j.
 //------------------------------------------------------------------------------
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
-    StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small) {
+    StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
+    StagReal K2_constant) {
   StagInt n = data->rows();
   StagInt d = data->cols();
   a = kern_param;
@@ -163,7 +165,7 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
 
     // Create the LSH parameters
     std::vector<StagUInt> lsh_parameters = ckns_gaussian_create_lsh_params(
-        J, j, n, a);
+        J, j, a, K2_constant);
 
     // Construct the LSH object
     LSH_buckets = stag::E2LSH(lsh_parameters[0],
@@ -208,10 +210,11 @@ StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
 //
 // We now come to the implementation of the full CKNS KDE data structure.
 //------------------------------------------------------------------------------
-stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat* data,
+void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagReal gaussian_param,
-                                       StagReal eps) {
-  assert(eps > 0 && eps <= 1);
+                                       StagReal min_mu,
+                                       StagInt K1,
+                                       StagReal K2_constant) {
   n = data->rows();
   a = gaussian_param;
 
@@ -219,10 +222,12 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat* data,
   //   log2(n * mu) ranges from 0 to floor(log2(n))
   //   i ranges from 1 to k1.
   //   j ranges from 1 to J.
-  max_log_nmu = (StagInt) ceil(log2(n));
-  num_log_nmu_iterations = ceil(max_log_nmu / 2);
+  min_log_nmu = (StagInt) floor(log2((StagReal) n * min_mu));
+  max_log_nmu = (StagInt) ceil(log2((StagReal) n));
+  num_log_nmu_iterations = ceil((StagReal) (max_log_nmu - min_log_nmu) / 2);
 
-  k1 = ceil(K1_CONSTANT * log(n) / SQR(eps));
+  k1 = K1;
+  k2_constant = K2_constant;
 
   hash_units.resize(num_log_nmu_iterations);
   for (StagInt log_nmu_iter = 0;
@@ -233,14 +238,14 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat* data,
 
   // For each value of n * mu, we'll create an array of LSH data structures.
   StagInt num_threads = std::thread::hardware_concurrency();
-  ctpl::thread_pool pool(num_threads);
+  ctpl::thread_pool pool((int) num_threads);
   StagInt max_J = ckns_J(n, 0);
   std::vector<std::future<StagInt>> futures;
   for (StagInt j_offset = max_J - 1; j_offset >= 0; j_offset--) {
     for (StagInt log_nmu_iter = 0;
          log_nmu_iter < num_log_nmu_iterations;
          log_nmu_iter++) {
-      StagInt log_nmu = log_nmu_iter * 2;
+      StagInt log_nmu = min_log_nmu + log_nmu_iter * 2;
       StagInt J = ckns_J(n, log_nmu);
       StagInt j = J - j_offset;
       if (j >= 1) {
@@ -267,13 +272,51 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat* data,
   pool.stop();
 }
 
+stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
+                                       StagReal a,
+                                       StagReal eps,
+                                       StagReal min_mu) {
+  n = data->rows();
+  StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
+  StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
+  initialize(data, a, min_mu, K1, K2_constant);
+}
+
+stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
+  n = data->rows();
+  StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(EPS_DEFAULT));
+  StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
+  StagReal min_mu = 1.0 / (StagReal) n;
+  initialize(data, a, min_mu, K1, K2_constant);
+}
+
+stag::CKNSGaussianKDE::CKNSGaussianKDE(
+    DenseMat *data, StagReal a, StagReal eps) {
+  n = data->rows();
+  StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
+  StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
+  StagReal min_mu = 1.0 / (StagReal) n;
+  initialize(data, a, min_mu, K1, K2_constant);
+}
+
+stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
+                                       StagReal a,
+                                       StagReal min_mu,
+                                       StagInt K1,
+                                       StagReal K2_constant) {
+  initialize(data, a, min_mu, K1, K2_constant);
+}
+
+
 StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
                                              StagInt log_nmu,
                                              StagInt iter,
                                              StagInt j,
                                              DenseMat* data) {
   assert(log_nmu < max_log_nmu);
-  CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(a, data, log_nmu, j);
+  assert(log_nmu >= min_log_nmu);
+  CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
+      a, data, log_nmu, j, k2_constant);
   hash_units_mutex.lock();
   hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
   hash_units_mutex.unlock();
@@ -362,7 +405,7 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
   for (auto log_nmu_iter = num_log_nmu_iterations - 1;
        log_nmu_iter >= 0;
        log_nmu_iter--) {
-    StagInt log_nmu = log_nmu_iter * 2;
+    StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
     StagInt J = ckns_J(n, log_nmu);
     StagReal this_mu_estimate;
 
