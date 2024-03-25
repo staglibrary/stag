@@ -9,6 +9,7 @@
 */
 
 #include <algorithm>
+#include <unordered_set>
 
 #include "definitions.h"
 #include "lsh.h"
@@ -108,10 +109,6 @@ stag::E2LSH::E2LSH(StagUInt K,
   // create the hash functions
   initialise_hash_functions();
 
-  sizeMarkedPoints = nPoints;
-  markedPoints.resize(nPoints, false);
-  markedPointsIndices.resize(sizeMarkedPoints);
-
   points = dataSet;
 
   // Given the number of points, let's set the hash table size to be 1/100 the
@@ -154,8 +151,8 @@ std::vector<StagUInt> stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint
 
 std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& query) {
   std::vector<DataPoint> near_points;
+  std::unordered_set<StagInt> near_indices;
 
-  StagUInt nMarkedPoints = 0;// the number of marked points
   for(StagUInt l = 0; l < parameterL; l++){
     BucketHashingIndexT bucket_index = hashTables[0].compute_bucket_index(
         compute_lsh(l, query));
@@ -165,20 +162,12 @@ std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& qu
     if (bucket != nullptr) {
       for (StagInt candidatePIndex : bucket->points) {
         DataPoint candidatePoint = points[candidatePIndex];
-        if (!markedPoints[candidatePIndex]) {
+        if (near_indices.find(candidatePIndex) == near_indices.end()) {
           near_points.push_back(candidatePoint);
-          markedPointsIndices[nMarkedPoints] = candidatePIndex;
-          markedPoints[candidatePIndex] = true; // do not include more points with the same index
-          nMarkedPoints++;
+          near_indices.insert(candidatePIndex);
         }
       }
     }
-  }
-
-  // we need to clear the array nnStruct->nearPoints for the next query.
-  for(StagUInt i = 0; i < nMarkedPoints; i++){
-    assert(markedPoints[markedPointsIndices[i]]);
-    markedPoints[markedPointsIndices[i]] = false;
   }
 
   return near_points;

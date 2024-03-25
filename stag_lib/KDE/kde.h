@@ -101,7 +101,8 @@ namespace stag {
    */
   class CKNSGaussianKDEHashUnit {
   public:
-    CKNSGaussianKDEHashUnit(StagReal a, DenseMat* data, StagInt log_nmu, StagInt j);
+    CKNSGaussianKDEHashUnit(StagReal a, DenseMat* data, StagInt log_nmu,
+                            StagInt j, StagReal K2_constant);
     StagReal query(const stag::DataPoint& q);
 
   private:
@@ -160,9 +161,60 @@ namespace stag {
      *
      * @param data pointer to an \f$(n \times d)\f$ matrix containing the dataset.
      * @param a the parameter \f$a\f$ of the Gaussian kernel function.
-     * @param eps the error parameter \f$\epsilon\f$ of the KDE data structure.
+     * @param eps (optional) the error parameter \f$\epsilon\f$ of the KDE data
+     *            structure. Default is 0.5.
+     * @param min_mu (optional) the minimum kernel density value of any query
+     *               point. A smaller number will give longer preprocessing and
+     *               query time complexity. If a query point has a kernel density
+     *               smaller than this value, then the data structure may not
+     *               return the correct result.
+     *               Default is 1 / n.
+     */
+    CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal eps, StagReal min_mu);
+
+    /**
+     * \overload
      */
     CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal eps);
+
+    /**
+     * \overload
+     */
+    CKNSGaussianKDE(DenseMat* data, StagReal a);
+
+    /**
+     * Initialise a new KDE data structure with the given dataset.
+     *
+     * Data should be a pointer to a matrix \f$X \in \mathbb{R}^{n \times d}\f$
+     * where each row represents a data point.
+     *
+     * This constructor gives fine-grained control over the constants used by
+     * the data structure to control the accuracy and variance of the estimator.
+     * For casual application, the simpler constructor will be sufficient, and
+     * will select sensible default values for the constants.
+     *
+     * \note
+     * The calling code is responsible for the memory management of the data
+     * matrix, and it must be available throughout the life of the CKNS data
+     * structure.
+     *
+     * @param data
+     * @param a
+     * @param min_mu the minimum kernel density value of any query
+     *               point. A smaller number will give longer preprocessing and
+     *               query time complexity. If a query point has a kernel density
+     *               smaller than this value, then the data structure may not
+     *               return the correct result.
+     * @param K1 the number of copies of the data structure to create in parallel.
+     *           This parameter controls the variance of the estimator returned
+     *           by the algorithm. Is is usually set to \f$\epsilon^{-2} \cdot \log(n)\f$.
+     * @param K2_constant controls the collision probability of each of the E2LSH
+     *                    hash tables used within the data structure. A higher value
+     *                    will give more accurate estimates at the cost of higher memory
+     *                    and time complexity. It is usually set to \f$5 \log(n)\f$.
+     */
+    CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
+                    StagReal K2_constant);
 
     /**
      * Calculate an estimate of the KDE value for each of the data points in
@@ -187,9 +239,11 @@ namespace stag {
      * @param q the query data point
      * @return the KDE estimate for the given query point
      */
-    StagReal query(stag::DataPoint& q);
+    StagReal query(const stag::DataPoint& q);
 
   private:
+    void initialize(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
+                    StagReal K2_constant);
     StagInt add_hash_unit(StagInt log_nmu_iter,
                           StagInt log_nmu,
                           StagInt iter,
@@ -199,10 +253,12 @@ namespace stag {
     std::vector<std::vector<std::vector<CKNSGaussianKDEHashUnit>>> hash_units;
     std::mutex hash_units_mutex;
     StagInt max_log_nmu;
+    StagInt min_log_nmu;
     StagInt num_log_nmu_iterations;
     StagInt n;
     StagReal a;
     StagInt k1;
+    StagReal k2_constant;
   };
 
   /**
