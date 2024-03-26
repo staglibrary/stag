@@ -81,7 +81,7 @@ namespace stag {
     LSHBucket* get_bucket(const BucketHashingIndexT& bucketIndex);
 
     BucketHashingIndexT compute_bucket_index(
-        const std::vector<StagUInt>& uVector);
+        const std::vector<StagInt>& uVector);
 
   private:
     // The array containing the hash slots of the universal hashing.
@@ -100,12 +100,12 @@ namespace stag {
     // The main hash function (that defines the index
     // of the slot in the table).
     // The type of the hash function is: h_{a}(k) = ((a\cdot k)mod p)mod hashTableSize.
-    std::vector<StagUInt> mainHashA;
+    std::vector<StagInt> mainHashA;
 
     // Control hash functions: used to compute/check the <controlValue>s
     // of <GBucket>s.
     // The type of the hash function is: h_{a}(k) = (a\cdot k)mod p
-    std::vector<StagUInt> controlHash1;
+    std::vector<StagInt> controlHash1;
 
   };
 }

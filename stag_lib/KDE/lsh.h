@@ -85,10 +85,10 @@ namespace stag {
      * Apply this hash function to the given data point.
      *
      * @param point a data point to be hashed
-     * @return a positive integer indicating which hash bucket this data point
+     * @return an integer indicating which hash bucket this data point
      *         was hashed to
      */
-    StagUInt apply(const DataPoint& point);
+    StagInt apply(const DataPoint& point);
 
     /**
      * For two points at a given distance \f$c\f$, compute the probability that
@@ -201,11 +201,13 @@ namespace stag {
   private:
     void initialise_hash_functions();
 
-    std::vector<StagUInt> compute_lsh(StagUInt gNumber, const DataPoint& point);
+    StagUInt compute_lsh(StagUInt gNumber, const DataPoint& point);
 
     StagUInt dimension; // dimension of points.
     StagUInt parameterK; // parameter K of the algorithm.
     StagUInt parameterL; // parameter L of the algorithm.
+
+    std::vector<StagInt> rnd_vec; // used for hashing vectors
 
     // The array of pointers to the points that are contained in the
     // structure. Some types of this structure (of UHashStructureT,
@@ -218,7 +220,7 @@ namespace stag {
     std::vector<std::vector<LSHFunction>> lshFunctions;
 
     // The set of non-empty buckets
-    std::vector<LSHTable> hashTables;
+    std::vector<std::unordered_map<StagUInt,std::vector<StagUInt>>> hashTables;
   };
 }
 

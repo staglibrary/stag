@@ -26,24 +26,24 @@ StagUInt genRandomUInt(StagUInt rangeStart, StagUInt rangeEnd){
 }
 
 // Computes (a.b)mod UH_PRIME_DEFAULT.
-inline StagUInt compute_product_mod_prime(const std::vector<StagUInt>& a,
-                                          const std::vector<StagUInt>& b){
+inline StagUInt compute_product_mod_prime(const std::vector<StagInt>& a,
+                                          const std::vector<StagInt>& b){
   assert(a.size() == b.size());
 
-  StagUInt h = 0;
+  StagInt h = 0;
   for(StagUInt i = 0; i < a.size(); i++){
-    h = h + (StagUInt)a[i] * (StagUInt)b[i];
-    h = (h & TWO_TO_32_MINUS_1) + 5 * (h >> 32);
-    if (h >= UH_PRIME_DEFAULT) {
-      h = h - UH_PRIME_DEFAULT;
-    }
+    h += a[i] * b[i];
+
+    if (h < 0) h += UH_PRIME_DEFAULT;
+    if (h >= UH_PRIME_DEFAULT) h -= UH_PRIME_DEFAULT;
   }
-  return h;
+  assert(h >= 0);
+  return (StagUInt) h;
 }
 
-// Compute fuction ((rndVector . data)mod prime)mod hashTableSize
-inline StagUInt compute_uhash_function(const std::vector<StagUInt>& rndVector,
-                                       const std::vector<StagUInt>& data,
+// Compute function ((rndVector . data)mod prime)mod hashTableSize
+inline StagUInt compute_uhash_function(const std::vector<StagInt>& rndVector,
+                                       const std::vector<StagInt>& data,
                                        StagUInt hashTableSize){
   assert(rndVector.size() == data.size());
   StagUInt h = compute_product_mod_prime(rndVector, data) % hashTableSize;
@@ -119,7 +119,7 @@ stag::LSHBucket* stag::LSHTable::get_bucket(
 
 
 stag::BucketHashingIndexT stag::LSHTable::compute_bucket_index(
-    const std::vector<StagUInt>& uVector){
+    const std::vector<StagInt>& uVector){
   StagUInt main = compute_uhash_function(mainHashA, uVector, tableSize);
   StagUInt control = compute_product_mod_prime(controlHash1, uVector);
   return {main, control};

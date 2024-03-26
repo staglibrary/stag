@@ -133,10 +133,10 @@ TEST(LSHTest, E2LSH11) {
 }
 
 
-TEST(LSHTest, E2LSH1010) {
-  // Check that an E2LSH table with K=10 and L=10 creates the correct number of
+TEST(LSHTest, E2LSH510) {
+  // Check that an E2LSH table with K=5 and L=10 creates the correct number of
   // collisions.
-  StagUInt K = 10;
+  StagUInt K = 5;
   StagUInt L = 10;
 
   // Create two data vectors

@@ -18,7 +18,11 @@
 #define TWO_ROOT_TWOPI 5.0132565
 #define TWO_ROOT_TWO 2.828427124
 
+// 4294967291 = 2^32-5
+#define UH_PRIME_DEFAULT 4294967291U
+
 // Returns TRUE iff |p1-p2|_2^2 <= threshold
+// TODO: delete this method
 inline bool isDistanceSqrLeq(StagUInt dimension, const stag::DataPoint& p1,
                              const stag::DataPoint& p2, StagReal threshold){
   StagReal result = 0;
@@ -57,6 +61,7 @@ StagReal genGaussianRandom(){
 //------------------------------------------------------------------------------
 // Implementation of the LSHFunction class.
 //------------------------------------------------------------------------------
+// TODO: combine multiple LSH functions (the K iterations) into a single matrix?
 stag::LSHFunction::LSHFunction(StagUInt dimension) {
   dim = dimension;
 
@@ -70,7 +75,7 @@ stag::LSHFunction::LSHFunction(StagUInt dimension) {
   b = genUniformRandom(0, LSH_PARAMETER_W);
 }
 
-StagUInt stag::LSHFunction::apply(const DataPoint& point) {
+StagInt stag::LSHFunction::apply(const DataPoint& point) {
   assert(point.dimension == dim);
 
   StagReal value = 0;
@@ -78,7 +83,7 @@ StagUInt stag::LSHFunction::apply(const DataPoint& point) {
     value += point.coordinates[d] * a[d];
   }
 
-  return (StagUInt) floor((value + b) / LSH_PARAMETER_W);
+  return (StagInt) floor((value + b) / LSH_PARAMETER_W);
 }
 
 StagReal stag::LSHFunction::collision_probability(StagReal c) {
@@ -93,6 +98,19 @@ StagReal stag::LSHFunction::collision_probability(StagReal c) {
 //------------------------------------------------------------------------------
 // Implementation of the E2LSH class.
 //------------------------------------------------------------------------------
+// Generate a random 32-bits unsigned (Uns32T) in the range
+// [rangeStart, rangeEnd]. Inputs must satisfy: rangeStart <=
+// rangeEnd.
+StagInt genRandomInt(StagInt rangeStart, StagInt rangeEnd){
+  assert(rangeStart <= rangeEnd);
+
+  std::uniform_int_distribution<StagInt> dist(rangeStart, rangeEnd);
+  StagInt r = dist(*stag::get_global_rng());
+
+  assert(r >= rangeStart && r <= rangeEnd);
+  return r;
+}
+
 stag::E2LSH::E2LSH(StagUInt K,
                    StagUInt L,
                    std::vector<DataPoint>& dataSet){
@@ -109,28 +127,30 @@ stag::E2LSH::E2LSH(StagUInt K,
   // create the hash functions
   initialise_hash_functions();
 
+  // TODO: don't copy the dataset?
   points = dataSet;
 
-  // Given the number of points, let's set the hash table size to be 1/100 the
-  // number of points to be hashed.
-  auto hashTableSize = (StagUInt) std::max((StagUInt) 1, nPoints / 100);
-
   // Initialise the empty hash tables
-  for (StagUInt l = 0; l < parameterL; l++) {
-    hashTables.emplace_back(hashTableSize, parameterK);
-  }
+  hashTables.resize(parameterL);
 
   // Add the points to the hash tables
   for(StagUInt i = 0; i < nPoints; i++){
     for(StagUInt l = 0; l < parameterL; l++){
-      BucketHashingIndexT bucket_index = hashTables[0].compute_bucket_index(
-          compute_lsh(l, dataSet[i]));
-      hashTables[l].add_bucket_entry(bucket_index, i);
+      StagInt this_lsh = compute_lsh(l, dataSet[i]);
+      if (!hashTables[l].contains(this_lsh)) {
+        hashTables[l][this_lsh] = std::vector<StagUInt>();
+      }
+      hashTables[l][this_lsh].push_back(i);
     }
   }
 }
 
 void stag::E2LSH::initialise_hash_functions() {
+  rnd_vec.resize(parameterK);
+  for(StagUInt i = 0; i < parameterK; i++){
+    rnd_vec[i] = genRandomInt(1, MAX_HASH_RND);
+  }
+
   lshFunctions.reserve(parameterL);
   for(StagUInt i = 0; i < parameterL; i++){
     lshFunctions.emplace_back();
@@ -141,27 +161,31 @@ void stag::E2LSH::initialise_hash_functions() {
   }
 }
 
-std::vector<StagUInt> stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint& point) {
-  std::vector<StagUInt> result(parameterK);
+StagUInt stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint& point) {
+  StagInt h = 0;
   for(StagUInt i = 0; i < parameterK; i++){
-    result[i] = lshFunctions[gNumber][i].apply(point);
+    h += rnd_vec[i] * lshFunctions[gNumber][i].apply(point);
+
+    if (h < 0) h += UH_PRIME_DEFAULT;
+    if (h >= UH_PRIME_DEFAULT) h -= UH_PRIME_DEFAULT;
   }
-  return result;
+
+  assert(h >= 0);
+  return h;
 }
 
 std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& query) {
   std::vector<DataPoint> near_points;
-  std::unordered_set<StagInt> near_indices;
+  std::unordered_set<StagUInt> near_indices;
 
   for(StagUInt l = 0; l < parameterL; l++){
-    BucketHashingIndexT bucket_index = hashTables[0].compute_bucket_index(
-        compute_lsh(l, query));
-    LSHBucket* bucket = hashTables[l].get_bucket(bucket_index);
+    StagUInt this_lsh = compute_lsh(l, query);
 
-    // circle through the bucket and add to <result> the points that are near.
-    if (bucket != nullptr) {
-      for (StagInt candidatePIndex : bucket->points) {
-        DataPoint candidatePoint = points[candidatePIndex];
+    if (!hashTables[l].contains(this_lsh)) {
+      continue;
+    } else {
+      for (StagUInt candidatePIndex : hashTables[l][this_lsh]) {
+        DataPoint& candidatePoint = points[candidatePIndex];
         if (near_indices.find(candidatePIndex) == near_indices.end()) {
           near_points.push_back(candidatePoint);
           near_indices.insert(candidatePIndex);
