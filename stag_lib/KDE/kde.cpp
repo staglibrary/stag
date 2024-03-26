@@ -181,15 +181,8 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   }
 }
 
-StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
-  std::vector<stag::DataPoint> near_neighbours;
-  if (below_cutoff) {
-    near_neighbours = all_data;
-  } else {
-    // Recover points within L_j - their distance is less than r_j.
-    near_neighbours = LSH_buckets.get_near_neighbors(q);
-  }
-
+StagReal stag::CKNSGaussianKDEHashUnit::query_neighbors(const stag::DataPoint& q,
+                                                         const std::vector<stag::DataPoint>& neighbors) {
   StagReal p_sampling = ckns_p_sampling(j, log_nmu);
   StagReal rj_squared = ckns_gaussian_rj_squared(j, a);
   StagReal rj_minus_1_squared = 0;
@@ -198,8 +191,7 @@ StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
   }
 
   StagReal total = 0;
-
-  for (const auto& neighbor : near_neighbours) {
+  for (const auto& neighbor : neighbors) {
     StagReal d_sq = squared_distance(q, neighbor);
 
     // We return only points that are in L_j - that is, in the annulus between
@@ -210,6 +202,15 @@ StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
     }
   }
   return total;
+}
+
+StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
+  if (below_cutoff) {
+    return query_neighbors(q, all_data);
+  } else {
+    std::vector<stag::DataPoint> near_neighbours = LSH_buckets.get_near_neighbors(q);
+    return query_neighbors(q, near_neighbours);
+  }
 }
 
 //------------------------------------------------------------------------------

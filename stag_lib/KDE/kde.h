@@ -106,6 +106,8 @@ namespace stag {
     StagReal query(const stag::DataPoint& q);
 
   private:
+    StagReal query_neighbors(const stag::DataPoint& q,
+                             const std::vector<stag::DataPoint>& neighbors);
     bool below_cutoff;
     stag::E2LSH LSH_buckets;
     StagInt j;
