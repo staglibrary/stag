@@ -86,7 +86,7 @@ StagInt ckns_J(StagInt n, StagInt log_nmu) {
  * @return
  */
 StagReal ckns_p_sampling(StagInt j, StagInt log_nmu) {
-  return pow(2, (StagReal) -j) * pow(2, (StagReal) -log_nmu);
+  return MIN(1, pow(2, (StagReal) -j) * pow(2, (StagReal) -log_nmu));
 }
 
 StagReal ckns_gaussian_rj_squared(StagInt j, StagReal a) {
@@ -420,6 +420,8 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
 StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
   // Iterate through possible values of mu , until we find a correct one for
   // the query.
+  StagReal last_mu_estimate = 0;
+
   for (auto log_nmu_iter = num_log_nmu_iterations - 1;
        log_nmu_iter >= 0;
        log_nmu_iter--) {
@@ -441,13 +443,15 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
 
     // Check whether the estimate is at least mu, in which case we
     // return it.
-    if (log(this_mu_estimate) >= (StagReal) log_nmu) {
+    if (log(this_mu_estimate) >= (StagReal) 1.3 * log_nmu) {
       return this_mu_estimate / (StagReal) n;
     }
+
+    last_mu_estimate = this_mu_estimate;
   }
 
-  // Didn't find a good answer, return 1/n.
-  return 1 / (StagReal) n;
+  // Didn't find a good answer, return the last estimate, or 0.
+  return last_mu_estimate / n;
 }
 
 //------------------------------------------------------------------------------

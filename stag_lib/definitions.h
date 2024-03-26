@@ -18,6 +18,7 @@
  */
 // Define some mathematical operations.
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define SQR(a) ((a) * (a))
 /**
  * \endcond
