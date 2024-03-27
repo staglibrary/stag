@@ -51,6 +51,27 @@ StagReal squared_distance(const stag::DataPoint& u, const stag::DataPoint& v) {
   return result;
 }
 
+/**
+ * Compute the squared distance between the given two data points, if it is at
+ * most max_dist. Otherwise, return -1.
+ *
+ * @param u the first data point
+ * @param v the second data point
+ * @param max_dist the maximum dist allowed.
+ * @return the squared distance between \f$u\f$ and \f$v\f$.
+ */
+StagReal squared_distance_at_most(const stag::DataPoint& u,
+                                  const stag::DataPoint& v,
+                                  StagReal max_dist) {
+  assert(u.dimension == v.dimension);
+  StagReal result = 0;
+  for (StagUInt i = 0; i < u.dimension; i++) {
+    result += SQR(u.coordinates[i] - v.coordinates[i]);
+    if (result > max_dist) return -1;
+  }
+  return result;
+}
+
 StagReal stag::gaussian_kernel(StagReal a, StagReal c) {
   return exp(-(a * c));
 }
@@ -192,11 +213,10 @@ StagReal stag::CKNSGaussianKDEHashUnit::query_neighbors(const stag::DataPoint& q
 
   StagReal total = 0;
   for (const auto& neighbor : neighbors) {
-    StagReal d_sq = squared_distance(q, neighbor);
-
     // We return only points that are in L_j - that is, in the annulus between
     // r_{j-1} and r_j.
-    if (d_sq <= rj_squared && d_sq > rj_minus_1_squared) {
+    StagReal d_sq = squared_distance_at_most(q, neighbor, rj_squared);
+    if (d_sq > rj_minus_1_squared) {
       // Include this point in the estimate
       total += gaussian_kernel(a, d_sq) / p_sampling;
     }
