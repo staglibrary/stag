@@ -22,7 +22,7 @@
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
-#define HASH_UNIT_CUTOFF 1
+#define HASH_UNIT_CUTOFF 1000
 
 #ifndef NDEBUG
 #  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
@@ -353,19 +353,15 @@ StagReal median(std::vector<StagReal> &v)
 }
 
 std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
-  std::vector<StagReal> results(query_mat->rows());
-
-  std::vector<stag::DataPoint> query_points = matrix_to_datapoints(
-      query_mat);
-
   StagInt num_threads = std::thread::hardware_concurrency();
 
   // Split the query into num_threads chunks.
   if (query_mat->rows() < num_threads) {
-    for (auto i = 0; i < query_mat->rows(); i++) {
-      results[i] = this->query(query_points.at(i));
-    }
+    return this->chunk_query(query_mat, 0, query_mat->rows());
   } else {
+    // Initialise the results vector
+    std::vector<StagReal> results(query_mat->rows());
+
     // Start the thread pool
     ctpl::thread_pool pool((int) num_threads);
 
@@ -376,7 +372,7 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
     for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
       futures.push_back(
           pool.push(
-              [&, chunk_size, chunk_id, num_threads, query_points] (int id) {
+              [&, chunk_size, chunk_id, num_threads, query_mat] (int id) {
                 ignore_warning(id);
                 assert(chunk_id < num_threads);
                 StagInt this_chunk_start = chunk_id * chunk_size;
@@ -385,17 +381,11 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
                   this_chunk_end = query_mat->rows();
                 }
 
-                assert(this_chunk_start <= (StagInt) query_points.size());
-                assert(this_chunk_end <= (StagInt) query_points.size());
+                assert(this_chunk_start <= (StagInt) query_mat->rows());
+                assert(this_chunk_end <= (StagInt) query_mat->rows());
                 assert(this_chunk_end >= this_chunk_start);
 
-                std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
-
-                for (auto i = this_chunk_start; i < this_chunk_end; i++) {
-                  chunk_results[i - this_chunk_start] = this->query(query_points.at(i));
-                }
-
-                return chunk_results;
+                return this->chunk_query(query_mat, this_chunk_start, this_chunk_end);
               }
           )
       );
@@ -413,9 +403,20 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
     }
 
     pool.stop();
-  }
 
-  return results;
+    return results;
+  }
+}
+
+std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
+    DenseMat* query, StagInt chunk_start, StagInt chunk_end) {
+  std::vector<StagReal> chunk_results;
+  chunk_results.reserve(chunk_end - chunk_start);
+  for (auto i = chunk_start; i < chunk_end; i++) {
+    stag::DataPoint q(*query, i);
+    chunk_results.push_back(this->query(q));
+  }
+  return chunk_results;
 }
 
 StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {

@@ -174,7 +174,7 @@ TEST(LSHTest, E2LSH510) {
 }
 
 TEST(LSHTest, E2LSHMoreData) {
-  // Check that an E2LSH table with K=10 and L=10 creates the correct number of
+  // Check that an E2LSH table with K=1 and L=1 creates the correct number of
   // collisions for different data points.
   StagUInt K = 1;
   StagUInt L = 1;

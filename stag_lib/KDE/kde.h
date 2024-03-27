@@ -251,6 +251,7 @@ namespace stag {
                           StagInt iter,
                           StagInt j,
                           DenseMat* data);
+    std::vector<StagReal> chunk_query(DenseMat* query, StagInt chunk_start, StagInt chunk_end);
 
     std::vector<std::vector<std::vector<CKNSGaussianKDEHashUnit>>> hash_units;
     std::mutex hash_units_mutex;

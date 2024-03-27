@@ -21,23 +21,6 @@
 // 4294967291 = 2^32-5
 #define UH_PRIME_DEFAULT 4294967291U
 
-// Returns TRUE iff |p1-p2|_2^2 <= threshold
-// TODO: delete this method
-inline bool isDistanceSqrLeq(StagUInt dimension, const stag::DataPoint& p1,
-                             const stag::DataPoint& p2, StagReal threshold){
-  StagReal result = 0;
-
-  for (StagUInt i = 0; i < dimension; i++){
-    StagReal temp = p1.coordinates[i] - p2.coordinates[i];
-    result += SQR(temp);
-    if (result > threshold){
-      return false;
-    }
-  }
-
-  return true;
-}
-
 // Generate a random real distributed uniformly in [rangeStart,
 // rangeEnd]. Input must satisfy: rangeStart <= rangeEnd. The
 // granularity of generated random reals is given by RAND_MAX.
@@ -58,10 +41,22 @@ StagReal genGaussianRandom(){
   return z;
 }
 
+// Generate a random 32-bits unsigned (Uns32T) in the range
+// [rangeStart, rangeEnd]. Inputs must satisfy: rangeStart <=
+// rangeEnd.
+StagInt genRandomInt(StagInt rangeStart, StagInt rangeEnd){
+  assert(rangeStart <= rangeEnd);
+
+  std::uniform_int_distribution<StagInt> dist(rangeStart, rangeEnd);
+  StagInt r = dist(*stag::get_global_rng());
+
+  assert(r >= rangeStart && r <= rangeEnd);
+  return r;
+}
+
 //------------------------------------------------------------------------------
 // Implementation of the LSHFunction class.
 //------------------------------------------------------------------------------
-// TODO: combine multiple LSH functions (the K iterations) into a single matrix?
 stag::LSHFunction::LSHFunction(StagUInt dimension) {
   dim = dimension;
 
@@ -96,25 +91,48 @@ StagReal stag::LSHFunction::collision_probability(StagReal c) {
 }
 
 //------------------------------------------------------------------------------
-// Implementation of the E2LSH class.
+// Implementation of the multi-LSH function class.
 //------------------------------------------------------------------------------
-// Generate a random 32-bits unsigned (Uns32T) in the range
-// [rangeStart, rangeEnd]. Inputs must satisfy: rangeStart <=
-// rangeEnd.
-StagInt genRandomInt(StagInt rangeStart, StagInt rangeEnd){
-  assert(rangeStart <= rangeEnd);
+stag::MultiLSHFunction::MultiLSHFunction(StagInt dimension, StagInt num_functions) {
+    rand_proj.conservativeResize(num_functions, dimension);
+    rand_offset.conservativeResize(num_functions);
+    uhash_vector.conservativeResize(num_functions);
 
-  std::uniform_int_distribution<StagInt> dist(rangeStart, rangeEnd);
-  StagInt r = dist(*stag::get_global_rng());
+    std::uniform_real_distribution<StagReal> real_dist(0, LSH_PARAMETER_W);
+    std::uniform_int_distribution<StagInt> int_dist(1, MAX_HASH_RND);
+    std::normal_distribution<StagReal> normal_dist(0, 1);
 
-  assert(r >= rangeStart && r <= rangeEnd);
-  return r;
+    for (StagInt g = 0; g < num_functions; g++) {
+      rand_offset.coeffRef(g) = real_dist(*stag::get_global_rng());
+      uhash_vector.coeffRef(g) = int_dist(*stag::get_global_rng());
+      for(StagInt d = 0; d < dimension; d++){
+        rand_proj.coeffRef(g, d) = normal_dist(*stag::get_global_rng());
+      }
+    }
+  }
+
+StagInt stag::MultiLSHFunction::apply(const stag::DataPoint& point) {
+  assert((StagInt) point.dimension == rand_proj.cols());
+  Eigen::Map<Eigen::VectorXd> pointMap(point.coordinates, (StagInt) point.dimension);
+  Eigen::Matrix<StagInt, Eigen::Dynamic, 1> projection =
+      ((1 / LSH_PARAMETER_W) * ((rand_proj * pointMap) + rand_offset)).array().floor().cast<StagInt>();
+  StagInt h = uhash_vector.dot(projection);
+
+  // TODO: Consider removing the mod prime part
+  while (h < 0) h += UH_PRIME_DEFAULT;
+  while (h >= UH_PRIME_DEFAULT) h -= UH_PRIME_DEFAULT;
+
+  assert(h >= 0);
+  return (StagInt) h;
 }
 
+//------------------------------------------------------------------------------
+// Implementation of the E2LSH class.
+//------------------------------------------------------------------------------
 stag::E2LSH::E2LSH(StagUInt K,
                    StagUInt L,
                    std::vector<DataPoint>& dataSet){
-  if (dataSet.size() > 0) {
+  if (!dataSet.empty()) {
     dimension = dataSet[0].dimension;
   } else {
     dimension = 1;
@@ -127,7 +145,6 @@ stag::E2LSH::E2LSH(StagUInt K,
   // create the hash functions
   initialise_hash_functions();
 
-  // TODO: don't copy the dataset?
   points = dataSet;
 
   // Initialise the empty hash tables
@@ -136,7 +153,7 @@ stag::E2LSH::E2LSH(StagUInt K,
   // Add the points to the hash tables
   for(StagUInt i = 0; i < nPoints; i++){
     for(StagUInt l = 0; l < parameterL; l++){
-      StagInt this_lsh = compute_lsh(l, dataSet[i]);
+      StagInt this_lsh = compute_lsh(l, points[i]);
       if (!hashTables[l].contains(this_lsh)) {
         hashTables[l][this_lsh] = std::vector<StagUInt>();
       }
@@ -153,25 +170,12 @@ void stag::E2LSH::initialise_hash_functions() {
 
   lshFunctions.reserve(parameterL);
   for(StagUInt i = 0; i < parameterL; i++){
-    lshFunctions.emplace_back();
-    lshFunctions[i].reserve(dimension);
-    for(StagUInt j = 0; j < parameterK; j++){
-      lshFunctions[i].emplace_back(dimension);
-    }
+    lshFunctions.emplace_back(dimension, parameterK);
   }
 }
 
-StagUInt stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint& point) {
-  StagInt h = 0;
-  for(StagUInt i = 0; i < parameterK; i++){
-    h += rnd_vec[i] * lshFunctions[gNumber][i].apply(point);
-
-    if (h < 0) h += UH_PRIME_DEFAULT;
-    if (h >= UH_PRIME_DEFAULT) h -= UH_PRIME_DEFAULT;
-  }
-
-  assert(h >= 0);
-  return h;
+StagInt stag::E2LSH::compute_lsh(StagUInt gNumber, const DataPoint& point) {
+  return lshFunctions[gNumber].apply(point);
 }
 
 std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& query) {
@@ -179,7 +183,7 @@ std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& qu
   std::unordered_set<StagUInt> near_indices;
 
   for(StagUInt l = 0; l < parameterL; l++){
-    StagUInt this_lsh = compute_lsh(l, query);
+    StagInt this_lsh = compute_lsh(l, query);
 
     if (!hashTables[l].contains(this_lsh)) {
       continue;
