@@ -23,7 +23,7 @@ void test_mnist() {
 
 void test_moons() {
   // Load the two moons dataset
-  std::string filename = "test/data/moons.txt";
+  std::string filename = "test/data/moons_short.txt";
   DenseMat data = stag::load_matrix(filename);
 
   // Create a CKNS KDE estimator
