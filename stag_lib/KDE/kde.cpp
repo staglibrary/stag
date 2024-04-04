@@ -20,6 +20,8 @@
 #define K1_DEFAULT_CONSTANT 1       // K_1 = C log(n) / eps^2
 #define EPS_DEFAULT 0.5             // K_1 = C log(n) / eps^2
 
+#define CKNS_DEFAULT_OFFSET 0
+
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
 #define HASH_UNIT_CUTOFF 1000
@@ -106,8 +108,8 @@ StagInt ckns_J(StagInt n, StagInt log_nmu) {
  * @param log_nmu the value of log2(n * mu)
  * @return
  */
-StagReal ckns_p_sampling(StagInt j, StagInt log_nmu) {
-  return MIN(1, pow(2, (StagReal) -j) * pow(2, (StagReal) -log_nmu));
+StagReal ckns_p_sampling(StagInt j, StagInt log_nmu, StagInt sampling_offset) {
+  return MIN(1, pow(2, (StagReal) -(j+sampling_offset)) * pow(2, (StagReal) -log_nmu));
 }
 
 StagReal ckns_gaussian_rj_squared(StagInt j, StagReal a) {
@@ -152,12 +154,13 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 //------------------------------------------------------------------------------
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
-    StagReal K2_constant) {
+    StagReal K2_constant, StagInt prob_offset) {
   StagInt n = data->rows();
   StagInt d = data->cols();
   a = kern_param;
   log_nmu = lognmu;
   j = j_small;
+  sampling_offset = prob_offset;
 
   // Get the J parameter from the value of n and log(n * mu)
   StagInt J = ckns_J(n, log_nmu);
@@ -172,7 +175,7 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   std::vector<stag::DataPoint> lsh_data;
 
   // We need to sample the data set with the correct sampling probability.
-  StagReal p_sampling = ckns_p_sampling(j, log_nmu);
+  StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
 
   StagUInt num_sampled_points = 0;
   for (StagInt i = 0; i < n; i++) {
@@ -204,7 +207,7 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
 
 StagReal stag::CKNSGaussianKDEHashUnit::query_neighbors(const stag::DataPoint& q,
                                                          const std::vector<stag::DataPoint>& neighbors) {
-  StagReal p_sampling = ckns_p_sampling(j, log_nmu);
+  StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
   StagReal rj_squared = ckns_gaussian_rj_squared(j, a);
   StagReal rj_minus_1_squared = 0;
   if (j > 1) {
@@ -242,12 +245,14 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagReal gaussian_param,
                                        StagReal min_mu,
                                        StagInt K1,
-                                       StagReal K2_constant) {
+                                       StagReal K2_constant,
+                                       StagInt prob_offset) {
 #ifndef NDEBUG
   std::cout << "Warning: STAG in debug mode!" << std::endl;
 #endif
   n = data->rows();
   a = gaussian_param;
+  sampling_offset = prob_offset;
 
   // We are going to create a grid of LSH data structures:
   //   log2(n * mu) ranges from 0 to floor(log2(n))
@@ -318,7 +323,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
   n = data->rows();
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
-  initialize(data, a, min_mu, K1, K2_constant);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
@@ -326,7 +331,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(EPS_DEFAULT));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
   StagReal min_mu = 1.0 / (StagReal) n;
-  initialize(data, a, min_mu, K1, K2_constant);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(
@@ -335,15 +340,16 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
   StagReal min_mu = 1.0 / (StagReal) n;
-  initialize(data, a, min_mu, K1, K2_constant);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
                                        StagReal a,
                                        StagReal min_mu,
                                        StagInt K1,
-                                       StagReal K2_constant) {
-  initialize(data, a, min_mu, K1, K2_constant);
+                                       StagReal K2_constant,
+                                       StagInt prob_offset) {
+  initialize(data, a, min_mu, K1, K2_constant, prob_offset);
 }
 
 
@@ -355,7 +361,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
   assert(log_nmu < max_log_nmu);
   assert(log_nmu >= min_log_nmu);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
-      a, data, log_nmu, j, k2_constant);
+      a, data, log_nmu, j, k2_constant, sampling_offset);
   hash_units_mutex.lock();
   hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
   hash_units_mutex.unlock();

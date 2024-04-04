@@ -102,7 +102,7 @@ namespace stag {
   class CKNSGaussianKDEHashUnit {
   public:
     CKNSGaussianKDEHashUnit(StagReal a, DenseMat* data, StagInt log_nmu,
-                            StagInt j, StagReal K2_constant);
+                            StagInt j, StagReal K2_constant, StagInt prob_offset);
     StagReal query(const stag::DataPoint& q);
 
   private:
@@ -113,6 +113,7 @@ namespace stag {
     StagInt j;
     StagInt log_nmu;
     StagReal a;
+    StagInt sampling_offset;
 
     // Used only if the number of data points is below the cutoff.
     std::vector<stag::DataPoint> all_data;
@@ -214,9 +215,10 @@ namespace stag {
      *                    hash tables used within the data structure. A higher value
      *                    will give more accurate estimates at the cost of higher memory
      *                    and time complexity. It is usually set to \f$5 \log(n)\f$.
+     * @param prob_offset
      */
     CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
-                    StagReal K2_constant);
+                    StagReal K2_constant, StagInt prob_offset);
 
     /**
      * Calculate an estimate of the KDE value for each of the data points in
@@ -245,7 +247,7 @@ namespace stag {
 
   private:
     void initialize(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
-                    StagReal K2_constant);
+                    StagReal K2_constant, StagInt prob_offset);
     StagInt add_hash_unit(StagInt log_nmu_iter,
                           StagInt log_nmu,
                           StagInt iter,
@@ -258,6 +260,7 @@ namespace stag {
     StagInt max_log_nmu;
     StagInt min_log_nmu;
     StagInt num_log_nmu_iterations;
+    StagInt sampling_offset;
     StagInt n;
     StagReal a;
     StagInt k1;

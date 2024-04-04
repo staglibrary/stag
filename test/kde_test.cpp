@@ -147,7 +147,8 @@ TEST(KDETest,CKNSExplicitConstants){
   StagInt K1 = 40;
   StagReal K2_constant = 50;
   StagReal min_mu = 0.005;
-  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant);
+  StagInt offset = 1;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
 
   // Create an exact Gaussian KDE
   stag::ExactGaussianKDE exact_kde(&data, a);
