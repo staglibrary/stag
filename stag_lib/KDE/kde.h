@@ -102,15 +102,18 @@ namespace stag {
   class CKNSGaussianKDEHashUnit {
   public:
     CKNSGaussianKDEHashUnit(StagReal a, DenseMat* data, StagInt log_nmu,
-                            StagInt j, StagReal K2_constant);
+                            StagInt j, StagReal K2_constant, StagInt prob_offset);
     StagReal query(const stag::DataPoint& q);
 
   private:
+    StagReal query_neighbors(const stag::DataPoint& q,
+                             const std::vector<stag::DataPoint>& neighbors);
     bool below_cutoff;
     stag::E2LSH LSH_buckets;
     StagInt j;
     StagInt log_nmu;
     StagReal a;
+    StagInt sampling_offset;
 
     // Used only if the number of data points is below the cutoff.
     std::vector<stag::DataPoint> all_data;
@@ -190,7 +193,7 @@ namespace stag {
      *
      * This constructor gives fine-grained control over the constants used by
      * the data structure to control the accuracy and variance of the estimator.
-     * For casual application, the simpler constructor will be sufficient, and
+     * For casual application, the simpler constructors will be sufficient, and
      * will select sensible default values for the constants.
      *
      * \note
@@ -198,8 +201,8 @@ namespace stag {
      * matrix, and it must be available throughout the life of the CKNS data
      * structure.
      *
-     * @param data
-     * @param a
+     * @param data pointer to an \f$(n \times d)\f$ matrix containing the dataset.
+     * @param a the parameter \f$a\f$ of the Gaussian kernel function.
      * @param min_mu the minimum kernel density value of any query
      *               point. A smaller number will give longer preprocessing and
      *               query time complexity. If a query point has a kernel density
@@ -212,9 +215,15 @@ namespace stag {
      *                    hash tables used within the data structure. A higher value
      *                    will give more accurate estimates at the cost of higher memory
      *                    and time complexity. It is usually set to \f$5 \log(n)\f$.
+     * @param sampling_offset the CKNS algorithm samples the dataset with various
+     *                        sampling probabilities. Setting a sampling offset of
+     *                        \f$k\f$ will further subsample the data by a factor
+     *                        of \f$1/2^k\f$. This will speed up the algorithm
+     *                        at the cost of some accuracy.
+     *                        It is usually set to \f$0\f$.
      */
     CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
-                    StagReal K2_constant);
+                    StagReal K2_constant, StagInt sampling_offset);
 
     /**
      * Calculate an estimate of the KDE value for each of the data points in
@@ -243,18 +252,20 @@ namespace stag {
 
   private:
     void initialize(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
-                    StagReal K2_constant);
+                    StagReal K2_constant, StagInt prob_offset);
     StagInt add_hash_unit(StagInt log_nmu_iter,
                           StagInt log_nmu,
                           StagInt iter,
                           StagInt j,
                           DenseMat* data);
+    std::vector<StagReal> chunk_query(DenseMat* query, StagInt chunk_start, StagInt chunk_end);
 
     std::vector<std::vector<std::vector<CKNSGaussianKDEHashUnit>>> hash_units;
     std::mutex hash_units_mutex;
     StagInt max_log_nmu;
     StagInt min_log_nmu;
     StagInt num_log_nmu_iterations;
+    StagInt sampling_offset;
     StagInt n;
     StagReal a;
     StagInt k1;

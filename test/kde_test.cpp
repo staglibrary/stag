@@ -147,7 +147,8 @@ TEST(KDETest,CKNSExplicitConstants){
   StagInt K1 = 40;
   StagReal K2_constant = 50;
   StagReal min_mu = 0.005;
-  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant);
+  StagInt offset = 1;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
 
   // Create an exact Gaussian KDE
   stag::ExactGaussianKDE exact_kde(&data, a);
@@ -176,7 +177,11 @@ TEST(KDETest, CKNSMnist) {
   std::vector<StagReal> kde_exact = exact_kde.query(&data);
 
   // Create a CKNS KDE estimator
-  stag::CKNSGaussianKDE ckns_kde(&data, a, eps);
+  StagInt K1 = pow(eps, -2) * log(data.rows());
+  StagReal K2_constant = 5 * log(data.rows());
+  StagReal min_mu = 1 / data.rows();
+  StagInt offset = 1;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
   std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
 
   // Check that the estimates are accurate

@@ -20,9 +20,17 @@
 #define K1_DEFAULT_CONSTANT 1       // K_1 = C log(n) / eps^2
 #define EPS_DEFAULT 0.5             // K_1 = C log(n) / eps^2
 
+#define CKNS_DEFAULT_OFFSET 0
+
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
 #define HASH_UNIT_CUTOFF 1000
+
+#ifndef NDEBUG
+#  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
+#else
+#  define LOG_DEBUG(x)
+#endif
 
 /*
  * Used to disable compiler warning for unused variable.
@@ -41,6 +49,27 @@ StagReal squared_distance(const stag::DataPoint& u, const stag::DataPoint& v) {
   StagReal result = 0;
   for (StagUInt i = 0; i < u.dimension; i++) {
     result += SQR(u.coordinates[i] - v.coordinates[i]);
+  }
+  return result;
+}
+
+/**
+ * Compute the squared distance between the given two data points, if it is at
+ * most max_dist. Otherwise, return -1.
+ *
+ * @param u the first data point
+ * @param v the second data point
+ * @param max_dist the maximum dist allowed.
+ * @return the squared distance between \f$u\f$ and \f$v\f$.
+ */
+StagReal squared_distance_at_most(const stag::DataPoint& u,
+                                  const stag::DataPoint& v,
+                                  StagReal max_dist) {
+  assert(u.dimension == v.dimension);
+  StagReal result = 0;
+  for (StagUInt i = 0; i < u.dimension; i++) {
+    result += SQR(u.coordinates[i] - v.coordinates[i]);
+    if (result > max_dist) return -1;
   }
   return result;
 }
@@ -79,8 +108,8 @@ StagInt ckns_J(StagInt n, StagInt log_nmu) {
  * @param log_nmu the value of log2(n * mu)
  * @return
  */
-StagReal ckns_p_sampling(StagInt j, StagInt log_nmu) {
-  return pow(2, (StagReal) -j) * pow(2, (StagReal) -log_nmu);
+StagReal ckns_p_sampling(StagInt j, StagInt log_nmu, StagInt sampling_offset) {
+  return MIN(1, pow(2, (StagReal) -(j+sampling_offset)) * pow(2, (StagReal) -log_nmu));
 }
 
 StagReal ckns_gaussian_rj_squared(StagInt j, StagReal a) {
@@ -125,12 +154,13 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 //------------------------------------------------------------------------------
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
-    StagReal K2_constant) {
+    StagReal K2_constant, StagInt prob_offset) {
   StagInt n = data->rows();
   StagInt d = data->cols();
   a = kern_param;
   log_nmu = lognmu;
   j = j_small;
+  sampling_offset = prob_offset;
 
   // Get the J parameter from the value of n and log(n * mu)
   StagInt J = ckns_J(n, log_nmu);
@@ -138,14 +168,14 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
 
   // Initialise the random number generator for the sampling of the
   // dataset
-  std::uniform_real_distribution<StagReal> uniform_distribution(0.0, 1.1);
+  std::uniform_real_distribution<StagReal> uniform_distribution(0.0, 1.0);
 
   // Create an array of PPointT structures which will be used to point to the
   // Eigen data matrix.
   std::vector<stag::DataPoint> lsh_data;
 
   // We need to sample the data set with the correct sampling probability.
-  StagReal p_sampling = ckns_p_sampling(j, log_nmu);
+  StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
 
   StagUInt num_sampled_points = 0;
   for (StagInt i = 0; i < n; i++) {
@@ -175,16 +205,9 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   }
 }
 
-StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
-  std::vector<stag::DataPoint> near_neighbours;
-  if (below_cutoff) {
-    near_neighbours = all_data;
-  } else {
-    // Recover points within L_j - their distance is less than r_j.
-    near_neighbours = LSH_buckets.get_near_neighbors(q);
-  }
-
-  StagReal p_sampling = ckns_p_sampling(j, log_nmu);
+StagReal stag::CKNSGaussianKDEHashUnit::query_neighbors(const stag::DataPoint& q,
+                                                         const std::vector<stag::DataPoint>& neighbors) {
+  StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
   StagReal rj_squared = ckns_gaussian_rj_squared(j, a);
   StagReal rj_minus_1_squared = 0;
   if (j > 1) {
@@ -192,18 +215,25 @@ StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
   }
 
   StagReal total = 0;
-
-  for (const auto& neighbor : near_neighbours) {
-    StagReal d_sq = squared_distance(q, neighbor);
-
+  for (const auto& neighbor : neighbors) {
     // We return only points that are in L_j - that is, in the annulus between
     // r_{j-1} and r_j.
-    if (d_sq <= rj_squared && d_sq > rj_minus_1_squared) {
+    StagReal d_sq = squared_distance_at_most(q, neighbor, rj_squared);
+    if (d_sq > rj_minus_1_squared) {
       // Include this point in the estimate
       total += gaussian_kernel(a, d_sq) / p_sampling;
     }
   }
   return total;
+}
+
+StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
+  if (below_cutoff) {
+    return query_neighbors(q, all_data);
+  } else {
+    std::vector<stag::DataPoint> near_neighbours = LSH_buckets.get_near_neighbors(q);
+    return query_neighbors(q, near_neighbours);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -215,20 +245,25 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagReal gaussian_param,
                                        StagReal min_mu,
                                        StagInt K1,
-                                       StagReal K2_constant) {
+                                       StagReal K2_constant,
+                                       StagInt prob_offset) {
 #ifndef NDEBUG
   std::cout << "Warning: STAG in debug mode!" << std::endl;
 #endif
   n = data->rows();
   a = gaussian_param;
+  sampling_offset = prob_offset;
 
   // We are going to create a grid of LSH data structures:
   //   log2(n * mu) ranges from 0 to floor(log2(n))
   //   i ranges from 1 to k1.
   //   j ranges from 1 to J.
   min_log_nmu = (StagInt) MAX(0, floor(log2((StagReal) n * min_mu)));
+  assert(min_log_nmu >= 0);
   max_log_nmu = (StagInt) ceil(log2((StagReal) n));
   num_log_nmu_iterations = ceil((StagReal) (max_log_nmu - min_log_nmu) / 2);
+  LOG_DEBUG("min_log_nmu: " << min_log_nmu << std::endl);
+  LOG_DEBUG("num_log_nmu_iterations: " << num_log_nmu_iterations << std::endl);
 
   k1 = K1;
   k2_constant = K2_constant;
@@ -258,6 +293,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
       StagInt j = J - j_offset;
       if (j >= 1) {
         for (StagInt iter = 0; iter < k1; iter++) {
+          LOG_DEBUG("Initialising j=" << j << " iter=" << iter << " log_nmu=" << log_nmu << std::endl);
           futures.push_back(
               pool.push(
                   [&, log_nmu_iter, log_nmu, iter, j](int id) {
@@ -287,7 +323,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
   n = data->rows();
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
-  initialize(data, a, min_mu, K1, K2_constant);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
@@ -295,7 +331,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(EPS_DEFAULT));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
   StagReal min_mu = 1.0 / (StagReal) n;
-  initialize(data, a, min_mu, K1, K2_constant);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(
@@ -304,15 +340,16 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
   StagReal min_mu = 1.0 / (StagReal) n;
-  initialize(data, a, min_mu, K1, K2_constant);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
                                        StagReal a,
                                        StagReal min_mu,
                                        StagInt K1,
-                                       StagReal K2_constant) {
-  initialize(data, a, min_mu, K1, K2_constant);
+                                       StagReal K2_constant,
+                                       StagInt prob_offset) {
+  initialize(data, a, min_mu, K1, K2_constant, prob_offset);
 }
 
 
@@ -324,7 +361,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
   assert(log_nmu < max_log_nmu);
   assert(log_nmu >= min_log_nmu);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
-      a, data, log_nmu, j, k2_constant);
+      a, data, log_nmu, j, k2_constant, sampling_offset);
   hash_units_mutex.lock();
   hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
   hash_units_mutex.unlock();
@@ -342,19 +379,15 @@ StagReal median(std::vector<StagReal> &v)
 }
 
 std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
-  std::vector<StagReal> results(query_mat->rows());
-
-  std::vector<stag::DataPoint> query_points = matrix_to_datapoints(
-      query_mat);
-
   StagInt num_threads = std::thread::hardware_concurrency();
 
   // Split the query into num_threads chunks.
   if (query_mat->rows() < num_threads) {
-    for (auto i = 0; i < query_mat->rows(); i++) {
-      results[i] = this->query(query_points.at(i));
-    }
+    return this->chunk_query(query_mat, 0, query_mat->rows());
   } else {
+    // Initialise the results vector
+    std::vector<StagReal> results(query_mat->rows());
+
     // Start the thread pool
     ctpl::thread_pool pool((int) num_threads);
 
@@ -365,7 +398,7 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
     for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
       futures.push_back(
           pool.push(
-              [&, chunk_size, chunk_id, num_threads, query_points] (int id) {
+              [&, chunk_size, chunk_id, num_threads, query_mat] (int id) {
                 ignore_warning(id);
                 assert(chunk_id < num_threads);
                 StagInt this_chunk_start = chunk_id * chunk_size;
@@ -374,17 +407,11 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
                   this_chunk_end = query_mat->rows();
                 }
 
-                assert(this_chunk_start <= (StagInt) query_points.size());
-                assert(this_chunk_end <= (StagInt) query_points.size());
+                assert(this_chunk_start <= (StagInt) query_mat->rows());
+                assert(this_chunk_end <= (StagInt) query_mat->rows());
                 assert(this_chunk_end >= this_chunk_start);
 
-                std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
-
-                for (auto i = this_chunk_start; i < this_chunk_end; i++) {
-                  chunk_results[i - this_chunk_start] = this->query(query_points.at(i));
-                }
-
-                return chunk_results;
+                return this->chunk_query(query_mat, this_chunk_start, this_chunk_end);
               }
           )
       );
@@ -402,14 +429,27 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
     }
 
     pool.stop();
-  }
 
-  return results;
+    return results;
+  }
+}
+
+std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
+    DenseMat* query, StagInt chunk_start, StagInt chunk_end) {
+  std::vector<StagReal> chunk_results;
+  chunk_results.reserve(chunk_end - chunk_start);
+  for (auto i = chunk_start; i < chunk_end; i++) {
+    stag::DataPoint q(*query, i);
+    chunk_results.push_back(this->query(q));
+  }
+  return chunk_results;
 }
 
 StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
   // Iterate through possible values of mu , until we find a correct one for
   // the query.
+  StagReal last_mu_estimate = 0;
+
   for (auto log_nmu_iter = num_log_nmu_iterations - 1;
        log_nmu_iter >= 0;
        log_nmu_iter--) {
@@ -431,13 +471,15 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
 
     // Check whether the estimate is at least mu, in which case we
     // return it.
-    if (log(this_mu_estimate) >= (StagReal) log_nmu) {
+    if (log(this_mu_estimate) >= (StagReal) 1.3 * log_nmu) {
       return this_mu_estimate / (StagReal) n;
     }
+
+    last_mu_estimate = this_mu_estimate;
   }
 
-  // Didn't find a good answer, return mu.
-  return exp((StagReal) min_log_nmu) / (StagReal) n;
+  // Didn't find a good answer, return the last estimate, or 0.
+  return last_mu_estimate / n;
 }
 
 //------------------------------------------------------------------------------

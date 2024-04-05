@@ -71,6 +71,11 @@ target_link_libraries(
         stag
 )
 
+# Add an ad-hoc script for profiling and manual testing.
+add_executable(stag_profile
+        test/profiling.cpp)
+target_link_libraries(stag_profile stag)
+
 add_executable(
         stagt_static EXCLUDE_FROM_ALL
         test/graph_test.cpp
@@ -108,6 +113,7 @@ configure_file(test/data/test8.adjacencylist test/data/test8.adjacencylist COPYO
 configure_file(test/data/badgraph.adjacencylist test/data/badgraph.adjacencylist COPYONLY)
 configure_file(test/data/hugegraph.adjacencylist test/data/hugegraph.adjacencylist COPYONLY)
 configure_file(test/data/moons.txt test/data/moons.txt COPYONLY)
+configure_file(test/data/moons_short.txt test/data/moons_short.txt COPYONLY)
 configure_file(test/data/mnist.txt test/data/mnist.txt COPYONLY)
 
 # Create the STAG tools

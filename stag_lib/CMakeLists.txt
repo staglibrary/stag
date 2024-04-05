@@ -12,7 +12,6 @@ set(STAG_PUBLIC_HEADERS
         KDE/kde.h
         definitions.h
         KDE/data.h
-        KDE/LSHTable.h
         )
 
 set(HEADER_FILES
@@ -31,7 +30,6 @@ set(SOURCE_FILES
         Graph/spectrum.cpp
         Cluster/cluster.cpp
         KDE/lsh.cpp
-        KDE/LSHTable.cpp
         KDE/kde.cpp
         KDE/data.cpp
         KMeansRex/KMeansRexCore.cpp
@@ -71,9 +69,16 @@ add_library(stag_static STATIC $<TARGET_OBJECTS:stag_object>)
 
 # Configure the compiler options to error on warnings
 if(MSVC)
+    message(STATUS "[stag] Compiling for Windows.")
     set(_COMPILE_OPTS /W4)
 else()
-    set(_COMPILE_OPTS -Werror -Wall -Wextra)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RELEASE")
+        message(STATUS "[stag] Enabling compiler optimisations.")
+        set(_COMPILE_OPTS -Werror -Wall -Wextra -O3)
+    else()
+        message(STATUS "[stag] Disabling compiler optimisations.")
+        set(_COMPILE_OPTS -Werror -Wall -Wextra)
+    endif()
 endif()
 message(STATUS "[stag] Set compiler options: ${_COMPILE_OPTS}")
 target_compile_options(stag_object PRIVATE "${_COMPILE_OPTS}")

@@ -28,9 +28,9 @@
 
 #include <vector>
 
+#include <unordered_map>
 #include "definitions.h"
 #include "data.h"
-#include "LSHTable.h"
 
 /**
  * \cond
@@ -85,10 +85,10 @@ namespace stag {
      * Apply this hash function to the given data point.
      *
      * @param point a data point to be hashed
-     * @return a positive integer indicating which hash bucket this data point
+     * @return an integer indicating which hash bucket this data point
      *         was hashed to
      */
-    StagUInt apply(const DataPoint& point);
+    StagInt apply(const DataPoint& point);
 
     /**
      * For two points at a given distance \f$c\f$, compute the probability that
@@ -120,6 +120,23 @@ namespace stag {
     StagReal b;
     StagUInt dim;
   };
+
+  /**
+   * \cond
+   */
+  class MultiLSHFunction {
+  public:
+    MultiLSHFunction(StagInt dimension, StagInt num_functions);
+    StagInt apply(const stag::DataPoint& point);
+  private:
+    StagInt L;
+    DenseMat rand_proj;
+    Eigen::VectorXd rand_offset;
+    Eigen::Matrix<StagInt, Eigen::Dynamic, 1> uhash_vector;
+  };
+  /**
+   * \endcond
+   */
 
   /**
    * \brief A Euclidean locality sensitive hash table.
@@ -156,7 +173,7 @@ namespace stag {
      *
      * @param K parameter K of the hash table
      * @param L parameter L of the hash table
-     * @param dataSet a reference to the dataSet to be hashed into the hash
+     * @param dataSet a pointer to the dataSet to be hashed into the hash
      *                table. The actual data should be stored and controlled by
      *                the calling code, and this vector of data point pointers
      *                will be used by the LSH table.
@@ -201,11 +218,13 @@ namespace stag {
   private:
     void initialise_hash_functions();
 
-    std::vector<StagUInt> compute_lsh(StagUInt gNumber, const DataPoint& point);
+    StagInt compute_lsh(StagUInt gNumber, const DataPoint& point);
 
     StagUInt dimension; // dimension of points.
     StagUInt parameterK; // parameter K of the algorithm.
     StagUInt parameterL; // parameter L of the algorithm.
+
+    std::vector<StagInt> rnd_vec; // used for hashing vectors
 
     // The array of pointers to the points that are contained in the
     // structure. Some types of this structure (of UHashStructureT,
@@ -215,10 +234,10 @@ namespace stag {
 
     // This table stores the LSH functions. There are <nHFTuples> rows
     // of <hfTuplesLength> LSH functions.
-    std::vector<std::vector<LSHFunction>> lshFunctions;
+    std::vector<MultiLSHFunction> lshFunctions;
 
     // The set of non-empty buckets
-    std::vector<LSHTable> hashTables;
+    std::vector<std::unordered_map<StagInt,std::vector<StagUInt>>> hashTables;
   };
 }
 
