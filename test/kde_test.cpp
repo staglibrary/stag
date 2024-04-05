@@ -180,8 +180,8 @@ TEST(KDETest, CKNSMnist) {
   StagInt K1 = pow(eps, -2) * log(data.rows());
   StagReal K2_constant = 5 * log(data.rows());
   StagReal min_mu = 1 / data.rows();
-  StagInt offset = 2;
-  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, 2);
+  StagInt offset = 1;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
   std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
 
   // Check that the estimates are accurate

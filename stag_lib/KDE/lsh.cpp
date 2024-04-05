@@ -63,11 +63,11 @@ stag::LSHFunction::LSHFunction(StagUInt dimension) {
   // The variable is a random Gaussian vector.
   a.reserve(dim);
   for(StagUInt d = 0; d < dim; d++){
-    a.emplace_back(genGaussianRandom());
+    a.emplace_back(genGaussianRandom() / LSH_PARAMETER_W);
   }
 
   // The variable b is a random offset on the random vector.
-  b = genUniformRandom(0, LSH_PARAMETER_W);
+  b = genUniformRandom(0, 1);
 }
 
 StagInt stag::LSHFunction::apply(const DataPoint& point) {
@@ -78,7 +78,7 @@ StagInt stag::LSHFunction::apply(const DataPoint& point) {
     value += point.coordinates[d] * a[d];
   }
 
-  return (StagInt) floor((value + b) / LSH_PARAMETER_W);
+  return (StagInt) floor(value + b);
 }
 
 StagReal stag::LSHFunction::collision_probability(StagReal c) {
@@ -94,19 +94,20 @@ StagReal stag::LSHFunction::collision_probability(StagReal c) {
 // Implementation of the multi-LSH function class.
 //------------------------------------------------------------------------------
 stag::MultiLSHFunction::MultiLSHFunction(StagInt dimension, StagInt num_functions) {
+    L = num_functions;
     rand_proj.conservativeResize(num_functions, dimension);
     rand_offset.conservativeResize(num_functions);
     uhash_vector.conservativeResize(num_functions);
 
-    std::uniform_real_distribution<StagReal> real_dist(0, LSH_PARAMETER_W);
+    std::uniform_real_distribution<StagReal> real_dist(0, 1);
     std::uniform_int_distribution<StagInt> int_dist(1, MAX_HASH_RND);
     std::normal_distribution<StagReal> normal_dist(0, 1);
 
     for (StagInt g = 0; g < num_functions; g++) {
       rand_offset.coeffRef(g) = real_dist(*stag::get_global_rng());
       uhash_vector.coeffRef(g) = int_dist(*stag::get_global_rng());
-      for(StagInt d = 0; d < dimension; d++){
-        rand_proj.coeffRef(g, d) = normal_dist(*stag::get_global_rng());
+      for(StagInt i = 0; i < dimension; i++){
+        rand_proj.coeffRef(g, i) = normal_dist(*stag::get_global_rng()) / LSH_PARAMETER_W;
       }
     }
   }
@@ -114,16 +115,13 @@ stag::MultiLSHFunction::MultiLSHFunction(StagInt dimension, StagInt num_function
 StagInt stag::MultiLSHFunction::apply(const stag::DataPoint& point) {
   assert((StagInt) point.dimension == rand_proj.cols());
   Eigen::Map<Eigen::VectorXd> pointMap(point.coordinates, (StagInt) point.dimension);
-  Eigen::Matrix<StagInt, Eigen::Dynamic, 1> projection =
-      ((1 / LSH_PARAMETER_W) * ((rand_proj * pointMap) + rand_offset)).array().floor().cast<StagInt>();
-  StagInt h = uhash_vector.dot(projection);
-
-  // TODO: Consider removing the mod prime part
-  while (h < 0) h += UH_PRIME_DEFAULT;
-  while (h >= UH_PRIME_DEFAULT) h -= UH_PRIME_DEFAULT;
-
-  assert(h >= 0);
-  return (StagInt) h;
+  Eigen::Matrix<StagReal, Eigen::Dynamic, 1> projection =
+      (rand_proj * pointMap) + rand_offset;
+  StagInt h = 0;
+  for (auto i = 0; i < L; i++) {
+    h += uhash_vector.coeff(i) * (StagInt) floor(projection.coeff(i));
+  }
+  return h;
 }
 
 //------------------------------------------------------------------------------
@@ -185,12 +183,10 @@ std::vector<stag::DataPoint> stag::E2LSH::get_near_neighbors(const DataPoint& qu
   for(StagUInt l = 0; l < parameterL; l++){
     StagInt this_lsh = compute_lsh(l, query);
 
-    if (!hashTables[l].contains(this_lsh)) {
-      continue;
-    } else {
+    if (hashTables[l].contains(this_lsh)) {
       for (StagUInt candidatePIndex : hashTables[l][this_lsh]) {
-        DataPoint& candidatePoint = points[candidatePIndex];
         if (near_indices.find(candidatePIndex) == near_indices.end()) {
+          DataPoint& candidatePoint = points[candidatePIndex];
           near_points.push_back(candidatePoint);
           near_indices.insert(candidatePIndex);
         }

@@ -130,6 +130,7 @@ namespace stag {
     MultiLSHFunction(StagInt dimension, StagInt num_functions);
     StagInt apply(const stag::DataPoint& point);
   private:
+    StagInt L;
     DenseMat rand_proj;
     Eigen::VectorXd rand_offset;
     Eigen::Matrix<StagInt, Eigen::Dynamic, 1> uhash_vector;
