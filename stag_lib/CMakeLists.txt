@@ -12,7 +12,6 @@ set(STAG_PUBLIC_HEADERS
         KDE/kde.h
         definitions.h
         KDE/data.h
-        KDE/LSHTable.h
         )
 
 set(HEADER_FILES
@@ -31,7 +30,6 @@ set(SOURCE_FILES
         Graph/spectrum.cpp
         Cluster/cluster.cpp
         KDE/lsh.cpp
-        KDE/LSHTable.cpp
         KDE/kde.cpp
         KDE/data.cpp
         KMeansRex/KMeansRexCore.cpp
