@@ -193,7 +193,7 @@ namespace stag {
      *
      * This constructor gives fine-grained control over the constants used by
      * the data structure to control the accuracy and variance of the estimator.
-     * For casual application, the simpler constructor will be sufficient, and
+     * For casual application, the simpler constructors will be sufficient, and
      * will select sensible default values for the constants.
      *
      * \note
@@ -201,8 +201,8 @@ namespace stag {
      * matrix, and it must be available throughout the life of the CKNS data
      * structure.
      *
-     * @param data
-     * @param a
+     * @param data pointer to an \f$(n \times d)\f$ matrix containing the dataset.
+     * @param a the parameter \f$a\f$ of the Gaussian kernel function.
      * @param min_mu the minimum kernel density value of any query
      *               point. A smaller number will give longer preprocessing and
      *               query time complexity. If a query point has a kernel density
@@ -215,10 +215,15 @@ namespace stag {
      *                    hash tables used within the data structure. A higher value
      *                    will give more accurate estimates at the cost of higher memory
      *                    and time complexity. It is usually set to \f$5 \log(n)\f$.
-     * @param prob_offset
+     * @param sampling_offset the CKNS algorithm samples the dataset with various
+     *                        sampling probabilities. Setting a sampling offset of
+     *                        \f$k\f$ will further subsample the data by a factor
+     *                        of \f$1/2^k\f$. This will speed up the algorithm
+     *                        at the cost of some accuracy.
+     *                        It is usually set to \f$0\f$.
      */
     CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
-                    StagReal K2_constant, StagInt prob_offset);
+                    StagReal K2_constant, StagInt sampling_offset);
 
     /**
      * Calculate an estimate of the KDE value for each of the data points in
