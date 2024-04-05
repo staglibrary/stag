@@ -115,11 +115,10 @@ stag::MultiLSHFunction::MultiLSHFunction(StagInt dimension, StagInt num_function
 StagInt stag::MultiLSHFunction::apply(const stag::DataPoint& point) {
   assert((StagInt) point.dimension == rand_proj.cols());
   Eigen::Map<Eigen::VectorXd> pointMap(point.coordinates, (StagInt) point.dimension);
-  Eigen::Matrix<StagReal, Eigen::Dynamic, 1> projection =
-      (rand_proj * pointMap) + rand_offset;
+  Eigen::Matrix<StagReal, Eigen::Dynamic, 1> projection = rand_proj * pointMap;
   StagInt h = 0;
   for (auto i = 0; i < L; i++) {
-    h += uhash_vector.coeff(i) * (StagInt) floor(projection.coeff(i));
+    h += uhash_vector(i) * (StagInt) floor(projection(i) + rand_offset(i));
   }
   return h;
 }
