@@ -28,6 +28,7 @@
 
 #include <vector>
 
+#include <unordered_map>
 #include "definitions.h"
 #include "data.h"
 #include "LSHTable.h"
