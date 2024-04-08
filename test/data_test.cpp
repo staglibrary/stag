@@ -109,3 +109,14 @@ TEST(DataTest, MatrixToDataPoints) {
     }
   }
 }
+
+TEST(DataTest, ASG) {
+  // Load the two MNIST dataset
+  std::string filename = "test/data/mnist.txt";
+  DenseMat data = stag::load_matrix(filename);
+  StagReal a = 0.000001;
+
+  // Create tha approximate similarity graph from this matrix.
+  stag::Graph apg = stag::approximate_similarity_graph(data, a);
+  EXPECT_EQ(apg.number_of_vertices(), data.rows());
+}

@@ -4,9 +4,17 @@
 */
 #include <iostream>
 #include <fstream>
+#include <random>
+#include <utility>
+#include <deque>
+#include <future>
 
 #include "data.h"
 #include "utility.h"
+#include "Graph/random.h"
+#include "KDE/kde.h"
+
+#define KDE_TREE_CUTOFF 1000
 
 //------------------------------------------------------------------------------
 // Implementation of the DataPoint class.
@@ -175,4 +183,95 @@ DenseMat stag::load_matrix(std::string& filename) {
   return data;
 }
 
+//------------------------------------------------------------------------------
+// Constructing approximate similarity graph.
+//------------------------------------------------------------------------------
+class KDETreeEntry {
+public:
+  KDETreeEntry(DenseMat& data, StagReal a, StagInt min_id, StagInt max_id)
+    : sampling_dist(0.0, 1.0)
+  {
+     min_idx = min_id;
+     max_idx = max_id;
+    LOG_DEBUG("Initialising from " << min_idx << " to " << max_idx << std::endl);
+
+     if (max_idx - min_idx >= KDE_TREE_CUTOFF) {
+       below_cutoff = false;
+       initialise_estimator(data, a);
+     } else {
+       below_cutoff = true;
+       initialise_exact(data, a);
+     }
+
+     if (min_idx != max_idx) {
+       StagInt midpoint = (min_idx + max_idx) / 2;
+       assert(midpoint >= min_idx);
+       assert(midpoint < max_idx);
+       left_child = new KDETreeEntry(data, a, min_idx, midpoint);
+       right_child = new KDETreeEntry(data, a, midpoint + 1, max_idx);
+     }
+  }
+
+  void initialise_estimator(DenseMat& data, StagReal a) {
+    DenseMat sub_data_mat = data.block(min_idx, 0, max_idx - min_idx + 1, data.cols());
+    this_estimator = stag::CKNSGaussianKDE(&sub_data_mat, a);
+  }
+
+  void initialise_exact(DenseMat& data, StagReal a) {
+    DenseMat sub_data_mat = data.block(min_idx, 0, max_idx - min_idx + 1, data.cols());
+    exact_kde = stag::ExactGaussianKDE(&sub_data_mat, a);
+  }
+
+  StagReal estimate_weight(const stag::DataPoint& q) {
+    if (!below_cutoff) {
+      return this_estimator.query(q);
+    } else {
+      return exact_kde.query(q);
+    }
+  }
+
+  StagInt sample_neighbor(const stag::DataPoint& q) {
+    if (min_idx == max_idx) {
+      return min_idx;
+    } else {
+      StagReal left_est = left_child->estimate_weight(q);
+      StagReal right_est = right_child->estimate_weight(q);
+      StagReal my_est = left_est + right_est;
+
+      if (sampling_dist(*stag::get_global_rng()) <= left_est / my_est) {
+        return left_child->sample_neighbor(q);
+      } else {
+        return right_child->sample_neighbor(q);
+      }
+    }
+  }
+
+private:
+  bool below_cutoff;
+  stag::CKNSGaussianKDE this_estimator;
+  stag::ExactGaussianKDE exact_kde;
+  StagInt min_idx;
+  StagInt max_idx;
+  KDETreeEntry* left_child;
+  KDETreeEntry* right_child;
+  std::uniform_real_distribution<double> sampling_dist;
+};
+
+stag::Graph stag::approximate_similarity_graph(DenseMat& data, StagReal a) {
+  // Begin by creating the tree of kernel density estimators.
+  KDETreeEntry tree_root(data, a, 0, data.rows() - 1);
+
+  //TODO: pararellise this
+  std::vector<StagInt> neighbors;
+  for (auto i = 0; i < 1000; i++) {
+    stag::DataPoint q(data, i);
+    neighbors.push_back(tree_root.sample_neighbor(q));
+  }
+
+  //TODO: return a graph
+  for (auto n : neighbors) {
+    std::cout << n << std::endl;
+  }
+  return stag::cycle_graph(data.rows());
+}
 

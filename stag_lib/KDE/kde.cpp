@@ -267,10 +267,8 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
 
   k1 = K1;
   k2_constant = K2_constant;
-#ifndef NDEBUG
-  std::cout << "[STAG] k1: " << k1 << std::endl;
-  std::cout << "[STAG] k2_constant: " << k2_constant << std::endl;
-#endif
+  LOG_DEBUG("[STAG] k1: " << k1 << std::endl);
+  LOG_DEBUG("[STAG] k2_constant: " << k2_constant << std::endl);
 
   hash_units.resize(num_log_nmu_iterations);
   for (StagInt log_nmu_iter = 0;
@@ -284,6 +282,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   ctpl::thread_pool pool((int) num_threads);
   StagInt max_J = ckns_J(n, 0);
   std::vector<std::future<StagInt>> futures;
+  std::mutex hash_units_mutex;
   for (StagInt j_offset = max_J - 1; j_offset >= 0; j_offset--) {
     for (StagInt log_nmu_iter = 0;
          log_nmu_iter < num_log_nmu_iterations;
@@ -293,12 +292,11 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
       StagInt j = J - j_offset;
       if (j >= 1) {
         for (StagInt iter = 0; iter < k1; iter++) {
-          LOG_DEBUG("Initialising j=" << j << " iter=" << iter << " log_nmu=" << log_nmu << std::endl);
           futures.push_back(
               pool.push(
                   [&, log_nmu_iter, log_nmu, iter, j](int id) {
                     ignore_warning(id);
-                    return add_hash_unit(log_nmu_iter, log_nmu, iter, j, data);
+                    return add_hash_unit(log_nmu_iter, log_nmu, iter, j, data, hash_units_mutex);
                   }
               )
           );
@@ -314,6 +312,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
 
   // Close the thread pool.
   pool.stop();
+  LOG_DEBUG("Finished initialising." << std::endl);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
@@ -357,7 +356,8 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
                                              StagInt log_nmu,
                                              StagInt iter,
                                              StagInt j,
-                                             DenseMat* data) {
+                                             DenseMat* data,
+                                             std::mutex& hash_units_mutex) {
   assert(log_nmu < max_log_nmu);
   assert(log_nmu >= min_log_nmu);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(

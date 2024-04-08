@@ -142,6 +142,16 @@ namespace stag {
   class CKNSGaussianKDE {
   public:
     /**
+     * \cond
+     * Do not document the default constructor. It should only be used as a
+     * placeholder.
+     */
+    CKNSGaussianKDE() {}
+    /**
+     * \endcond
+     */
+
+    /**
      * Initialise a new KDE data structure with the given dataset.
      *
      * Data should be a pointer to a matrix \f$X \in \mathbb{R}^{n \times d}\f$
@@ -257,11 +267,11 @@ namespace stag {
                           StagInt log_nmu,
                           StagInt iter,
                           StagInt j,
-                          DenseMat* data);
+                          DenseMat* data,
+                          std::mutex& units_mutex);
     std::vector<StagReal> chunk_query(DenseMat* query, StagInt chunk_start, StagInt chunk_end);
 
     std::vector<std::vector<std::vector<CKNSGaussianKDEHashUnit>>> hash_units;
-    std::mutex hash_units_mutex;
     StagInt max_log_nmu;
     StagInt min_log_nmu;
     StagInt num_log_nmu_iterations;
@@ -284,6 +294,16 @@ namespace stag {
    */
   class ExactGaussianKDE {
   public:
+    /**
+     * \cond
+     * Do not document the default constructor. It should only be used as a
+     * placeholder.
+     */
+    ExactGaussianKDE() {}
+    /**
+     * \endcond
+     */
+
     /**
      * Initialise the data structure with the given dataset and Gaussian kernel
      * parameter \f$a\f$.

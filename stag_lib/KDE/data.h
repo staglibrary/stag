@@ -15,6 +15,7 @@
 #define STAG_LIBRARY_DATA_H
 
 #include "definitions.h"
+#include "Graph/graph.h"
 
 namespace stag{
   /**
@@ -98,6 +99,15 @@ namespace stag{
    * @return a vector of stag::DataPoint pointing to the rows of the matrix
    */
   std::vector<stag::DataPoint> matrix_to_datapoints(DenseMat* data);
+
+
+  /**
+   * TODO: Write description.
+   * @param data
+   * @param a
+   * @return
+   */
+  Graph approximate_similarity_graph(DenseMat& data, StagReal a);
 }
 
 #endif //STAG_LIBRARY_DATA_H
