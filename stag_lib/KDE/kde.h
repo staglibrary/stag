@@ -102,7 +102,8 @@ namespace stag {
   class CKNSGaussianKDEHashUnit {
   public:
     CKNSGaussianKDEHashUnit(StagReal a, DenseMat* data, StagInt log_nmu,
-                            StagInt j, StagReal K2_constant, StagInt prob_offset);
+                            StagInt j, StagReal K2_constant, StagInt prob_offset,
+                            StagInt min_idx, StagInt max_idx);
     StagReal query(const stag::DataPoint& q);
 
   private:
@@ -236,6 +237,18 @@ namespace stag {
                     StagReal K2_constant, StagInt sampling_offset);
 
     /**
+     * \cond
+     * Hidden constructor, used to specify a minimuum and maximum id of the
+     * provided matrix.
+     */
+    CKNSGaussianKDE(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
+                    StagReal K2_constant, StagInt sampling_offset, StagInt min_idx,
+                    StagInt max_idx);
+    /**
+     * \nocond
+     */
+
+    /**
      * Calculate an estimate of the KDE value for each of the data points in
      * the query matrix.
      *
@@ -262,7 +275,8 @@ namespace stag {
 
   private:
     void initialize(DenseMat* data, StagReal a, StagReal min_mu, StagInt K1,
-                    StagReal K2_constant, StagInt prob_offset);
+                    StagReal K2_constant, StagInt prob_offset, StagInt min_idx,
+                    StagInt max_idx);
     StagInt add_hash_unit(StagInt log_nmu_iter,
                           StagInt log_nmu,
                           StagInt iter,
@@ -272,6 +286,8 @@ namespace stag {
     std::vector<StagReal> chunk_query(DenseMat* query, StagInt chunk_start, StagInt chunk_end);
 
     std::vector<std::vector<std::vector<CKNSGaussianKDEHashUnit>>> hash_units;
+    StagInt min_id;
+    StagInt max_id;
     StagInt max_log_nmu;
     StagInt min_log_nmu;
     StagInt num_log_nmu_iterations;
@@ -315,6 +331,15 @@ namespace stag {
      */
     ExactGaussianKDE(DenseMat* data, StagReal a);
 
+
+    /**
+     * \cond
+     */
+    ExactGaussianKDE(DenseMat* data, StagReal a, StagInt min_idx, StagInt max_idx);
+    /**
+     * \endcond
+     */
+
     /**
      * Calculate the KDE value for each of the data points in
      * the query matrix.
@@ -341,6 +366,8 @@ namespace stag {
   private:
     std::vector<stag::DataPoint> all_data;
     StagReal a;
+    StagInt min_id;
+    StagInt max_id;
   };
 }
 

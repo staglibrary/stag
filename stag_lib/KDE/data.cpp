@@ -13,8 +13,14 @@
 #include "utility.h"
 #include "Graph/random.h"
 #include "KDE/kde.h"
+#include "multithreading/ctpl_stl.h"
 
 #define KDE_TREE_CUTOFF 1000
+
+/*
+ * Used to disable compiler warning for unused variable.
+ */
+template<class T> void ignore_warning(const T&){}
 
 //------------------------------------------------------------------------------
 // Implementation of the DataPoint class.
@@ -188,7 +194,7 @@ DenseMat stag::load_matrix(std::string& filename) {
 //------------------------------------------------------------------------------
 class KDETreeEntry {
 public:
-  KDETreeEntry(DenseMat& data, StagReal a, StagInt min_id, StagInt max_id)
+  KDETreeEntry(DenseMat* data, StagReal a, StagInt min_id, StagInt max_id)
     : sampling_dist(0.0, 1.0)
   {
      min_idx = min_id;
@@ -212,17 +218,42 @@ public:
      }
   }
 
-  void initialise_estimator(DenseMat& data, StagReal a) {
-    DenseMat sub_data_mat = data.block(min_idx, 0, max_idx - min_idx + 1, data.cols());
-    this_estimator = stag::CKNSGaussianKDE(&sub_data_mat, a);
+  void initialise_estimator(DenseMat* data, StagReal a) {
+    StagInt n = data->rows();
+    StagInt K1 = ceil(log((StagReal) n) / 0.25);
+    StagReal K2_constant = 5 * log((StagReal) n);
+    StagReal min_mu = 1.0 / (StagReal) n;
+    this_estimator = stag::CKNSGaussianKDE(data, a, min_mu, K1, K2_constant,
+                                           0, min_idx, max_idx + 1);
   }
 
-  void initialise_exact(DenseMat& data, StagReal a) {
-    DenseMat sub_data_mat = data.block(min_idx, 0, max_idx - min_idx + 1, data.cols());
-    exact_kde = stag::ExactGaussianKDE(&sub_data_mat, a);
+  void initialise_exact(DenseMat* data, StagReal a) {
+    exact_kde = stag::ExactGaussianKDE(data, a, min_idx, max_idx + 1);
   }
 
-  StagReal estimate_weight(const stag::DataPoint& q) {
+  StagReal estimate_weight(const stag::DataPoint& q, const StagInt q_id) {
+    StagReal weight;
+    cache_mutex.lock();
+    if (!cached_weights.contains(q_id)) {
+      cache_mutex.unlock();
+      if (!below_cutoff) {
+        weight = this_estimator.query(q);
+      } else {
+        weight = exact_kde.query(q);
+      }
+
+      cache_mutex.lock();
+      cached_weights[q_id] = weight;
+      cache_mutex.unlock();
+
+    } else {
+      weight = cached_weights[q_id];
+      cache_mutex.unlock();
+    }
+    return weight;
+  }
+
+  std::vector<StagReal> estimate_weights(DenseMat* q) {
     if (!below_cutoff) {
       return this_estimator.query(q);
     } else {
@@ -230,18 +261,18 @@ public:
     }
   }
 
-  StagInt sample_neighbor(const stag::DataPoint& q) {
+  StagInt sample_neighbor(const stag::DataPoint& q, const StagInt q_id) {
     if (min_idx == max_idx) {
       return min_idx;
     } else {
-      StagReal left_est = left_child->estimate_weight(q);
-      StagReal right_est = right_child->estimate_weight(q);
+      StagReal left_est = left_child->estimate_weight(q, q_id);
+      StagReal right_est = right_child->estimate_weight(q, q_id);
       StagReal my_est = left_est + right_est;
 
       if (sampling_dist(*stag::get_global_rng()) <= left_est / my_est) {
-        return left_child->sample_neighbor(q);
+        return left_child->sample_neighbor(q, q_id);
       } else {
-        return right_child->sample_neighbor(q);
+        return right_child->sample_neighbor(q, q_id);
       }
     }
   }
@@ -255,23 +286,80 @@ private:
   KDETreeEntry* left_child;
   KDETreeEntry* right_child;
   std::uniform_real_distribution<double> sampling_dist;
+  std::unordered_map<StagInt, StagReal> cached_weights;
+  std::mutex cache_mutex;
 };
 
-stag::Graph stag::approximate_similarity_graph(DenseMat& data, StagReal a) {
+void sample_asg_edges(DenseMat* data,
+                      KDETreeEntry& tree_root,
+                      StagInt chunk_start,
+                      StagInt chunk_end,
+                      std::vector<EdgeTriplet>& edges,
+                      StagInt edges_per_node) {
+  for (auto i = chunk_start; i < chunk_end; i++) {
+    stag::DataPoint q(*data, i);
+
+    for (auto j = 0; j < edges_per_node; j++) {
+      StagInt neighbor = tree_root.sample_neighbor(q, i);
+      StagInt this_base_index = 2 * ((i * j) + j);
+      edges.at(this_base_index) = EdgeTriplet(i, neighbor, 1);
+      edges.at(this_base_index + 1) = EdgeTriplet(neighbor, i, 1);
+    }
+  }
+}
+
+stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
   // Begin by creating the tree of kernel density estimators.
-  KDETreeEntry tree_root(data, a, 0, data.rows() - 1);
+  // Creating each node is parallelized by the KDE code.
+  KDETreeEntry tree_root(data, a, 0, data->rows() - 1);
 
-  //TODO: pararellise this
-  std::vector<StagInt> neighbors;
-  for (auto i = 0; i < 1000; i++) {
-    stag::DataPoint q(data, i);
-    neighbors.push_back(tree_root.sample_neighbor(q));
+  // Work out how many total edges we will sample
+  auto edges_per_node = (StagInt) (3 * log((StagReal) data->rows()));
+  StagInt num_edges = data->rows() * edges_per_node;
+
+  // First, compute the degrees of all nodes
+  std::vector<StagReal> degrees = tree_root.estimate_weights(data);
+
+  StagInt num_threads = std::thread::hardware_concurrency();
+  std::vector<EdgeTriplet> graph_edges(2 * num_edges);
+  if (data->rows() <= num_threads * 2) {
+    sample_asg_edges(data, tree_root, 0, data->rows(), graph_edges, edges_per_node);
+  } else {
+    // Start the thread pool
+    ctpl::thread_pool pool((int) num_threads);
+    std::vector<std::future<void>> futures;
+
+    StagInt chunk_size = floor((StagReal) data->rows() / (StagReal) num_threads);
+
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      StagInt this_chunk_start = chunk_id * chunk_size;
+      StagInt this_chunk_end = this_chunk_start + chunk_size;
+      if (chunk_id == num_threads - 1) this_chunk_end = data->rows();
+
+      assert(this_chunk_start <= (StagInt) data->rows());
+      assert(this_chunk_end <= (StagInt) data->rows());
+      assert(this_chunk_end > this_chunk_start);
+
+      futures.push_back(
+        pool.push(
+          [&, this_chunk_start, this_chunk_end, edges_per_node] (int id) {
+            ignore_warning(id);
+            sample_asg_edges(data, tree_root, this_chunk_start,
+                             this_chunk_end, graph_edges, edges_per_node);
+          }
+        )
+      );
+    }
+
+    // Join the futures
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      futures[chunk_id].get();
+    }
   }
 
-  //TODO: return a graph
-  for (auto n : neighbors) {
-    std::cout << n << std::endl;
-  }
-  return stag::cycle_graph(data.rows());
+  // Return a graph
+  SprsMat adj_mat(data->rows(), data->rows());
+  adj_mat.setFromTriplets(graph_edges.begin(), graph_edges.end());
+  return stag::Graph(adj_mat);
 }
 

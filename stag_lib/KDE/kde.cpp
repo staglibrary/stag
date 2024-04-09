@@ -154,8 +154,8 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 //------------------------------------------------------------------------------
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
-    StagReal K2_constant, StagInt prob_offset) {
-  StagInt n = data->rows();
+    StagReal K2_constant, StagInt prob_offset, StagInt min_idx, StagInt max_idx) {
+  StagInt n = max_idx - min_idx;
   StagInt d = data->cols();
   a = kern_param;
   log_nmu = lognmu;
@@ -170,25 +170,24 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   // dataset
   std::uniform_real_distribution<StagReal> uniform_distribution(0.0, 1.0);
 
-  // Create an array of PPointT structures which will be used to point to the
+  // Create an array of DataPoint structures which will be used to point to the
   // Eigen data matrix.
   std::vector<stag::DataPoint> lsh_data;
 
   // We need to sample the data set with the correct sampling probability.
   StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
 
-  StagUInt num_sampled_points = 0;
-  for (StagInt i = 0; i < n; i++) {
+  for (StagInt i = min_idx; i < max_idx; i++) {
     // Sample with probability p_sampling
     if (uniform_distribution(*get_global_rng()) <= p_sampling) {
       lsh_data.emplace_back(d, data->row(i).data());
-      num_sampled_points++;
+      assert(lsh_data.back().coordinates >= data->data());
     }
   }
 
   // If the number of sampled points is below the cutoff, don't create an LSH
   // table, just store the points and we'll search through them at query time.
-  if (num_sampled_points <= HASH_UNIT_CUTOFF) {
+  if (lsh_data.size() <= HASH_UNIT_CUTOFF) {
     below_cutoff = true;
     all_data = lsh_data;
   } else {
@@ -246,11 +245,18 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagReal min_mu,
                                        StagInt K1,
                                        StagReal K2_constant,
-                                       StagInt prob_offset) {
+                                       StagInt prob_offset,
+                                       StagInt min_idx,
+                                       StagInt max_idx) {
 #ifndef NDEBUG
-  std::cout << "Warning: STAG in debug mode!" << std::endl;
+  std::cerr << "Warning: STAG in debug mode!" << std::endl;
 #endif
-  n = data->rows();
+  assert(max_idx <= data->rows());
+  assert(min_idx >= 0);
+  assert(min_idx < max_idx);
+  min_id = min_idx;
+  max_id = max_idx;
+  n = max_id - min_id;
   a = gaussian_param;
   sampling_offset = prob_offset;
 
@@ -322,7 +328,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
   n = data->rows();
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
-  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET, 0, n);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
@@ -330,7 +336,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data, StagReal a) {
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(EPS_DEFAULT));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
   StagReal min_mu = 1.0 / (StagReal) n;
-  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET, 0, n);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(
@@ -339,7 +345,7 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(
   StagInt K1 = ceil(K1_DEFAULT_CONSTANT * log((StagReal) n) / SQR(eps));
   StagReal K2_constant = K2_DEFAULT_CONSTANT * log((StagReal) n);
   StagReal min_mu = 1.0 / (StagReal) n;
-  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET);
+  initialize(data, a, min_mu, K1, K2_constant, CKNS_DEFAULT_OFFSET, 0, n);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
@@ -348,9 +354,19 @@ stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
                                        StagInt K1,
                                        StagReal K2_constant,
                                        StagInt prob_offset) {
-  initialize(data, a, min_mu, K1, K2_constant, prob_offset);
+  initialize(data, a, min_mu, K1, K2_constant, prob_offset, 0, data->rows());
 }
 
+stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
+                                       StagReal a,
+                                       StagReal min_mu,
+                                       StagInt K1,
+                                       StagReal K2_constant,
+                                       StagInt prob_offset,
+                                       StagInt min_idx,
+                                       StagInt max_idx) {
+  initialize(data, a, min_mu, K1, K2_constant, prob_offset, min_idx, max_idx);
+}
 
 StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
                                              StagInt log_nmu,
@@ -361,7 +377,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
   assert(log_nmu < max_log_nmu);
   assert(log_nmu >= min_log_nmu);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
-      a, data, log_nmu, j, k2_constant, sampling_offset);
+      a, data, log_nmu, j, k2_constant, sampling_offset, min_id, max_id);
   hash_units_mutex.lock();
   hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
   hash_units_mutex.unlock();
@@ -391,7 +407,7 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
     // Start the thread pool
     ctpl::thread_pool pool((int) num_threads);
 
-    StagInt chunk_size = floor(query_mat->rows() / num_threads);
+    StagInt chunk_size = floor((StagReal) query_mat->rows() / (StagReal) num_threads);
 
     // The query size is large enough to be worth splitting.
     std::vector<std::future<std::vector<StagReal>>> futures;
@@ -496,8 +512,21 @@ StagReal gaussian_kde_exact(StagReal a,
 }
 
 stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param) {
+  min_id = 0;
+  max_id = data->rows();
   all_data = stag::matrix_to_datapoints(data);
   a = param;
+}
+
+stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param,
+                                         StagInt min_idx, StagInt max_idx) {
+  min_id = min_idx;
+  max_id = max_idx;
+  a = param;
+
+  for (auto i = min_id; i < max_id; i++) {
+    all_data.emplace_back(data->cols(), data->row(i).data());
+  }
 }
 
 StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
@@ -521,7 +550,7 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
     // Start the thread pool
     ctpl::thread_pool pool((int) num_threads);
 
-    StagInt chunk_size = floor(query_mat->rows() / num_threads);
+    StagInt chunk_size = floor((StagReal) query_mat->rows() / (StagReal) num_threads);
 
     // The query size is large enough to be worth splitting.
     std::vector<std::future<std::vector<StagReal>>> futures;

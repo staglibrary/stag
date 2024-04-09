@@ -9,13 +9,6 @@
 #include <gtest/gtest.h>
 #include "KDE/kde.h"
 
-#define EXPECT_FLOATS_APPROX_EQ(expected, actual, error) \
-        EXPECT_EQ(expected.size(), actual.size()) << "Array sizes differ.";\
-        for (size_t idx = 0; idx < std::min(expected.size(), actual.size()); ++idx) \
-        { \
-            EXPECT_NEAR(expected[idx], actual[idx], error * actual[idx]) << "at index: " << idx;\
-        }
-
 //------------------------------------------------------------------------------
 // Tests for the Gaussian kernel.
 //------------------------------------------------------------------------------
@@ -177,9 +170,9 @@ TEST(KDETest, CKNSMnist) {
   std::vector<StagReal> kde_exact = exact_kde.query(&data);
 
   // Create a CKNS KDE estimator
-  StagInt K1 = pow(eps, -2) * log(data.rows());
-  StagReal K2_constant = 5 * log(data.rows());
-  StagReal min_mu = 1 / data.rows();
+  auto K1 = (StagInt) (pow(eps, -2) * log((StagReal) data.rows()));
+  StagReal K2_constant = 5 * log((StagReal) data.rows());
+  StagReal min_mu = 1.0 / (StagReal) data.rows();
   StagInt offset = 1;
   stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
   std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
