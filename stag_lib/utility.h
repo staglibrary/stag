@@ -15,11 +15,17 @@
 
 #include "Graph/graph.h"
 
+/**
+ * \cond
+ */
 #ifndef NDEBUG
 #  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
 #else
 #  define LOG_DEBUG(x)
 #endif
+/**
+ * \endcond
+ */
 
 namespace stag {
 
