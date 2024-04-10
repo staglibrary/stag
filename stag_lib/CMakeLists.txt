@@ -50,6 +50,10 @@ get_property(SPECTRA_INCLUDE_DIR TARGET Spectra::Spectra
 message(STATUS "[stag] Found Spectra: ${SPECTRA_INCLUDE_DIR}")
 include_directories(${SPECTRA_INCLUDE_DIR})
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+message(STATUS "[stag] Found Threads")
+
 #####################################
 # Define the STAG library
 #####################################
@@ -63,9 +67,11 @@ set_property(TARGET stag_object PROPERTY POSITION_INDEPENDENT_CODE 1)
 add_library(stag SHARED $<TARGET_OBJECTS:stag_object>)
 set_target_properties(stag PROPERTIES PREFIX "")
 set_target_properties(stag PROPERTIES PUBLIC_HEADER "${STAG_PUBLIC_HEADERS}")
+target_link_libraries(stag PRIVATE Threads::Threads)
 
 # Define a static version of the STAG library for the stagtools
 add_library(stag_static STATIC $<TARGET_OBJECTS:stag_object>)
+target_link_libraries(stag_static PRIVATE Threads::Threads)
 
 # Configure the compiler options to error on warnings
 if(MSVC)
