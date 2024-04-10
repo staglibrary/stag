@@ -9,6 +9,7 @@
 #include "multithreading/ctpl_stl.h"
 #include "data.h"
 #include <iostream>
+#include "utility.h"
 
 #define TWO_ROOT_TWO 2.828427124
 #define TWO_ROOT_TWOPI 5.0132565
@@ -25,12 +26,6 @@
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
 #define HASH_UNIT_CUTOFF 1000
-
-#ifndef NDEBUG
-#  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
-#else
-#  define LOG_DEBUG(x)
-#endif
 
 /*
  * Used to disable compiler warning for unused variable.
@@ -248,9 +243,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagInt prob_offset,
                                        StagInt min_idx,
                                        StagInt max_idx) {
-#ifndef NDEBUG
-  std::cerr << "Warning: STAG in debug mode!" << std::endl;
-#endif
+  LOG_DEBUG("Warning: STAG in debug mode!" << std::endl);
   assert(max_idx <= data->rows());
   assert(min_idx >= 0);
   assert(min_idx < max_idx);

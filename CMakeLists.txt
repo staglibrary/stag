@@ -71,11 +71,6 @@ target_link_libraries(
         stag
 )
 
-# Add an ad-hoc script for profiling and manual testing.
-add_executable(stag_profile
-        test/profiling.cpp)
-target_link_libraries(stag_profile stag)
-
 add_executable(
         stagt_static EXCLUDE_FROM_ALL
         test/graph_test.cpp
@@ -95,6 +90,11 @@ target_link_libraries(
         GTest::gtest_main
         stag_static
 )
+
+# Add an ad-hoc script for profiling and manual testing.
+add_executable(stag_profile
+        test/profiling.cpp)
+target_link_libraries(stag_profile stag_static)
 
 # Add the test data files - these need to be copied to the binary directory for the testing application to work
 # correctly
