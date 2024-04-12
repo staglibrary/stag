@@ -133,8 +133,6 @@ namespace stag {
    * a \f$(1 + \epsilon)\f$-approximate kernel density estimate can be returned
    * in \f$O(\epsilon^{-2} n^{0.25})\f$ time.
    *
-   * For more information on the Kernel Density Estimation problem, see kde.h.
-   *
    * \par References
    * Charikar, Moses, et al. "Kernel density estimation through density
    * constrained near neighbor search." 2020 IEEE 61st Annual Symposium on
@@ -167,11 +165,6 @@ namespace stag {
      * The initialisation time complexity of the data structure is
      * \f$O(\epsilon^{-2} n^{1.25} \log^2(n))\f$ and the query time for each
      * query point is \f$(O(\epsilon^{-2} n^{0.25} \log^2(n))\f$.
-     *
-     * \note
-     * The calling code is responsible for the memory management of the data
-     * matrix, and it must be available throughout the life of the CKNS data
-     * structure.
      *
      * @param data pointer to an \f$(n \times d)\f$ matrix containing the dataset.
      * @param a the parameter \f$a\f$ of the Gaussian kernel function.
@@ -206,11 +199,6 @@ namespace stag {
      * the data structure to control the accuracy and variance of the estimator.
      * For casual application, the simpler constructors will be sufficient, and
      * will select sensible default values for the constants.
-     *
-     * \note
-     * The calling code is responsible for the memory management of the data
-     * matrix, and it must be available throughout the life of the CKNS data
-     * structure.
      *
      * @param data pointer to an \f$(n \times d)\f$ matrix containing the dataset.
      * @param a the parameter \f$a\f$ of the Gaussian kernel function.
