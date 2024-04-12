@@ -10,6 +10,8 @@
 #include "data.h"
 #include <iostream>
 #include <random>
+#include <unordered_set>
+#include <set>
 
 #define TWO_ROOT_TWO 2.828427124
 #define TWO_ROOT_TWOPI 5.0132565
@@ -462,13 +464,78 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
 
 std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
     DenseMat* query, StagInt chunk_start, StagInt chunk_end) {
-  std::vector<StagReal> chunk_results;
-  chunk_results.reserve(chunk_end - chunk_start);
-  for (auto i = chunk_start; i < chunk_end; i++) {
-    stag::DataPoint q(*query, i);
-    chunk_results.push_back(this->query(q));
+  // Iterate through possible values of mu , until we find a correct one for
+  // each query point.
+  std::vector<StagReal> results(chunk_end - chunk_start, 0);
+  std::unordered_set<StagInt> unsolved_queries;
+  std::unordered_map<StagInt, StagReal> last_mu_estimates;
+  assert(chunk_start < chunk_end);
+  for (StagInt i = chunk_start; i < chunk_end; i++) {
+    assert(i < chunk_end);
+    unsolved_queries.insert(i);
+    last_mu_estimates.insert(std::pair<StagInt, StagReal>(i, 0));
   }
-  return chunk_results;
+  assert((StagInt) last_mu_estimates.size() == (chunk_end - chunk_start));
+
+  for (auto log_nmu_iter = num_log_nmu_iterations - 1;
+       log_nmu_iter >= 0;
+       log_nmu_iter--) {
+    StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
+    StagInt J = ckns_J(n, log_nmu);
+
+    // Get an estimate from k1 copies of the CKNS data structure.
+    // Take the median one to be the true estimate.
+    std::unordered_map<StagInt, std::vector<StagReal>> iter_estimates;
+    for (StagInt i : unsolved_queries) {
+      assert(i < chunk_end);
+      std::vector<StagReal> temp(k1, 0);
+      iter_estimates.insert(std::pair<StagInt, std::vector<StagReal>>(i, temp));
+    }
+
+    for (auto iter = 0; iter < k1; iter++) {
+      // Iterate through the shells for each value of j
+      for (auto j = 1; j <= J; j++) {
+        for (auto i : unsolved_queries) {
+          assert(i < chunk_end);
+          iter_estimates[i][iter] += hash_units[log_nmu_iter][iter][j - 1].query(stag::DataPoint(*query, i));
+        }
+      }
+    }
+
+    std::vector<StagInt> newly_solved;
+    for (StagInt i : unsolved_queries) {
+      assert(i < chunk_end);
+      StagReal this_mu_estimate = median(iter_estimates[i]);
+
+      // Check whether the estimate is at least mu, in which case we
+      // return it.
+      if (log(this_mu_estimate) >= (StagReal) 1.3 * log_nmu) {
+        results.at(i - chunk_start) = this_mu_estimate / (StagReal) n;
+        newly_solved.push_back(i);
+      }
+
+      assert(i < chunk_end);
+      auto test = last_mu_estimates.end();
+      ignore_warning(test);
+      assert(last_mu_estimates.find(i) != last_mu_estimates.end());
+      last_mu_estimates[i] = this_mu_estimate;
+    }
+
+    for (StagInt i : newly_solved) {
+      assert(i < chunk_end);
+      auto test = unsolved_queries.end();
+      ignore_warning(test);
+      assert(unsolved_queries.find(i) != unsolved_queries.end());
+      unsolved_queries.erase(i);
+    }
+  }
+
+  // Didn't find a good answer, return the last estimate, or 0.
+  for (auto i : unsolved_queries) {
+    assert(i < chunk_end);
+    results.at(i - chunk_start) = last_mu_estimates[i] / n;
+  }
+  return results;
 }
 
 StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
