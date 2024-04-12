@@ -286,6 +286,7 @@ namespace stag {
     std::vector<StagReal> chunk_query(DenseMat* query, StagInt chunk_start, StagInt chunk_end);
 
     std::vector<std::vector<std::vector<CKNSGaussianKDEHashUnit>>> hash_units;
+    std::vector<DenseMat> data_copies;
     StagInt min_id;
     StagInt max_id;
     StagInt max_log_nmu;

@@ -9,6 +9,7 @@
 #include "multithreading/ctpl_stl.h"
 #include "data.h"
 #include <iostream>
+#include <random>
 
 #define TWO_ROOT_TWO 2.828427124
 #define TWO_ROOT_TWOPI 5.0132565
@@ -166,10 +167,6 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   StagInt J = ckns_J(n, log_nmu);
   assert(j <= J);
 
-  // Initialise the random number generator for the sampling of the
-  // dataset
-  std::uniform_real_distribution<StagReal> uniform_distribution(0.0, 1.0);
-
   // Create an array of DataPoint structures which will be used to point to the
   // Eigen data matrix.
   std::vector<stag::DataPoint> lsh_data;
@@ -177,12 +174,15 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   // We need to sample the data set with the correct sampling probability.
   StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
 
-  for (StagInt i = min_idx; i < max_idx; i++) {
-    // Sample with probability p_sampling
-    if (uniform_distribution(*get_global_rng()) <= p_sampling) {
-      lsh_data.emplace_back(d, data->row(i).data());
-      assert(lsh_data.back().coordinates >= data->data());
-    }
+  // Get the number of points to sample
+  auto num_sampled_points = (StagInt) floor(p_sampling * n);
+
+  // And the starting index
+  StagInt starting_idx = (StagInt) (1 - 2 * p_sampling) * n;
+
+  for (StagInt i = starting_idx; i < starting_idx + num_sampled_points; i++) {
+    lsh_data.emplace_back(d, data->row(i).data());
+    assert(lsh_data.back().coordinates >= data->data());
   }
 
   // If the number of sampled points is below the cutoff, don't create an LSH
@@ -283,26 +283,36 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
     hash_units[log_nmu_iter].resize(k1);
   }
 
+  // Create K1 permuted copies of the data
+  data_copies.reserve(K1);
+  for (StagInt iter = 0; iter < k1; iter++) {
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(n);
+    perm.setIdentity();
+    std::shuffle(perm.indices().data(), perm.indices().data() + perm.indices().size(), std::mt19937(std::random_device()()));
+    DenseMat permutedMatrix = perm * *data;
+    data_copies.push_back(permutedMatrix);
+  }
+
   // For each value of n * mu, we'll create an array of LSH data structures.
   StagInt num_threads = std::thread::hardware_concurrency();
   ctpl::thread_pool pool((int) num_threads);
   StagInt max_J = ckns_J(n, 0);
   std::vector<std::future<StagInt>> futures;
   std::mutex hash_units_mutex;
-  for (StagInt j_offset = max_J - 1; j_offset >= 0; j_offset--) {
+  for (StagInt iter = 0; iter < k1; iter++) {
     for (StagInt log_nmu_iter = 0;
          log_nmu_iter < num_log_nmu_iterations;
          log_nmu_iter++) {
       StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
       StagInt J = ckns_J(n, log_nmu);
-      StagInt j = J - j_offset;
-      if (j >= 1) {
-        for (StagInt iter = 0; iter < k1; iter++) {
+      for (StagInt j_offset = max_J - 1; j_offset >= 0; j_offset--) {
+        StagInt j = J - j_offset;
+        if (j >= 1) {
           futures.push_back(
               pool.push(
                   [&, log_nmu_iter, log_nmu, iter, j](int id) {
                     ignore_warning(id);
-                    return add_hash_unit(log_nmu_iter, log_nmu, iter, j, data, hash_units_mutex);
+                    return add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies.at(iter), hash_units_mutex);
                   }
               )
           );
