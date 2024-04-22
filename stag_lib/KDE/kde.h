@@ -110,6 +110,7 @@ namespace stag {
     StagReal query_neighbors(const stag::DataPoint& q,
                              const std::vector<stag::DataPoint>& neighbors);
     bool below_cutoff;
+    bool final_shell;
     stag::E2LSH LSH_buckets;
     StagInt j;
     StagInt log_nmu;

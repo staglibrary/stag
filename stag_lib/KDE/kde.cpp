@@ -191,11 +191,17 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   // If the number of sampled points is below the cutoff, or this is the 'outer
   // ring' don't create an LSH table, just store the points and we'll search
   // through them at query time.
-  if (lsh_data.size() <= HASH_UNIT_CUTOFF || j == J) {
+  if (j == J) {
+    final_shell = true;
+    below_cutoff = false;
+    all_data = lsh_data;
+  } else if (lsh_data.size() <= HASH_UNIT_CUTOFF) {
+    final_shell = false;
     below_cutoff = true;
     all_data = lsh_data;
   } else {
     below_cutoff = false;
+    final_shell = false;
 
     // Create the LSH parameters
     std::vector<StagUInt> lsh_parameters = ckns_gaussian_create_lsh_params(
@@ -217,21 +223,33 @@ StagReal stag::CKNSGaussianKDEHashUnit::query_neighbors(const stag::DataPoint& q
     rj_minus_1_squared = ckns_gaussian_rj_squared(j-1, a);
   }
 
-  StagReal total = 0;
-  for (const auto& neighbor : neighbors) {
-    // We return only points that are in L_j - that is, in the annulus between
-    // r_{j-1} and r_j.
-    StagReal d_sq = squared_distance_at_most(q, neighbor, rj_squared);
-    if (d_sq > rj_minus_1_squared) {
-      // Include this point in the estimate
+  // Seperate computation if this is the final shell.
+  if (final_shell) {
+    StagReal total = 0;
+    for (const auto& neighbor : neighbors) {
+      // We return only points that are in L_j - that is, in the annulus between
+      // r_{j-1} and r_j.
+      StagReal d_sq = squared_distance(q, neighbor);
       total += gaussian_kernel(a, d_sq) / p_sampling;
     }
+    return total;
+  } else {
+    StagReal total = 0;
+    for (const auto& neighbor : neighbors) {
+      // We return only points that are in L_j - that is, in the annulus between
+      // r_{j-1} and r_j.
+      StagReal d_sq = squared_distance_at_most(q, neighbor, rj_squared);
+      if (d_sq > rj_minus_1_squared) {
+        // Include this point in the estimate
+        total += gaussian_kernel(a, d_sq) / p_sampling;
+      }
+    }
+    return total;
   }
-  return total;
 }
 
 StagReal stag::CKNSGaussianKDEHashUnit::query(const stag::DataPoint& q) {
-  if (below_cutoff) {
+  if (below_cutoff || final_shell) {
     return query_neighbors(q, all_data);
   } else {
     std::vector<stag::DataPoint> near_neighbours = LSH_buckets.get_near_neighbors(q);
