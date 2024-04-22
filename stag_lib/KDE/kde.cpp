@@ -99,7 +99,7 @@ StagReal stag::gaussian_kernel(StagReal a, const stag::DataPoint& u,
  * @return
  */
 StagInt ckns_J(StagInt n, StagInt log_nmu) {
-  assert(log_nmu < log2(n));
+  assert(log_nmu <= ceil(log2((StagReal) n)) + 1);
   return ((StagInt) ceil(log2((StagReal) n))) - log_nmu;
 }
 
@@ -188,9 +188,10 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     assert(lsh_data.back().coordinates >= data->data());
   }
 
-  // If the number of sampled points is below the cutoff, don't create an LSH
-  // table, just store the points and we'll search through them at query time.
-  if (lsh_data.size() <= HASH_UNIT_CUTOFF) {
+  // If the number of sampled points is below the cutoff, or this is the 'outer
+  // ring' don't create an LSH table, just store the points and we'll search
+  // through them at query time.
+  if (lsh_data.size() <= HASH_UNIT_CUTOFF || j == J) {
     below_cutoff = true;
     all_data = lsh_data;
   } else {
@@ -269,13 +270,17 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   //   j ranges from 1 to J.
   min_log_nmu = (StagInt) floor(log2((StagReal) n * min_mu));
   max_log_nmu = (StagInt) ceil(log2((StagReal) n));
-  num_log_nmu_iterations = ceil((StagReal) (max_log_nmu - min_log_nmu) / 2);
-  LOG_DEBUG("min_log_nmu: " << min_log_nmu << std::endl);
-  LOG_DEBUG("num_log_nmu_iterations: " << num_log_nmu_iterations << std::endl);
+  min_log_nmu = MIN(min_log_nmu, max_log_nmu);
 
   // Make sure that we are not over-sampling.
+  sampling_offset = MAX(sampling_offset, -max_log_nmu);
   min_log_nmu = MAX(min_log_nmu, -sampling_offset);
   assert(min_log_nmu + sampling_offset >= 0);
+  assert(min_log_nmu <= max_log_nmu);
+
+  num_log_nmu_iterations = (StagInt) ceil((StagReal) (max_log_nmu - min_log_nmu) / 2) + 1;
+  LOG_DEBUG("min_log_nmu: " << min_log_nmu << std::endl);
+  LOG_DEBUG("num_log_nmu_iterations: " << num_log_nmu_iterations << std::endl);
 
   k1 = K1;
   k2_constant = K2_constant;
@@ -302,7 +307,6 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   // For each value of n * mu, we'll create an array of LSH data structures.
   StagInt num_threads = std::thread::hardware_concurrency();
   ctpl::thread_pool pool((int) num_threads);
-  StagInt max_J = ckns_J(n, 0);
   std::vector<std::future<StagInt>> futures;
   std::mutex hash_units_mutex;
   for (StagInt iter = 0; iter < k1; iter++) {
@@ -311,18 +315,21 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
          log_nmu_iter++) {
       StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
       StagInt J = ckns_J(n, log_nmu);
-      for (StagInt j_offset = max_J - 1; j_offset >= 0; j_offset--) {
-        StagInt j = J - j_offset;
-        if (j >= 1) {
-          futures.push_back(
-              pool.push(
-                  [&, log_nmu_iter, log_nmu, iter, j](int id) {
-                    ignore_warning(id);
-                    return add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies.at(iter), hash_units_mutex);
-                  }
-              )
-          );
-        }
+
+      // Make sure everything works like we expect.
+      if (log_nmu_iter != num_log_nmu_iterations - 1) assert(log_nmu < max_log_nmu);
+      if (log_nmu_iter == num_log_nmu_iterations - 1) assert(log_nmu >= max_log_nmu);
+      if (log_nmu >= max_log_nmu) assert(J <= 1 && J >= -1);
+
+      for (StagInt j = MIN(1, J); j <= J; j++) {
+        futures.push_back(
+            pool.push(
+                [&, log_nmu_iter, log_nmu, iter, j](int id) {
+                  ignore_warning(id);
+                  return add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies.at(iter), hash_units_mutex);
+                }
+            )
+        );
       }
     }
   }
@@ -390,7 +397,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
                                              StagInt j,
                                              DenseMat* data,
                                              std::mutex& hash_units_mutex) {
-  assert(log_nmu < max_log_nmu);
+  assert(log_nmu <= max_log_nmu + 1);
   assert(log_nmu >= min_log_nmu);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
       a, data, log_nmu, j, k2_constant, sampling_offset, min_id, max_id);

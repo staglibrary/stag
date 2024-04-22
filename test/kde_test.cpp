@@ -215,3 +215,60 @@ TEST(KDETest, CKNSOversample) {
   EXPECT_LE(avg_error, 0.5);
 }
 
+TEST(KDETest, CKNSSmallMu) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator
+  StagReal a = 10;
+  StagInt K1 = 40;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 0.00001;
+  StagInt offset = 0;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
+}
+
+TEST(KDETest, CKNSRandomSampling) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator, set the parameters so that the estimator
+  // behaves like the random sampling algorithm.
+  StagReal a = 10;
+  StagInt K1 = 1;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 1; // This makes the CKNS algorithm behave as random sampling.
+  StagInt offset = -8; // offset of -8 samples approximately 256 points.
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
+}
