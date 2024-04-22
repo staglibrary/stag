@@ -112,6 +112,7 @@ StagInt ckns_J(StagInt n, StagInt log_nmu) {
  * @return
  */
 StagReal ckns_p_sampling(StagInt j, StagInt log_nmu, StagInt sampling_offset) {
+  assert(j + sampling_offset + log_nmu >= 1);
   return MIN(1, pow(2, (StagReal) -(j+sampling_offset)) * pow(2, (StagReal) -log_nmu));
 }
 
@@ -266,12 +267,15 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   //   log2(n * mu) ranges from 0 to floor(log2(n))
   //   i ranges from 1 to k1.
   //   j ranges from 1 to J.
-  min_log_nmu = (StagInt) MAX(0, floor(log2((StagReal) n * min_mu)));
-  assert(min_log_nmu >= 0);
+  min_log_nmu = (StagInt) floor(log2((StagReal) n * min_mu));
   max_log_nmu = (StagInt) ceil(log2((StagReal) n));
   num_log_nmu_iterations = ceil((StagReal) (max_log_nmu - min_log_nmu) / 2);
   LOG_DEBUG("min_log_nmu: " << min_log_nmu << std::endl);
   LOG_DEBUG("num_log_nmu_iterations: " << num_log_nmu_iterations << std::endl);
+
+  // Make sure that we are not over-sampling.
+  min_log_nmu = MAX(min_log_nmu, -sampling_offset);
+  assert(min_log_nmu + sampling_offset >= 0);
 
   k1 = K1;
   k2_constant = K2_constant;
