@@ -156,8 +156,8 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 //------------------------------------------------------------------------------
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
-    StagReal K2_constant, StagInt prob_offset, StagInt min_idx, StagInt max_idx) {
-  StagInt n = max_idx - min_idx;
+    StagReal K2_constant, StagInt prob_offset) {
+  StagInt n = data->rows();
   StagInt d = data->cols();
   a = kern_param;
   log_nmu = lognmu;
@@ -284,13 +284,13 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
     hash_units[log_nmu_iter].resize(k1);
   }
 
-  // Create K1 permuted copies of the data
+  // Create K1 permuted copies of the data submatrix we are interested in.
   data_copies.reserve(K1);
   for (StagInt iter = 0; iter < k1; iter++) {
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(n);
     perm.setIdentity();
     std::shuffle(perm.indices().data(), perm.indices().data() + perm.indices().size(), std::mt19937(std::random_device()()));
-    DenseMat permutedMatrix = perm * *data;
+    DenseMat permutedMatrix = perm * data->block(min_idx, 0, n, data->cols());
     data_copies.push_back(permutedMatrix);
   }
 
@@ -388,7 +388,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
   assert(log_nmu < max_log_nmu);
   assert(log_nmu >= min_log_nmu);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
-      a, data, log_nmu, j, k2_constant, sampling_offset, min_id, max_id);
+      a, data, log_nmu, j, k2_constant, sampling_offset);
   hash_units_mutex.lock();
   hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
   hash_units_mutex.unlock();
@@ -607,6 +607,17 @@ stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param,
 
 StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
   return gaussian_kde_exact(a, all_data, q);
+}
+
+StagInt stag::ExactGaussianKDE::sample_neighbor(const stag::DataPoint &q, StagReal r) {
+  StagReal total_weight = this->query(q);
+
+  StagReal total = 0;
+  for (StagInt i = min_id; i <= max_id; i++) {
+    total += gaussian_kernel(a, q, all_data.at(i - min_id));
+    if (total / total_weight >= r) return i;
+  }
+  return max_id;
 }
 
 std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {

@@ -102,8 +102,7 @@ namespace stag {
   class CKNSGaussianKDEHashUnit {
   public:
     CKNSGaussianKDEHashUnit(StagReal a, DenseMat* data, StagInt log_nmu,
-                            StagInt j, StagReal K2_constant, StagInt prob_offset,
-                            StagInt min_idx, StagInt max_idx);
+                            StagInt j, StagReal K2_constant, StagInt prob_offset);
     StagReal query(const stag::DataPoint& q);
 
   private:
@@ -213,7 +212,7 @@ namespace stag {
      * @param K2_constant controls the collision probability of each of the E2LSH
      *                    hash tables used within the data structure. A higher value
      *                    will give more accurate estimates at the cost of higher memory
-     *                    and time complexity. It is usually set to \f$5 \log(n)\f$.
+     *                    and time complexity. It is usually set to \f$0.1 \log(n)\f$.
      * @param sampling_offset the CKNS algorithm samples the dataset with various
      *                        sampling probabilities. Setting a sampling offset of
      *                        \f$k\f$ will further subsample the data by a factor
@@ -351,6 +350,11 @@ namespace stag {
      * @return the kernel density for the given query point
      */
     StagReal query(const stag::DataPoint& q);
+
+    /**
+     * \cond
+     */
+     StagInt sample_neighbor(const stag::DataPoint& q, StagReal r);
 
   private:
     std::vector<stag::DataPoint> all_data;
