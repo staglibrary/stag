@@ -113,9 +113,11 @@ namespace stag {
     bool final_shell;
     stag::E2LSH LSH_buckets;
     StagInt j;
+    StagInt J;
     StagInt log_nmu;
     StagReal a;
     StagInt sampling_offset;
+    StagInt n;
 
     // Used only if the number of data points is below the cutoff.
     std::vector<stag::DataPoint> all_data;

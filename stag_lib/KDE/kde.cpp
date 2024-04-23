@@ -99,7 +99,7 @@ StagReal stag::gaussian_kernel(StagReal a, const stag::DataPoint& u,
  * @return
  */
 StagInt ckns_J(StagInt n, StagInt log_nmu) {
-  assert(log_nmu <= ceil(log2((StagReal) n)) + 1);
+  assert((StagReal) log_nmu <= ceil(log2((StagReal) n)));
   return ((StagInt) ceil(log2((StagReal) n))) - log_nmu;
 }
 
@@ -111,9 +111,11 @@ StagInt ckns_J(StagInt n, StagInt log_nmu) {
  * @param log_nmu the value of log2(n * mu)
  * @return
  */
-StagReal ckns_p_sampling(StagInt j, StagInt log_nmu, StagInt sampling_offset) {
-  assert(j + sampling_offset + log_nmu >= 1);
-  return MIN(1, pow(2, (StagReal) -(j+sampling_offset)) * pow(2, (StagReal) -log_nmu));
+StagReal ckns_p_sampling(StagInt j, StagInt log_nmu, StagInt n, StagInt sampling_offset) {
+  // j = 0 is the special random sampling hash unit. Sample with probability
+  // 2^-offset / n.
+  if (j == 0) return MIN((StagReal) 1, pow(2, -sampling_offset) / n);
+  else return MIN((StagReal) 1, pow(2, (StagReal) -(j+sampling_offset)) * pow(2, (StagReal) -log_nmu));
 }
 
 StagReal ckns_gaussian_rj_squared(StagInt j, StagReal a) {
@@ -159,7 +161,7 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
     StagReal K2_constant, StagInt prob_offset, StagInt min_idx, StagInt max_idx) {
-  StagInt n = max_idx - min_idx;
+  n = max_idx - min_idx;
   StagInt d = data->cols();
   a = kern_param;
   log_nmu = lognmu;
@@ -167,7 +169,7 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   sampling_offset = prob_offset;
 
   // Get the J parameter from the value of n and log(n * mu)
-  StagInt J = ckns_J(n, log_nmu);
+  J = ckns_J(n, log_nmu);
   assert(j <= J);
 
   // Create an array of DataPoint structures which will be used to point to the
@@ -175,15 +177,20 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   std::vector<stag::DataPoint> lsh_data;
 
   // We need to sample the data set with the correct sampling probability.
-  StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
+  StagReal p_sampling = ckns_p_sampling(j, log_nmu, n, sampling_offset);
 
   // Get the number of points to sample
   auto num_sampled_points = (StagInt) floor(p_sampling * n);
 
   // And the starting index
-  StagInt starting_idx = (StagInt) (1 - 2 * p_sampling) * n;
+  StagInt starting_idx = 0;
+  if (p_sampling <= (StagReal) 1/2) starting_idx = (StagInt) (1 - 2 * p_sampling) * n;
+  else starting_idx = 0;
+  assert(starting_idx + num_sampled_points <= data->rows());
+  assert(starting_idx >= 0);
 
   for (StagInt i = starting_idx; i < starting_idx + num_sampled_points; i++) {
+    assert(i <= data->rows());
     lsh_data.emplace_back(d, data->row(i).data());
     assert(lsh_data.back().coordinates >= data->data());
   }
@@ -191,7 +198,7 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
   // If the number of sampled points is below the cutoff, or this is the 'outer
   // ring' don't create an LSH table, just store the points and we'll search
   // through them at query time.
-  if (j == J) {
+  if (j == 0) {
     final_shell = true;
     below_cutoff = false;
     all_data = lsh_data;
@@ -216,21 +223,26 @@ stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
 
 StagReal stag::CKNSGaussianKDEHashUnit::query_neighbors(const stag::DataPoint& q,
                                                          const std::vector<stag::DataPoint>& neighbors) {
-  StagReal p_sampling = ckns_p_sampling(j, log_nmu, sampling_offset);
+  StagReal p_sampling = ckns_p_sampling(j, log_nmu, n, sampling_offset);
   StagReal rj_squared = ckns_gaussian_rj_squared(j, a);
   StagReal rj_minus_1_squared = 0;
   if (j > 1) {
     rj_minus_1_squared = ckns_gaussian_rj_squared(j-1, a);
+  } else if (j == 0) {
+    // If j = 0, then this is the 'outer' shell
+    rj_minus_1_squared = ckns_gaussian_rj_squared(J, a);
   }
 
-  // Seperate computation if this is the final shell.
+  // Separate computation if this is the final shell - no maximum distance.
   if (final_shell) {
     StagReal total = 0;
     for (const auto& neighbor : neighbors) {
-      // We return only points that are in L_j - that is, in the annulus between
-      // r_{j-1} and r_j.
+      // We use all the points in the final shell.
       StagReal d_sq = squared_distance(q, neighbor);
-      total += gaussian_kernel(a, d_sq) / p_sampling;
+      if (d_sq > rj_minus_1_squared) {
+        // Include this point in the estimate
+        total += gaussian_kernel(a, d_sq) / p_sampling;
+      }
     }
     return total;
   } else {
@@ -286,14 +298,9 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   //   log2(n * mu) ranges from 0 to floor(log2(n))
   //   i ranges from 1 to k1.
   //   j ranges from 1 to J.
+  assert(min_mu <= 1);
   min_log_nmu = (StagInt) floor(log2((StagReal) n * min_mu));
   max_log_nmu = (StagInt) ceil(log2((StagReal) n));
-  min_log_nmu = MIN(min_log_nmu, max_log_nmu);
-
-  // Make sure that we are not over-sampling.
-  sampling_offset = MAX(sampling_offset, -max_log_nmu);
-  min_log_nmu = MAX(min_log_nmu, -sampling_offset);
-  assert(min_log_nmu + sampling_offset >= 0);
   assert(min_log_nmu <= max_log_nmu);
 
   num_log_nmu_iterations = (StagInt) ceil((StagReal) (max_log_nmu - min_log_nmu) / 2) + 1;
@@ -331,15 +338,16 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
     for (StagInt log_nmu_iter = 0;
          log_nmu_iter < num_log_nmu_iterations;
          log_nmu_iter++) {
-      StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
+      StagInt log_nmu = max_log_nmu - (log_nmu_iter * 2);
       StagInt J = ckns_J(n, log_nmu);
+      assert(J >= 0);
 
       // Make sure everything works like we expect.
-      if (log_nmu_iter != num_log_nmu_iterations - 1) assert(log_nmu < max_log_nmu);
-      if (log_nmu_iter == num_log_nmu_iterations - 1) assert(log_nmu >= max_log_nmu);
-      if (log_nmu >= max_log_nmu) assert(J <= 1 && J >= -1);
+      assert(log_nmu <= max_log_nmu);
+      assert(log_nmu >= min_log_nmu - 1);
 
-      for (StagInt j = MIN(1, J); j <= J; j++) {
+      // j = 0 is the special random sampling hash unit.
+      for (StagInt j = 0; j <= J; j++) {
         futures.push_back(
             pool.push(
                 [&, log_nmu_iter, log_nmu, iter, j](int id) {
@@ -415,8 +423,8 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
                                              StagInt j,
                                              DenseMat* data,
                                              std::mutex& hash_units_mutex) {
-  assert(log_nmu <= max_log_nmu + 1);
-  assert(log_nmu >= min_log_nmu);
+  assert(log_nmu <= max_log_nmu);
+  assert(log_nmu >= min_log_nmu - 1);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
       a, data, log_nmu, j, k2_constant, sampling_offset, min_id, max_id);
   hash_units_mutex.lock();
@@ -506,10 +514,10 @@ std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
   }
   assert((StagInt) last_mu_estimates.size() == (chunk_end - chunk_start));
 
-  for (auto log_nmu_iter = num_log_nmu_iterations - 1;
-       log_nmu_iter >= 0;
-       log_nmu_iter--) {
-    StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
+  for (StagInt log_nmu_iter = 0;
+       log_nmu_iter < num_log_nmu_iterations;
+       log_nmu_iter++) {
+    StagInt log_nmu = max_log_nmu - (log_nmu_iter * 2);
     StagInt J = ckns_J(n, log_nmu);
 
     // Get an estimate from k1 copies of the CKNS data structure.
@@ -523,10 +531,11 @@ std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
 
     for (auto iter = 0; iter < k1; iter++) {
       // Iterate through the shells for each value of j
-      for (auto j = 1; j <= J; j++) {
+      // Recall that j = 0 is the special random sampling unit.
+      for (auto j = 0; j <= J; j++) {
         for (auto i : unsolved_queries) {
           assert(i < chunk_end);
-          iter_estimates[i][iter] += hash_units[log_nmu_iter][iter][j - 1].query(stag::DataPoint(*query, i));
+          iter_estimates[i][iter] += hash_units[log_nmu_iter][iter][j].query(stag::DataPoint(*query, i));
         }
       }
     }
@@ -575,7 +584,7 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
   for (auto log_nmu_iter = num_log_nmu_iterations - 1;
        log_nmu_iter >= 0;
        log_nmu_iter--) {
-    StagInt log_nmu = min_log_nmu + (log_nmu_iter * 2);
+    StagInt log_nmu = max_log_nmu - (log_nmu_iter * 2);
     StagInt J = ckns_J(n, log_nmu);
     StagReal this_mu_estimate;
 
@@ -584,8 +593,9 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
     std::vector<StagReal> iter_estimates(k1, 0);
     for (auto iter = 0; iter < k1; iter++) {
       // Iterate through the shells for each value of j
-      for (auto j = 1; j <= J; j++) {
-        iter_estimates[iter] += hash_units[log_nmu_iter][iter][j - 1].query(q);
+      // Recall that j = 0 is the special random sampling hash unit.
+      for (auto j = 0; j <= J; j++) {
+        iter_estimates[iter] += hash_units[log_nmu_iter][iter][j].query(q);
       }
     }
 

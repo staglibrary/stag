@@ -199,7 +199,6 @@ TEST(KDETest, CKNSOversample) {
   StagInt offset = -2;
   stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
 
-
   // Create an exact Gaussian KDE
   stag::ExactGaussianKDE exact_kde(&data, a);
 
@@ -254,8 +253,37 @@ TEST(KDETest, CKNSRandomSampling) {
   StagReal a = 10;
   StagInt K1 = 1;
   StagReal K2_constant = 50;
+  StagReal min_mu = 1;
+  StagInt offset = -10; // offset of -10 samples approximately 1024 points.
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
+}
+
+TEST(KDETest, CKNSRandomSamplingMNIST) {
+  // Load the mnist dataset
+  std::string filename = "test/data/mnist.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator, set the parameters so that the estimator
+  // behaves like the random sampling algorithm.
+  StagReal a = 0.000001;
+  StagInt K1 = 1;
+  StagReal K2_constant = 50;
   StagReal min_mu = 1; // This makes the CKNS algorithm behave as random sampling.
-  StagInt offset = -8; // offset of -8 samples approximately 256 points.
+  StagInt offset = -10; // offset of -10 samples approximately 1024 points.
   stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
 
   // Create an exact Gaussian KDE
