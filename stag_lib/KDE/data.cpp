@@ -209,7 +209,7 @@ public:
        initialise_exact(data, a);
      }
 
-     if (min_idx != max_idx) {
+     if (!below_cutoff) {
        StagInt midpoint = (min_idx + max_idx) / 2;
        assert(midpoint >= min_idx);
        assert(midpoint < max_idx);
@@ -220,11 +220,12 @@ public:
 
   void initialise_estimator(DenseMat* data, StagReal a) {
     StagInt n = data->rows();
-    StagInt K1 = ceil(log((StagReal) n) / 0.25);
-    StagReal K2_constant = 5 * log((StagReal) n);
+    StagInt K1 = ceil(0.5 * log((StagReal) n));
+    StagReal K2_constant = 1;
     StagReal min_mu = 1.0 / (StagReal) n;
+    StagInt offset = 1;
     this_estimator = stag::CKNSGaussianKDE(data, a, min_mu, K1, K2_constant,
-                                           0, min_idx, max_idx + 1);
+                                           offset, min_idx, max_idx + 1);
   }
 
   void initialise_exact(DenseMat* data, StagReal a) {
@@ -262,8 +263,9 @@ public:
   }
 
   StagInt sample_neighbor(const stag::DataPoint& q, const StagInt q_id) {
-    if (min_idx == max_idx) {
-      return min_idx;
+    if (below_cutoff) {
+      StagReal r = sampling_dist(*stag::get_global_rng());
+      return exact_kde.sample_neighbor(q, r);
     } else {
       StagReal left_est = left_child->estimate_weight(q, q_id);
       StagReal right_est = right_child->estimate_weight(q, q_id);

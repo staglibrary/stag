@@ -19,11 +19,10 @@
 
 // The CKNS algorithm has a couple of 'magic constants' which control the
 // probability guarantee and variance bounds.
-#define K2_DEFAULT_CONSTANT 5       // K_2 = C log(n) p^{-k_j}
+#define K2_DEFAULT_CONSTANT 0.1     // K_2 = C log(n) p^{-k_j}
 #define K1_DEFAULT_CONSTANT 1       // K_1 = C log(n) / eps^2
-#define EPS_DEFAULT 0.5             // K_1 = C log(n) / eps^2
-
-#define CKNS_DEFAULT_OFFSET 0
+#define EPS_DEFAULT 1               // K_1 = C log(n) / eps^2
+#define CKNS_DEFAULT_OFFSET 1
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
@@ -319,13 +318,13 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
     hash_units[log_nmu_iter].resize(k1);
   }
 
-  // Create K1 permuted copies of the data
+  // Create K1 permuted copies of the data submatrix we are interested in.
   data_copies.reserve(K1);
   for (StagInt iter = 0; iter < k1; iter++) {
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(n);
     perm.setIdentity();
     std::shuffle(perm.indices().data(), perm.indices().data() + perm.indices().size(), std::mt19937(std::random_device()()));
-    DenseMat permutedMatrix = perm * *data;
+    DenseMat permutedMatrix = perm * data->block(min_idx, 0, n, data->cols());
     data_copies.push_back(permutedMatrix);
   }
 
@@ -426,7 +425,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
   assert(log_nmu <= max_log_nmu);
   assert(log_nmu >= min_log_nmu - 1);
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
-      a, data, log_nmu, j, k2_constant, sampling_offset, min_id, max_id);
+      a, data, log_nmu, j, k2_constant, sampling_offset);
   hash_units_mutex.lock();
   hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
   hash_units_mutex.unlock();
@@ -647,6 +646,17 @@ stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param,
 
 StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
   return gaussian_kde_exact(a, all_data, q);
+}
+
+StagInt stag::ExactGaussianKDE::sample_neighbor(const stag::DataPoint &q, StagReal r) {
+  StagReal total_weight = this->query(q);
+
+  StagReal total = 0;
+  for (StagInt i = min_id; i <= max_id; i++) {
+    total += gaussian_kernel(a, q, all_data.at(i - min_id));
+    if (total / total_weight >= r) return i;
+  }
+  return max_id;
 }
 
 std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {

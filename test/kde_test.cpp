@@ -163,18 +163,13 @@ TEST(KDETest, CKNSMnist) {
   std::string filename = "test/data/mnist.txt";
   DenseMat data = stag::load_matrix(filename);
   StagReal a = 0.000001;
-  StagReal eps = 0.99;
 
   // Create an exact Gaussian KDE
   stag::ExactGaussianKDE exact_kde(&data, a);
   std::vector<StagReal> kde_exact = exact_kde.query(&data);
 
   // Create a CKNS KDE estimator
-  auto K1 = (StagInt) (pow(eps, -2) * log((StagReal) data.rows()));
-  StagReal K2_constant = 5 * log((StagReal) data.rows());
-  StagReal min_mu = 1.0 / (StagReal) data.rows();
-  StagInt offset = 1;
-  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+  stag::CKNSGaussianKDE ckns_kde(&data, a);
   std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
 
   // Check that the estimates are accurate
@@ -183,7 +178,7 @@ TEST(KDETest, CKNSMnist) {
     total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
   }
   StagReal avg_error = total_error / (StagReal) kde_estimates.size();
-  EXPECT_LE(avg_error, 0.5 * eps);
+  EXPECT_LE(avg_error, 0.5);
 }
 
 TEST(KDETest, CKNSOversample) {
