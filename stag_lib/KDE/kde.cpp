@@ -159,8 +159,8 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
 //------------------------------------------------------------------------------
 stag::CKNSGaussianKDEHashUnit::CKNSGaussianKDEHashUnit(
     StagReal kern_param, DenseMat* data, StagInt lognmu, StagInt j_small,
-    StagReal K2_constant, StagInt prob_offset, StagInt min_idx, StagInt max_idx) {
-  n = max_idx - min_idx;
+    StagReal K2_constant, StagInt prob_offset) {
+  n = data->rows();
   StagInt d = data->cols();
   a = kern_param;
   log_nmu = lognmu;
