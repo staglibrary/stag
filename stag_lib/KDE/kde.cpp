@@ -22,7 +22,7 @@
 #define K2_DEFAULT_CONSTANT 0.1     // K_2 = C log(n) p^{-k_j}
 #define K1_DEFAULT_CONSTANT 1       // K_1 = C log(n) / eps^2
 #define EPS_DEFAULT 1               // K_1 = C log(n) / eps^2
-#define CKNS_DEFAULT_OFFSET 1
+#define CKNS_DEFAULT_OFFSET 0
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
