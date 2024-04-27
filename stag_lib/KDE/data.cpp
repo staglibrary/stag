@@ -220,10 +220,10 @@ public:
 
   void initialise_estimator(DenseMat* data, StagReal a) {
     StagInt n = data->rows();
-    StagInt K1 = ceil(0.5 * log((StagReal) n));
-    StagReal K2_constant = 1;
+    StagInt K1 = ceil(1 * log((StagReal) n));
+    StagReal K2_constant = 0.1;
     StagReal min_mu = 1.0 / (StagReal) n;
-    StagInt offset = 1;
+    StagInt offset = 0;
     this_estimator = stag::CKNSGaussianKDE(data, a, min_mu, K1, K2_constant,
                                            offset, min_idx, max_idx + 1);
   }

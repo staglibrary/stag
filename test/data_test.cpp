@@ -112,7 +112,7 @@ TEST(DataTest, MatrixToDataPoints) {
 
 TEST(DataTest, ASG) {
   // Load the two MNIST dataset
-  std::string filename = "test/data/moons.txt";
+  std::string filename = "test/data/mnist.txt";
   DenseMat data = stag::load_matrix(filename);
   StagReal a = 0.000001;
 
