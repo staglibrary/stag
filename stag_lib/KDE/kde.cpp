@@ -26,7 +26,7 @@
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
-#define HASH_UNIT_CUTOFF 1000
+#define HASH_UNIT_CUTOFF 3000
 
 #ifndef NDEBUG
 #  define LOG_DEBUG(x) do { std::cerr << x; } while (0)

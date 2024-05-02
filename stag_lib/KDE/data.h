@@ -100,7 +100,6 @@ namespace stag{
    */
   std::vector<stag::DataPoint> matrix_to_datapoints(DenseMat* data);
 
-
   /**
    * TODO: Write description.
    * @param data

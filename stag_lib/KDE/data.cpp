@@ -15,7 +15,7 @@
 #include "KDE/kde.h"
 #include "multithreading/ctpl_stl.h"
 
-#define KDE_TREE_CUTOFF 1000
+#define KDE_TREE_CUTOFF 5000
 
 /*
  * Used to disable compiler warning for unused variable.
@@ -194,16 +194,22 @@ DenseMat stag::load_matrix(std::string& filename) {
 //------------------------------------------------------------------------------
 class KDETreeEntry {
 public:
-  KDETreeEntry(DenseMat* data, StagReal a, StagInt min_id, StagInt max_id)
+  KDETreeEntry(DenseMat* data, StagReal a, StagInt min_id, StagInt max_id, StagInt dep, StagInt dep_cutoff)
     : sampling_dist(0.0, 1.0)
   {
      min_idx = min_id;
      max_idx = max_id;
+     n_node = max_idx - min_idx;
+     depth = dep;
+     depth_cutoff = dep_cutoff;
     LOG_DEBUG("Initialising from " << min_idx << " to " << max_idx << std::endl);
 
      if (max_idx - min_idx >= KDE_TREE_CUTOFF) {
        below_cutoff = false;
-       initialise_estimator(data, a);
+
+       // We only initialise an estimator at this node if we are below the depth
+       // depth cutoff. Above the depth cutoff and we just use the children to estimate.
+       if (depth > depth_cutoff) initialise_estimator(data, a);
      } else {
        below_cutoff = true;
        initialise_exact(data, a);
@@ -213,16 +219,15 @@ public:
        StagInt midpoint = (min_idx + max_idx) / 2;
        assert(midpoint >= min_idx);
        assert(midpoint < max_idx);
-       left_child = new KDETreeEntry(data, a, min_idx, midpoint);
-       right_child = new KDETreeEntry(data, a, midpoint + 1, max_idx);
+       left_child = new KDETreeEntry(data, a, min_idx, midpoint, depth + 1, depth_cutoff);
+       right_child = new KDETreeEntry(data, a, midpoint + 1, max_idx, depth + 1, depth_cutoff);
      }
   }
 
   void initialise_estimator(DenseMat* data, StagReal a) {
-    StagInt n = data->rows();
-    StagInt K1 = ceil(1 * log((StagReal) n));
+    StagInt K1 = ceil(1 * log((StagReal) n_node));
     StagReal K2_constant = 0.1;
-    StagReal min_mu = 1.0 / (StagReal) n;
+    StagReal min_mu = 1.0 / (StagReal) n_node;
     StagInt offset = 0;
     this_estimator = stag::CKNSGaussianKDE(data, a, min_mu, K1, K2_constant,
                                            offset, min_idx, max_idx + 1);
@@ -238,7 +243,14 @@ public:
     if (!cached_weights.contains(q_id)) {
       cache_mutex.unlock();
       if (!below_cutoff) {
-        weight = this_estimator.query(q);
+        if (depth > depth_cutoff) {
+          // If we are below the cutoff depth, query the estimator.
+          weight = this_estimator.query(q);
+        } else {
+          // If we are above the cutoff depth, get the estimate from the
+          // children.
+          weight = left_child->estimate_weight(q, q_id) + right_child->estimate_weight(q, q_id);
+        }
       } else {
         weight = exact_kde.query(q);
       }
@@ -255,11 +267,37 @@ public:
   }
 
   std::vector<StagReal> estimate_weights(DenseMat* q) {
+    std::cout << "Querying weights at level " << depth << std::endl;
+    std::vector<StagReal> weights;
     if (!below_cutoff) {
-      return this_estimator.query(q);
+      if (depth > depth_cutoff) {
+        weights = this_estimator.query(q);
+
+        for (auto & weight : weights) {
+          weight = (StagReal) n_node * weight;
+        }
+      } else {
+        std::vector<StagReal> left_weights = left_child->estimate_weights(q);
+        std::vector<StagReal> right_weights = right_child->estimate_weights(q);
+        assert(left_weights.size() == right_weights.size());
+        for (StagInt i = 0; i < (StagInt) left_weights.size(); i++) {
+          weights.push_back(left_weights.at(i) + right_weights.at(i));
+        }
+      }
     } else {
-      return exact_kde.query(q);
+      weights = exact_kde.query(q);
+
+      for (auto & weight : weights) {
+        weight = (StagReal) n_node * weight;
+      }
     }
+
+    for (auto q_id = 0; q_id < (StagInt) weights.size(); q_id++) {
+      cached_weights[q_id] = weights.at(q_id);
+    }
+
+    std::cout << "Returning weights at level " << depth << std::endl;
+    return weights;
   }
 
   StagInt sample_neighbor(const stag::DataPoint& q, const StagInt q_id) {
@@ -285,11 +323,14 @@ private:
   stag::ExactGaussianKDE exact_kde;
   StagInt min_idx;
   StagInt max_idx;
+  StagInt n_node;
   KDETreeEntry* left_child;
   KDETreeEntry* right_child;
   std::uniform_real_distribution<double> sampling_dist;
   std::unordered_map<StagInt, StagReal> cached_weights;
   std::mutex cache_mutex;
+  StagInt depth;
+  StagInt depth_cutoff;
 };
 
 void sample_asg_edges(DenseMat* data,
@@ -299,6 +340,9 @@ void sample_asg_edges(DenseMat* data,
                       std::vector<EdgeTriplet>& edges,
                       StagInt edges_per_node) {
   for (auto i = chunk_start; i < chunk_end; i++) {
+    if ((i - chunk_start) % 100 == 0) {
+      std::cout << i << " for " << chunk_start << " to " << chunk_end << std::endl;
+    }
     stag::DataPoint q(*data, i);
 
     for (auto j = 0; j < edges_per_node; j++) {
@@ -311,16 +355,18 @@ void sample_asg_edges(DenseMat* data,
 }
 
 stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
-  // Begin by creating the tree of kernel density estimators.
-  // Creating each node is parallelized by the KDE code.
-  KDETreeEntry tree_root(data, a, 0, data->rows() - 1);
-
   // Work out how many total edges we will sample
   auto edges_per_node = (StagInt) (3 * log((StagReal) data->rows()));
   StagInt num_edges = data->rows() * edges_per_node;
 
+  // Begin by creating the tree of kernel density estimators.
+  // Creating each node is parallelized by the KDE code.
+  KDETreeEntry tree_root(data, a, 0, data->rows() - 1, 0, (StagInt) log((StagReal) edges_per_node));
+  std::cout << "Finished initialising" << std::endl;
+
   // First, compute the degrees of all nodes
   std::vector<StagReal> degrees = tree_root.estimate_weights(data);
+  std::cout << "Computed degrees" << std::endl;
 
   StagInt num_threads = std::thread::hardware_concurrency();
   std::vector<EdgeTriplet> graph_edges(2 * num_edges);
