@@ -331,7 +331,7 @@ namespace stag {
      * Additionally, provide a threshold value, beneath which the Gaussian
      * kernel is taken to be 0.
      */
-    ExactGaussianKDE(DenseMat* data, StagReal a, StagInt min_idx, StagInt max_idx);
+    ExactGaussianKDE(DenseMat* data, StagReal a, StagInt min_idx, StagInt max_idx, StagReal thresh);
     /**
      * \endcond
      */
@@ -375,6 +375,7 @@ namespace stag {
     StagReal a;
     StagInt min_id;
     StagInt max_id;
+    StagReal distance_threshold;
   };
 }
 
