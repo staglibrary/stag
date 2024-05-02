@@ -245,14 +245,14 @@ public:
       if (!below_cutoff) {
         if (depth > depth_cutoff) {
           // If we are below the cutoff depth, query the estimator.
-          weight = this_estimator.query(q);
+          weight = (StagReal) n_node * this_estimator.query(q);
         } else {
           // If we are above the cutoff depth, get the estimate from the
           // children.
           weight = left_child->estimate_weight(q, q_id) + right_child->estimate_weight(q, q_id);
         }
       } else {
-        weight = exact_kde.query(q);
+        weight = (StagReal) n_node * exact_kde.query(q);
       }
 
       cache_mutex.lock();

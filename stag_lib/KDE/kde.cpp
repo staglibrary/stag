@@ -49,8 +49,10 @@ template<class T> void ignore_warning(const T&){}
 StagReal squared_distance(const stag::DataPoint& u, const stag::DataPoint& v) {
   assert(u.dimension == v.dimension);
   StagReal result = 0;
+  StagReal diff;
   for (StagUInt i = 0; i < u.dimension; i++) {
-    result += SQR(u.coordinates[i] - v.coordinates[i]);
+    diff = u.coordinates[i] - v.coordinates[i];
+    result += diff * diff;
   }
   return result;
 }
@@ -69,8 +71,10 @@ StagReal squared_distance_at_most(const stag::DataPoint& u,
                                   StagReal max_dist) {
   assert(u.dimension == v.dimension);
   StagReal result = 0;
+  StagReal diff;
   for (StagUInt i = 0; i < u.dimension; i++) {
-    result += SQR(u.coordinates[i] - v.coordinates[i]);
+    diff = u.coordinates[i] - v.coordinates[i];
+    result += diff * diff;
     if (result > max_dist) return -1;
   }
   return result;
@@ -623,7 +627,7 @@ StagReal gaussian_kde_exact(StagReal a,
   for (const auto& i : data) {
     total += gaussian_kernel(a, query, i);
   }
-  return total / (double) data.size();
+  return total / (StagReal) data.size();
 }
 
 stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param) {
@@ -649,48 +653,38 @@ StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
 }
 
 std::vector<StagInt> stag::ExactGaussianKDE::sample_neighbors(const stag::DataPoint &q, StagReal degree, std::vector<StagReal> rs) {
-  // When calling this method, we assume that the distance threshold is set.
   std::vector<StagInt> samples;
 
-  std::deque<StagReal> targets_lt_half;
-  std::deque<StagReal> targets_mt_half;
+  std::deque<StagReal> targets;
   for (auto r : rs) {
-    if (r <= 0.5) targets_lt_half.push_back(degree * r);
-    else targets_mt_half.push_back(degree * r);
+    targets.push_back(degree * r);
   }
-  std::sort(targets_lt_half.begin(), targets_lt_half.end());
-  std::sort(targets_mt_half.begin(), targets_mt_half.end());
+  std::sort(targets.begin(), targets.end());
 
-  if (!targets_lt_half.empty()) {
-    StagReal total = 0;
-    for (StagInt i = min_id; i < max_id; i++) {
-      total += gaussian_kernel(a, q, all_data.at(i - min_id));
+  StagReal total = 0;
+  for (StagInt i = min_id; i < max_id; i++) {
+    total += gaussian_kernel(a, q, all_data.at(i - min_id));
 
-      if (total >= targets_lt_half.front()) {
-        samples.push_back(i);
-        targets_lt_half.pop_front();
-      }
+    // Get an iterator to the first element more than the total
+    auto it = std::lower_bound(targets.begin(), targets.end(), total);
 
-      if (targets_lt_half.empty()) break;
+    // Count the elements less than the total
+    StagInt count = std::distance(targets.begin(), it);
+
+    // Remove the satisfied targets
+    targets.erase(targets.begin(), it);
+
+    // Add the samples
+    for (auto j = 0; j < count; j++) {
+      samples.push_back(i);
     }
+
+    if (targets.empty()) break;
   }
 
-  if (!targets_mt_half.empty()){
-    StagReal total = degree;
-    for (StagInt i = max_id - 1; i >= min_id; i--) {
-      total -= gaussian_kernel(a, q, all_data.at(i - min_id));
-
-      if (total <= targets_mt_half.back()) {
-        samples.push_back(i);
-        targets_mt_half.pop_back();
-      }
-
-      if (targets_mt_half.empty()) break;
-    }
-  }
-
-  assert(targets_lt_half.empty());
-  assert(targets_mt_half.empty());
+  assert((StagInt) all_data.size() == max_id - min_id);
+  assert(targets.empty());
+  assert(samples.size() == rs.size());
 
   return samples;
 }
