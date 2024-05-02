@@ -234,7 +234,7 @@ public:
   }
 
   void initialise_exact(DenseMat* data, StagReal a) {
-    exact_kde = stag::ExactGaussianKDE(data, a, min_idx, max_idx + 1);
+    exact_kde = stag::ExactGaussianKDE(data, a, min_idx, max_idx + 1, 1.0 / (StagReal) n_node);
   }
 
   StagReal estimate_weight(const stag::DataPoint& q, const StagInt q_id) {
@@ -303,7 +303,8 @@ public:
   StagInt sample_neighbor(const stag::DataPoint& q, const StagInt q_id) {
     if (below_cutoff) {
       StagReal r = sampling_dist(*stag::get_global_rng());
-      return exact_kde.sample_neighbor(q, r);
+      StagReal deg = estimate_weight(q, q_id); // should be cached
+      return exact_kde.sample_neighbor(q, deg, r);
     } else {
       StagReal left_est = left_child->estimate_weight(q, q_id);
       StagReal right_est = right_child->estimate_weight(q, q_id);

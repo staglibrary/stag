@@ -325,8 +325,13 @@ namespace stag {
 
     /**
      * \cond
+     * Compute the exact Gaussian KDE for indexes between the min and max
+     * for the given data.
+     *
+     * Additionally, provide a threshold value, beneath which the Gaussian
+     * kernel is taken to be 0.
      */
-    ExactGaussianKDE(DenseMat* data, StagReal a, StagInt min_idx, StagInt max_idx);
+    ExactGaussianKDE(DenseMat* data, StagReal a, StagInt min_idx, StagInt max_idx, StagReal thresh);
     /**
      * \endcond
      */
@@ -359,7 +364,7 @@ namespace stag {
      * The sample neighbor method is used only by the approximate similarity
      * graph code - we do not expect end-users to use it.
      */
-     StagInt sample_neighbor(const stag::DataPoint& q, StagReal r);
+     StagInt sample_neighbor(const stag::DataPoint& q, StagReal degree, StagReal r);
      /**
       * \endcond
       */
@@ -369,6 +374,7 @@ namespace stag {
     StagReal a;
     StagInt min_id;
     StagInt max_id;
+    StagReal distance_threshold;
   };
 }
 
