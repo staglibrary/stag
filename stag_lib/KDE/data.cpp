@@ -300,21 +300,31 @@ public:
     return weights;
   }
 
-  StagInt sample_neighbor(const stag::DataPoint& q, const StagInt q_id) {
+  std::vector<StagInt> sample_neighbors(const stag::DataPoint& q, const StagInt q_id, StagInt num_to_sample) {
     if (below_cutoff) {
-      StagReal r = sampling_dist(*stag::get_global_rng());
+      std::vector<StagReal> rs;
+      for (auto i = 0; i < num_to_sample; i++) {
+        rs.push_back(sampling_dist(*stag::get_global_rng()));
+      }
       StagReal deg = estimate_weight(q, q_id); // should be cached
-      return exact_kde.sample_neighbor(q, deg, r);
+      return exact_kde.sample_neighbors(q, deg, rs);
     } else {
       StagReal left_est = left_child->estimate_weight(q, q_id);
       StagReal right_est = right_child->estimate_weight(q, q_id);
       StagReal my_est = left_est + right_est;
 
-      if (sampling_dist(*stag::get_global_rng()) <= left_est / my_est) {
-        return left_child->sample_neighbor(q, q_id);
-      } else {
-        return right_child->sample_neighbor(q, q_id);
-      }
+      std::vector<StagInt> left_samples;
+      std::vector<StagInt> right_samples;
+      StagInt num_left_samples = round(num_to_sample * left_est / my_est);
+      if (num_left_samples > 0) left_samples = left_child->sample_neighbors(q, q_id, num_left_samples);
+      if (num_left_samples < num_to_sample) right_samples = right_child->sample_neighbors(q, q_id, num_to_sample - num_left_samples);
+      assert((StagInt) left_samples.size() + (StagInt) right_samples.size() == num_to_sample);
+
+      std::vector<StagInt> samples;
+      samples.reserve(num_to_sample);
+      samples.insert(samples.end(), left_samples.begin(), left_samples.end());
+      samples.insert(samples.end(), right_samples.begin(), right_samples.end());
+      return samples;
     }
   }
 
@@ -346,8 +356,10 @@ void sample_asg_edges(DenseMat* data,
     }
     stag::DataPoint q(*data, i);
 
+    std::vector<StagInt> node_samples = tree_root.sample_neighbors(q, i, edges_per_node);
+
     for (auto j = 0; j < edges_per_node; j++) {
-      StagInt neighbor = tree_root.sample_neighbor(q, i);
+      StagInt neighbor = node_samples.at(j);
       StagInt this_base_index = 2 * ((i * j) + j);
       edges.at(this_base_index) = EdgeTriplet(i, neighbor, 1);
       edges.at(this_base_index + 1) = EdgeTriplet(neighbor, i, 1);

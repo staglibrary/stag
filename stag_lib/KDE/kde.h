@@ -364,7 +364,8 @@ namespace stag {
      * The sample neighbor method is used only by the approximate similarity
      * graph code - we do not expect end-users to use it.
      */
-     StagInt sample_neighbor(const stag::DataPoint& q, StagReal degree, StagReal r);
+     std::vector<StagInt> sample_neighbors(const stag::DataPoint& q, StagReal degree,
+                                           std::vector<StagReal> rs);
      /**
       * \endcond
       */
