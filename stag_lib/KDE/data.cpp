@@ -234,7 +234,7 @@ public:
   }
 
   void initialise_exact(DenseMat* data, StagReal a) {
-    exact_kde = stag::ExactGaussianKDE(data, a, min_idx, max_idx + 1, 1.0 / (StagReal) n_node);
+    exact_kde = stag::ExactGaussianKDE(data, a, min_idx, max_idx + 1);
   }
 
   StagReal estimate_weight(const stag::DataPoint& q, const StagInt q_id) {
@@ -316,6 +316,7 @@ public:
       std::vector<StagInt> left_samples;
       std::vector<StagInt> right_samples;
       StagInt num_left_samples = round(num_to_sample * left_est / my_est);
+      assert(num_left_samples >= 0);
       if (num_left_samples > 0) left_samples = left_child->sample_neighbors(q, q_id, num_left_samples);
       if (num_left_samples < num_to_sample) right_samples = right_child->sample_neighbors(q, q_id, num_to_sample - num_left_samples);
       assert((StagInt) left_samples.size() + (StagInt) right_samples.size() == num_to_sample);

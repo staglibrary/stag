@@ -85,14 +85,6 @@ StagReal stag::gaussian_kernel(StagReal a, const stag::DataPoint& u,
   return stag::gaussian_kernel(a, squared_distance(u, v));
 }
 
-StagReal gaussian_kernel_max_distance(StagReal a, const stag::DataPoint& u,
-                                      const stag::DataPoint& v,
-                                      StagReal max_distance) {
-  StagReal dist = squared_distance_at_most(u, v, max_distance);
-  if (dist > 0) return stag::gaussian_kernel(a, dist);
-  else return 0;
-}
-
 //------------------------------------------------------------------------------
 // Beginning of CKNS Implementation
 //------------------------------------------------------------------------------
@@ -634,33 +626,18 @@ StagReal gaussian_kde_exact(StagReal a,
   return total / (double) data.size();
 }
 
-StagReal gaussian_kde_exact_max_dist(StagReal a,
-                                     const std::vector<stag::DataPoint>& data,
-                                     const stag::DataPoint& query,
-                                     StagReal distance_threshold) {
-  StagReal total = 0;
-  for (const auto& i : data) {
-    total += gaussian_kernel_max_distance(a, query, i, distance_threshold);
-  }
-  return total / (double) data.size();
-}
-
 stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param) {
   min_id = 0;
   max_id = data->rows();
   all_data = stag::matrix_to_datapoints(data);
   a = param;
-  distance_threshold = -1;
 }
 
 stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param,
-                                         StagInt min_idx, StagInt max_idx,
-                                         StagReal thresh) {
+                                         StagInt min_idx, StagInt max_idx) {
   min_id = min_idx;
   max_id = max_idx;
   a = param;
-
-  distance_threshold = -log(thresh) / a;
 
   for (auto i = min_id; i < max_id; i++) {
     all_data.emplace_back(data->cols(), data->row(i).data());
@@ -668,55 +645,52 @@ stag::ExactGaussianKDE::ExactGaussianKDE(DenseMat *data, StagReal param,
 }
 
 StagReal stag::ExactGaussianKDE::query(const stag::DataPoint& q) {
-  if (distance_threshold > 0) return gaussian_kde_exact_max_dist(a, all_data, q, distance_threshold);
-  else return gaussian_kde_exact(a, all_data, q);
+  return gaussian_kde_exact(a, all_data, q);
 }
 
 std::vector<StagInt> stag::ExactGaussianKDE::sample_neighbors(const stag::DataPoint &q, StagReal degree, std::vector<StagReal> rs) {
   // When calling this method, we assume that the distance threshold is set.
-  assert(distance_threshold > 0);
   std::vector<StagInt> samples;
 
-  std::vector<StagReal> targets_lt_half;
-  std::vector<StagReal> targets_mt_half;
+  std::deque<StagReal> targets_lt_half;
+  std::deque<StagReal> targets_mt_half;
   for (auto r : rs) {
     if (r <= 0.5) targets_lt_half.push_back(degree * r);
     else targets_mt_half.push_back(degree * r);
   }
+  std::sort(targets_lt_half.begin(), targets_lt_half.end());
+  std::sort(targets_mt_half.begin(), targets_mt_half.end());
 
   if (!targets_lt_half.empty()) {
     StagReal total = 0;
-    StagReal last_total = 0;
     for (StagInt i = min_id; i < max_id; i++) {
-      last_total = total;
-      total += gaussian_kernel_max_distance(a, q, all_data.at(i - min_id), distance_threshold);
+      total += gaussian_kernel(a, q, all_data.at(i - min_id));
 
-      for (auto target : targets_lt_half) {
-        if (total >= target && target > last_total) {
-          samples.push_back(i);
-        }
+      if (total >= targets_lt_half.front()) {
+        samples.push_back(i);
+        targets_lt_half.pop_front();
       }
 
-      if (samples.size() == targets_lt_half.size()) break;
+      if (targets_lt_half.empty()) break;
     }
   }
 
   if (!targets_mt_half.empty()){
     StagReal total = degree;
-    StagReal last_total = degree;
     for (StagInt i = max_id - 1; i >= min_id; i--) {
-      last_total = total;
-      total -= gaussian_kernel_max_distance(a, q, all_data.at(i - min_id), distance_threshold);
+      total -= gaussian_kernel(a, q, all_data.at(i - min_id));
 
-      for (auto target : targets_mt_half) {
-        if (total <= target && target < last_total) {
-          samples.push_back(i);
-        }
+      if (total <= targets_mt_half.back()) {
+        samples.push_back(i);
+        targets_mt_half.pop_back();
       }
 
-      if (samples.size() == rs.size()) break;
+      if (targets_mt_half.empty()) break;
     }
   }
+
+  assert(targets_lt_half.empty());
+  assert(targets_mt_half.empty());
 
   return samples;
 }
@@ -760,16 +734,9 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
 
                 std::vector<StagReal> chunk_results(this_chunk_end - this_chunk_start);
 
-                if (distance_threshold > 0) {
-                  for (auto i = this_chunk_start; i < this_chunk_end; i++) {
-                    chunk_results[i - this_chunk_start] = gaussian_kde_exact_max_dist(
-                        a, all_data, query_points[i], distance_threshold);
-                  }
-                } else {
-                  for (auto i = this_chunk_start; i < this_chunk_end; i++) {
-                    chunk_results[i - this_chunk_start] = gaussian_kde_exact(
-                        a, all_data, query_points[i]);
-                  }
+                for (auto i = this_chunk_start; i < this_chunk_end; i++) {
+                  chunk_results[i - this_chunk_start] = gaussian_kde_exact(
+                      a, all_data, query_points[i]);
                 }
 
                 return chunk_results;
