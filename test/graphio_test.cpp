@@ -204,6 +204,10 @@ TEST(GraphioTest, AdjacencyListErrors) {
   std::string filename = "test/data/badgraph.adjacencylist";
   EXPECT_THROW({stag::Graph testGraph = stag::load_adjacencylist(filename);},
                std::domain_error);
+
+  std::string badfile = "test/data/badfile.adjacencylist";
+  EXPECT_THROW({stag::Graph testGraph = stag::load_adjacencylist(badfile);},
+               std::runtime_error);
 }
 
 TEST(GraphioTest, SaveAdjacencylist) {
