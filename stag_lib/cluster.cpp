@@ -235,7 +235,8 @@ std::tuple<SprsMat, SprsMat> stag::approximate_pagerank(stag::LocalGraph *graph,
   StagInt degree_index = 0;
   for (SprsMat::InnerIterator it(seed_vector, 0); it; ++it) {
     u = it.row();
-    if (r.coeff(u, 0) >= epsilon * degrees.at(degree_index)) {
+    if (r.coeff(u, 0) >= epsilon * degrees.at(degree_index)
+          && degrees.at(degree_index) != 0) {
       vertex_queue.push_back(u);
       queue_members.insert(u);
     }
