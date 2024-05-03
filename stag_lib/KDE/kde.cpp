@@ -355,7 +355,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
             pool.push(
                 [&, log_nmu_iter, log_nmu, iter, j](int id) {
                   ignore_warning(id);
-                  return add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies.at(iter), hash_units_mutex);
+                  return add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies[iter], hash_units_mutex);
                 }
             )
         );
@@ -491,7 +491,7 @@ std::vector<StagReal> stag::CKNSGaussianKDE::query(DenseMat* query_mat) {
       std::vector<StagReal> chunk_results = futures[chunk_id].get();
 
       for (auto res : chunk_results) {
-        results.at(next_index) = res;
+        results[next_index] = res;
         next_index++;
       }
     }
@@ -551,7 +551,7 @@ std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
       // Check whether the estimate is at least mu, in which case we
       // return it.
       if (log(this_mu_estimate) >= (StagReal) 1.3 * log_nmu) {
-        results.at(i - chunk_start) = this_mu_estimate / (StagReal) n;
+        results[i - chunk_start] = this_mu_estimate / (StagReal) n;
         newly_solved.push_back(i);
       }
 
@@ -574,7 +574,7 @@ std::vector<StagReal> stag::CKNSGaussianKDE::chunk_query(
   // Didn't find a good answer, return the last estimate, or 0.
   for (auto i : unsolved_queries) {
     assert(i < chunk_end);
-    results.at(i - chunk_start) = last_mu_estimates[i] / n;
+    results[i - chunk_start] = last_mu_estimates[i] / n;
   }
   return results;
 }
@@ -663,7 +663,7 @@ std::vector<StagInt> stag::ExactGaussianKDE::sample_neighbors(const stag::DataPo
 
   StagReal total = 0;
   for (StagInt i = min_id; i < max_id; i++) {
-    total += gaussian_kernel(a, q, all_data.at(i - min_id));
+    total += gaussian_kernel(a, q, all_data[i - min_id]);
 
     // Get an iterator to the first element more than the total
     auto it = std::lower_bound(targets.begin(), targets.end(), total);
@@ -700,7 +700,7 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
   // Split the query into num_threads chunks.
   if (query_mat->rows() < num_threads) {
     for (auto i = 0; i < query_mat->rows(); i++) {
-      results[i] = this->query(query_points.at(i));
+      results[i] = this->query(query_points[i]);
     }
   } else {
     // Start the thread pool
@@ -745,7 +745,7 @@ std::vector<StagReal> stag::ExactGaussianKDE::query(DenseMat* query_mat) {
       std::vector<StagReal> chunk_results = futures[chunk_id].get();
 
       for (auto res : chunk_results) {
-        results.at(next_index) = res;
+        results[next_index] = res;
         next_index++;
       }
     }

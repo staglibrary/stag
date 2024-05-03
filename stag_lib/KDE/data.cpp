@@ -15,7 +15,7 @@
 #include "KDE/kde.h"
 #include "multithreading/ctpl_stl.h"
 
-#define KDE_TREE_CUTOFF 5000
+#define KDE_TREE_CUTOFF 3000
 
 /*
  * Used to disable compiler warning for unused variable.
@@ -350,7 +350,9 @@ void sample_asg_edges(DenseMat* data,
                       StagInt chunk_start,
                       StagInt chunk_end,
                       std::vector<EdgeTriplet>& edges,
-                      StagInt edges_per_node) {
+                      StagInt edges_per_node,
+                      std::vector<StagReal>& degrees) {
+  StagInt next_index = 2 * (chunk_start * edges_per_node);
   for (auto i = chunk_start; i < chunk_end; i++) {
     if ((i - chunk_start) % 100 == 0) {
       std::cout << i << " for " << chunk_start << " to " << chunk_end << std::endl;
@@ -359,11 +361,17 @@ void sample_asg_edges(DenseMat* data,
 
     std::vector<StagInt> node_samples = tree_root.sample_neighbors(q, i, edges_per_node);
 
+    assert(i <= (StagInt) degrees.size());
+    StagReal added_weight = degrees[i] / 5;
+
     for (auto j = 0; j < edges_per_node; j++) {
-      StagInt neighbor = node_samples.at(j);
-      StagInt this_base_index = 2 * ((i * j) + j);
-      edges.at(this_base_index) = EdgeTriplet(i, neighbor, 1);
-      edges.at(this_base_index + 1) = EdgeTriplet(neighbor, i, 1);
+      assert(j < (StagInt) node_samples.size());
+      StagInt neighbor = node_samples[j];
+      assert(next_index < (StagInt) edges.size());
+      edges[next_index] = EdgeTriplet(i, neighbor, added_weight);
+      next_index++;
+      edges[next_index] = EdgeTriplet(neighbor, i, added_weight);
+      next_index++;
     }
   }
 }
@@ -385,7 +393,7 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
   StagInt num_threads = std::thread::hardware_concurrency();
   std::vector<EdgeTriplet> graph_edges(2 * num_edges);
   if (data->rows() <= num_threads * 2) {
-    sample_asg_edges(data, tree_root, 0, data->rows(), graph_edges, edges_per_node);
+    sample_asg_edges(data, tree_root, 0, data->rows(), graph_edges, edges_per_node, degrees);
   } else {
     // Start the thread pool
     ctpl::thread_pool pool((int) num_threads);
@@ -407,7 +415,7 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
           [&, this_chunk_start, this_chunk_end, edges_per_node] (int id) {
             ignore_warning(id);
             sample_asg_edges(data, tree_root, this_chunk_start,
-                             this_chunk_end, graph_edges, edges_per_node);
+                             this_chunk_end, graph_edges, edges_per_node, degrees);
           }
         )
       );
@@ -425,3 +433,74 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
   return stag::Graph(adj_mat);
 }
 
+stag::Graph stag::similarity_graph(DenseMat* data, StagReal a) {
+  StagInt n = data->rows();
+  std::vector<EdgeTriplet> graph_edges;
+
+  std::vector<stag::DataPoint> datapoints = stag::matrix_to_datapoints(data);
+
+  StagInt num_threads = std::thread::hardware_concurrency();
+  if (n <= num_threads * 2) {
+    for (StagInt i = 0; i < n; i++) {
+      for (StagInt j = i; j < n; j++) {
+        StagReal weight = stag::gaussian_kernel(a, datapoints.at(i), datapoints.at(j));
+        EdgeTriplet e1(i, j, weight);
+        graph_edges.push_back(e1);
+        if (i != j) {
+          EdgeTriplet e2(j, i, weight);
+          graph_edges.push_back(e2);
+        }
+      }
+    }
+  } else {
+    // Start the thread pool
+    ctpl::thread_pool pool((int) num_threads);
+    std::vector<std::future<std::vector<EdgeTriplet>>> futures;
+
+    StagInt chunk_size = floor((StagReal) n / (StagReal) num_threads);
+
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      StagInt this_chunk_start = chunk_id * chunk_size;
+      StagInt this_chunk_end = this_chunk_start + chunk_size;
+      if (chunk_id == num_threads - 1) this_chunk_end = n;
+
+      assert(this_chunk_start <= n);
+      assert(this_chunk_end <= n);
+      assert(this_chunk_end > this_chunk_start);
+
+      futures.push_back(
+          pool.push(
+              [&, this_chunk_start, this_chunk_end] (int id) {
+                ignore_warning(id);
+                std::vector<EdgeTriplet> this_thread_edges;
+                for (StagInt i = this_chunk_start; i < this_chunk_end; i++) {
+                  for (StagInt j = i; j < n; j++) {
+                    StagReal weight = stag::gaussian_kernel(a, datapoints.at(i), datapoints.at(j));
+                    EdgeTriplet e1(i, j, weight);
+                    this_thread_edges.push_back(e1);
+                    if (i != j) {
+                      EdgeTriplet e2(j, i, weight);
+                      this_thread_edges.push_back(e2);
+                    }
+                  }
+                }
+                return this_thread_edges;
+              }
+          )
+      );
+    }
+
+    // Join the futures
+    for (auto chunk_id = 0; chunk_id < num_threads; chunk_id++) {
+      std::vector<EdgeTriplet> this_thread_edges = futures[chunk_id].get();
+      graph_edges.insert(graph_edges.end(), this_thread_edges.begin(), this_thread_edges.end());
+    }
+
+    assert((StagInt) graph_edges.size() == n * n);
+  }
+
+  // Return a graph
+  SprsMat adj_mat(n, n);
+  adj_mat.setFromTriplets(graph_edges.begin(), graph_edges.end());
+  return stag::Graph(adj_mat);
+}

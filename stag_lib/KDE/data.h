@@ -107,6 +107,14 @@ namespace stag{
    * @return
    */
   Graph approximate_similarity_graph(DenseMat* data, StagReal a);
+
+  /**
+   * TODO: write description.
+   * @param data
+   * @param a
+   * @return
+   */
+  Graph similarity_graph(DenseMat* data, StagReal a);
 }
 
 #endif //STAG_LIBRARY_DATA_H
