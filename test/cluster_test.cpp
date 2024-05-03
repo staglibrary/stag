@@ -168,7 +168,7 @@ TEST(ClusterTest, APR0degree) {
   std::tuple<SprsMat, SprsMat> apr = stag::approximate_pagerank(&testGraph, seed, 0.001, 0.001);
 
   // We expect the returned pagerank vector to be the empty sparse matrix.
-  std::vector<StagInt> colStarts = {0, i0};
+  std::vector<StagInt> colStarts = {0, 0};
   std::vector<StagInt> rowIndices;
   std::vector<StagInt> valuesVec;
 
