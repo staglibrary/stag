@@ -14,8 +14,9 @@
 #include "Graph/random.h"
 #include "KDE/kde.h"
 #include "multithreading/ctpl_stl.h"
+#include "indicators/indicators.hpp"
 
-#define KDE_TREE_CUTOFF 3000
+#define KDE_TREE_CUTOFF 5000
 
 /*
  * Used to disable compiler warning for unused variable.
@@ -202,7 +203,6 @@ public:
      n_node = max_idx - min_idx;
      depth = dep;
      depth_cutoff = dep_cutoff;
-    LOG_DEBUG("Initialising from " << min_idx << " to " << max_idx << std::endl);
 
      if (max_idx - min_idx >= KDE_TREE_CUTOFF) {
        below_cutoff = false;
@@ -266,8 +266,8 @@ public:
     return weight;
   }
 
-  std::vector<StagReal> estimate_weights(DenseMat* q) {
-    std::cout << "Querying weights at level " << depth << std::endl;
+  std::vector<StagReal> estimate_weights(DenseMat* q, indicators::ProgressBar* prog_bar,
+                                         StagInt progress_start, StagInt progress_end) {
     std::vector<StagReal> weights;
     if (!below_cutoff) {
       if (depth > depth_cutoff) {
@@ -277,8 +277,9 @@ public:
           weight = (StagReal) n_node * weight;
         }
       } else {
-        std::vector<StagReal> left_weights = left_child->estimate_weights(q);
-        std::vector<StagReal> right_weights = right_child->estimate_weights(q);
+        auto progress_middle = (StagInt) (progress_start + progress_end) / 2;
+        std::vector<StagReal> left_weights = left_child->estimate_weights(q, prog_bar, progress_start, progress_middle);
+        std::vector<StagReal> right_weights = right_child->estimate_weights(q, prog_bar, progress_middle, progress_end);
         assert(left_weights.size() == right_weights.size());
         for (StagInt i = 0; i < (StagInt) left_weights.size(); i++) {
           weights.push_back(left_weights.at(i) + right_weights.at(i));
@@ -296,7 +297,8 @@ public:
       cached_weights[q_id] = weights.at(q_id);
     }
 
-    std::cout << "Returning weights at level " << depth << std::endl;
+    prog_bar->set_progress(progress_end);
+
     return weights;
   }
 
@@ -351,12 +353,16 @@ void sample_asg_edges(DenseMat* data,
                       StagInt chunk_end,
                       std::vector<EdgeTriplet>& edges,
                       StagInt edges_per_node,
-                      std::vector<StagReal>& degrees) {
+                      std::vector<StagReal>& degrees,
+                      indicators::ProgressBar* prog_bar) {
+  auto nodes_per_tick = (StagInt) ceil((StagReal) data->rows() / 70);
+  std::uniform_real_distribution<double> sampling_dist(0, 0.8);
+  auto progress_offset = (StagInt) (sampling_dist(*stag::get_global_rng()) * nodes_per_tick);
+  auto total_ticks = (StagInt) (chunk_end - chunk_start) / nodes_per_tick;
+  StagInt ticks_made = 0;
+
   StagInt next_index = 2 * (chunk_start * edges_per_node);
   for (auto i = chunk_start; i < chunk_end; i++) {
-    if ((i - chunk_start) % 100 == 0) {
-      std::cout << i << " for " << chunk_start << " to " << chunk_end << std::endl;
-    }
     stag::DataPoint q(*data, i);
 
     std::vector<StagInt> node_samples = tree_root.sample_neighbors(q, i, edges_per_node);
@@ -373,6 +379,14 @@ void sample_asg_edges(DenseMat* data,
       edges[next_index] = EdgeTriplet(neighbor, i, added_weight);
       next_index++;
     }
+
+    // Update the progress bar
+    if ((i - chunk_start + progress_offset) % nodes_per_tick == 0) {
+      if (ticks_made < total_ticks) {
+        prog_bar->tick();
+        ticks_made++;
+      }
+    }
   }
 }
 
@@ -381,19 +395,35 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
   auto edges_per_node = (StagInt) (3 * log((StagReal) data->rows()));
   StagInt num_edges = data->rows() * edges_per_node;
 
+  // Track the construction with a progress bar
+  indicators::ProgressBar prog_bar{indicators::option::BarWidth{50},
+                                   indicators::option::Start{"["},
+                                   indicators::option::Fill{"■"},
+                                   indicators::option::Lead{"■"},
+                                   indicators::option::Remainder{"-"},
+                                   indicators::option::End{"]"},
+                                   indicators::option::ForegroundColor{indicators::Color::cyan},
+                                   indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}},
+                                   indicators::option::PostfixText("Initialising KDE Estimators")};
+  prog_bar.set_progress(1);
+
   // Begin by creating the tree of kernel density estimators.
   // Creating each node is parallelized by the KDE code.
   KDETreeEntry tree_root(data, a, 0, data->rows() - 1, 0, (StagInt) log((StagReal) edges_per_node));
-  std::cout << "Finished initialising" << std::endl;
+
+  prog_bar.set_option(indicators::option::PostfixText("Estimating node degrees"));
+  prog_bar.set_progress(10);
 
   // First, compute the degrees of all nodes
-  std::vector<StagReal> degrees = tree_root.estimate_weights(data);
-  std::cout << "Computed degrees" << std::endl;
+  std::vector<StagReal> degrees = tree_root.estimate_weights(data, &prog_bar, 10, 30);
+
+  prog_bar.set_option(indicators::option::PostfixText("Sampling edges"));
+  prog_bar.set_progress(30);
 
   StagInt num_threads = std::thread::hardware_concurrency();
   std::vector<EdgeTriplet> graph_edges(2 * num_edges);
   if (data->rows() <= num_threads * 2) {
-    sample_asg_edges(data, tree_root, 0, data->rows(), graph_edges, edges_per_node, degrees);
+    sample_asg_edges(data, tree_root, 0, data->rows(), graph_edges, edges_per_node, degrees, &prog_bar);
   } else {
     // Start the thread pool
     ctpl::thread_pool pool((int) num_threads);
@@ -415,7 +445,7 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
           [&, this_chunk_start, this_chunk_end, edges_per_node] (int id) {
             ignore_warning(id);
             sample_asg_edges(data, tree_root, this_chunk_start,
-                             this_chunk_end, graph_edges, edges_per_node, degrees);
+                             this_chunk_end, graph_edges, edges_per_node, degrees, &prog_bar);
           }
         )
       );
@@ -426,6 +456,9 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
       futures[chunk_id].get();
     }
   }
+
+  prog_bar.set_option(indicators::option::PostfixText("Done!"));
+  prog_bar.set_progress(100);
 
   // Return a graph
   SprsMat adj_mat(data->rows(), data->rows());

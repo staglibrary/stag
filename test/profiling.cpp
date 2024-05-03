@@ -8,7 +8,7 @@
 
 void test_mnist() {
   // Load the mnist dataset
-  std::string filename = "test/data/mnist.txt";
+  std::string filename = "test/data/mnist_full.txt";
   DenseMat data = stag::load_matrix(filename);
 
   // Create tha approximate similarity graph from this matrix.
@@ -17,7 +17,7 @@ void test_mnist() {
   std::cout << asg.number_of_vertices() << std::endl;
   std::cout << asg.number_of_edges() << std::endl;
 
-  std::string fname = "mnist_similarity.el";
+  std::string fname = "mnist_full_similarity.el";
   stag::save_edgelist(asg, fname);
 }
 

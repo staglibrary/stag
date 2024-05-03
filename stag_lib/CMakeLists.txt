@@ -20,6 +20,7 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
         multithreading/ctpl_stl.h
+        indicators/indicators.hpp
         )
 
 set(SOURCE_FILES

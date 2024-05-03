@@ -286,7 +286,7 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagInt min_idx,
                                        StagInt max_idx) {
 #ifndef NDEBUG
-  std::cerr << "Warning: STAG in debug mode!" << std::endl;
+  std::cerr << "Warning: STAG compiled in debug mode. For optimal performance, compile with -DCMAKE_BUILD_TYPE=Release." << std::endl;
 #endif
   assert(max_idx <= data->rows());
   assert(min_idx >= 0);
@@ -307,13 +307,9 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
   assert(min_log_nmu <= max_log_nmu);
 
   num_log_nmu_iterations = (StagInt) ceil((StagReal) (max_log_nmu - min_log_nmu) / 2) + 1;
-  LOG_DEBUG("min_log_nmu: " << min_log_nmu << std::endl);
-  LOG_DEBUG("num_log_nmu_iterations: " << num_log_nmu_iterations << std::endl);
 
   k1 = K1;
   k2_constant = K2_constant;
-  LOG_DEBUG("[STAG] k1: " << k1 << std::endl);
-  LOG_DEBUG("[STAG] k2_constant: " << k2_constant << std::endl);
 
   hash_units.resize(num_log_nmu_iterations);
   for (StagInt log_nmu_iter = 0;
@@ -370,7 +366,6 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
 
   // Close the thread pool.
   pool.stop();
-  LOG_DEBUG("Finished initialising." << std::endl);
 }
 
 stag::CKNSGaussianKDE::CKNSGaussianKDE(DenseMat *data,
