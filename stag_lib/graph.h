@@ -349,6 +349,32 @@ namespace stag {
        StagInt number_of_edges() const;
 
        /**
+        * Add an edge to the graph.
+        *
+        * The edge goes from node i to node j, and is added with weight w.
+        * If there is already an edge from i to j, then w is added to
+        * its weight.
+        *
+        * If either of \f$i\f$ or \f$j\f$ are larger than the number
+        * of nodes in the graph, the graph is resized to have enough nodes.
+        *
+        * @param i
+        * @param j
+        * @param w
+        */
+       void add_edge(StagInt i, StagInt j, StagReal w);
+
+       /**
+        * Remove an edge from the graph.
+        *
+        * Remove any edge between nodes \f$i\f$ and \f$j\f$.
+        *
+        * @param i
+        * @param j
+        */
+       void remove_edge(StagInt i, StagInt j);
+
+       /**
         * Returns a boolean indicating whether this graph contains self loops.
         */
        bool has_self_loops() const;
@@ -407,7 +433,7 @@ namespace stag {
        */
       void initialise_signless_laplacian_();
 
-    /**
+      /**
        * Initialise the normalised Laplacian matrix of the graph is it has not
        * been initialised yet.
        */
@@ -456,7 +482,7 @@ namespace stag {
        *
        * @throws std::invalid_argument if the check does not pass
        */
-       void check_vertex_argument(StagInt v);
+      void check_vertex_argument(StagInt v);
 
        /**
         * \endcond

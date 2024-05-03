@@ -1191,3 +1191,203 @@ TEST(GraphTest, ScalarMultiplication) {
   EXPECT_EQ(rowIndices, newIndices);
   EXPECT_FLOATS_NEARLY_EQ(values, newValues, 0.000001);
 }
+
+TEST(GraphTest, AddEdge) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<StagInt> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<StagInt> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Construct the graph
+  stag::Graph g = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+
+  // Add an edge
+  g.add_edge(1, 3, 1.5);
+
+  // Create the adjacency matrix for the graph with added edge.
+  //     0       2  3.3333 0
+  //     2       0   6     1.5
+  //     3.3333  6   0     1
+  //     0       1.5 1     0
+  std::vector<StagInt> adjRowStarts = {0, 2, 5, 8, 10};
+  std::vector<StagInt> adjColIndices = {1, 2, 0, 2, 3, 0, 1, 3, 1, 2};
+  std::vector<double> adjValues = {2, 3.3333, 2, 6, 1.5, 3.3333, 6, 1, 1.5, 1};
+
+  // Check that the graph matches.
+  stag::Graph newGraph = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(g, newGraph);
+}
+
+TEST(GraphTest, IncreaseWeight) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<StagInt> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<StagInt> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Construct the graph
+  stag::Graph g = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+
+  // Add an edge
+  g.add_edge(0, 1, 0.5);
+
+  // Create the adjacency matrix for the graph with added edge.
+  //     0       2.5  3.3333 0
+  //     2.5     0   6       0
+  //     3.3333  6   0       1
+  //     0       0   1       0
+  std::vector<StagInt> adjRowStarts = {0, 2, 4, 7, 8};
+  std::vector<StagInt> adjColIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> adjValues = {2.5, 3.3333, 2.5, 6, 3.3333, 6, 1, 1};
+
+  // Check that the graph matches.
+  stag::Graph newGraph = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(g, newGraph);
+}
+
+TEST(GraphTest, RemoveEdge) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<StagInt> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<StagInt> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Construct the graph
+  stag::Graph g = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+
+  // Remove an edge
+  g.remove_edge(0, 2);
+
+  // Create the adjacency matrix for the graph with added edge.
+  //     0       2   0     0
+  //     2       0   6     0
+  //     0       6   0     1
+  //     0       0   1     0
+  std::vector<StagInt> adjRowStarts = {0, 1, 3, 5, 6};
+  std::vector<StagInt> adjColIndices = {1, 0, 2, 1, 3, 2};
+  std::vector<double> adjValues = {2, 2, 6, 6, 1, 1};
+
+  // Check that the graph matches.
+  stag::Graph newGraph = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(g, newGraph);
+}
+
+TEST(GraphTest, AddVertex) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<StagInt> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<StagInt> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Construct the graph
+  stag::Graph g = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+
+  // Add an edge which adds a vertex
+  g.add_edge(1, 4, 1.5);
+
+  // Create the adjacency matrix for the graph with added edge.
+  //     0       2  3.3333 0  0
+  //     2       0   6     0  1.5
+  //     3.3333  6   0     1  0
+  //     0       0   1     0  0
+  //     0       1.5 0     0  0
+  std::vector<StagInt> adjRowStarts = {0, 2, 5, 8, 9, 10};
+  std::vector<StagInt> adjColIndices = {1, 2, 0, 2, 4, 0, 1, 3, 2, 1};
+  std::vector<double> adjValues = {2, 3.3333, 2, 6, 1.5, 3.3333, 6, 1, 1, 1.5};
+
+  // Check that the graph matches.
+  stag::Graph newGraph = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(g, newGraph);
+}
+
+TEST(GraphTest, AddVertexNoEdge) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<StagInt> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<StagInt> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Construct the graph
+  stag::Graph g = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+
+  // Add an edge which adds a vertex
+  g.add_edge(1, 4, 1.5);
+
+  // Remove that edge
+  g.remove_edge(1, 4);
+
+  // Create the adjacency matrix for the new graph.
+  //     0       2  3.3333 0  0
+  //     2       0   6     0  0
+  //     3.3333  6   0     1  0
+  //     0       0   1     0  0
+  //     0       0   0     0  0
+  std::vector<StagInt> adjRowStarts = {0, 2, 4, 7, 8, 8};
+  std::vector<StagInt> adjColIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<double> adjValues = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
+
+  // Check that the graph matches.
+  stag::Graph newGraph = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(g, newGraph);
+}
+
+TEST(GraphTest, AddTwoVertex) {
+  // Create a graph Laplacian matrix
+  //     5.3333  -2  -3.3333   0
+  //    -2        8  -6        0
+  //    -3.3333  -6   10.3333 -1
+  //     0        0  -1        1
+  std::vector<StagInt> lapRowStarts = {0, 3, 6, 10, 12};
+  std::vector<StagInt> lapColIndices = {0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> lapValues = {5.3333, -2, -3.3333, -2, 8, -6, -3.3333, -6, 10.3333, -1, -1, 1};
+
+  // Construct the graph
+  stag::Graph g = stag::Graph(lapRowStarts, lapColIndices, lapValues);
+
+  // Add an edge which adds a two vertices
+  g.add_edge(1, 5, 1.5);
+
+  // Create the adjacency matrix for the graph with added edge.
+  //     0       2  3.3333 0  0 0
+  //     2       0   6     0  0 1.5
+  //     3.3333  6   0     1  0 0
+  //     0       0   1     0  0 0
+  //     0       0   0     0  0 0
+  //     0       1.5 0     0  0 0
+  std::vector<StagInt> adjRowStarts = {0, 2, 5, 8, 9, 9, 10};
+  std::vector<StagInt> adjColIndices = {1, 2, 0, 2, 5, 0, 1, 3, 2, 1};
+  std::vector<double> adjValues = {2, 3.3333, 2, 6, 1.5, 3.3333, 6, 1, 1, 1.5};
+
+  // Check that the graph matches.
+  stag::Graph newGraph = stag::Graph(adjRowStarts, adjColIndices, adjValues);
+
+  // Check for graph equality
+  EXPECT_GRAPHS_NEARLY_EQ(g, newGraph);
+}
+
