@@ -927,6 +927,14 @@ TEST(GraphTest, ALLGVertexExists) {
   EXPECT_FALSE(graph2.vertex_exists(100));
 }
 
+TEST(GraphTest, ALLGBadFile) {
+  stag::AdjacencyListLocalGraph testGraph("test/data/badfile.adjacencylist");
+  EXPECT_TRUE(testGraph.vertex_exists(0));
+  EXPECT_FALSE(testGraph.vertex_exists(1));
+  EXPECT_TRUE(testGraph.vertex_exists(2));
+}
+
+
 TEST(GraphTest, ALLGHugeGraph) {
   stag::AdjacencyListLocalGraph testGraph("test/data/test6.adjacencylist");
   EXPECT_NEAR(testGraph.degree(18950), 20.088781, 0.0001);
