@@ -392,7 +392,7 @@ TEST(ClusterTest, NMI) {
 
   std::vector<StagInt> labels2   {1, 1, 2, 2, 2, 2, 0, 0, 0, 0};
   expected_nmi = 1;
-  actual_nmi = stag::adjusted_rand_index(gt_labels, labels2);
+  actual_nmi = stag::normalised_mutual_information(gt_labels, labels2);
   EXPECT_NEAR(actual_nmi, expected_nmi, 0.0001);
 }
 
