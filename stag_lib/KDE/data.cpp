@@ -315,10 +315,13 @@ public:
       StagReal right_est = right_child->estimate_weight(q, q_id);
       StagReal my_est = left_est + right_est;
 
+      // Get the number of left samples from a binomial distribution.
+      std::binomial_distribution<> d(num_to_sample, left_est / my_est);
+      StagInt num_left_samples = d(*stag::get_global_rng());
+
+      assert(num_left_samples >= 0);
       std::vector<StagInt> left_samples;
       std::vector<StagInt> right_samples;
-      StagInt num_left_samples = round(num_to_sample * left_est / my_est);
-      assert(num_left_samples >= 0);
       if (num_left_samples > 0) left_samples = left_child->sample_neighbors(q, q_id, num_left_samples);
       if (num_left_samples < num_to_sample) right_samples = right_child->sample_neighbors(q, q_id, num_to_sample - num_left_samples);
       assert((StagInt) left_samples.size() + (StagInt) right_samples.size() == num_to_sample);
