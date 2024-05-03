@@ -7,7 +7,19 @@
  * @file cluster.h
  * \brief Algorithms for finding clusters in graphs.
  *
+ * The methods in this module can be divided into three sub-categories.
+ *
+ * \par Clustering Algorithms
  * The two key clustering methods provided by this module are stag::spectral_cluster and stag::local_cluster.
+ *
+ * \par Similarity Graph Construction
+ * The module provides the methods stag::similarity_graph and stag::approximate_similarity_graph
+ * for constructing a similarity graph from data.
+ *
+ * \par Clustering Evaluation
+ * The module provides implementations of the standard ARI and NMI clustering
+ * evaluation metrics in the stag::adjusted_rand_index and stag::normalised_mutual_information
+ * methods.
  */
 
 #ifndef STAG_TEST_CLUSTER_H
@@ -315,6 +327,54 @@ namespace stag {
    */
   std::vector<StagInt> symmetric_difference(std::vector<StagInt>& S,
                                             std::vector<StagInt>& T);
+
+  /**
+   * Construct an approximate similarity graph for the given dataset.
+   *
+   * Given datapoints \f$\{x_1, \ldots, x_n\} \in \mathbb{R}^n\f$ and a
+   * parameter \f$a\f$, the similarity between two data points is given by
+   * \f[
+   *    k(x_i, x_j) = \mathrm{exp}\left(- a \|x_i - x_j\|^2 \right).
+   * \f]
+   * Then, the similarity graph of the data is a complete graph on \f$n\f$ vertices
+   * such that the weight between vertex \f$i\f$ and \f$j\f$ is given by \f$k(x_i, x_j)\f$.
+   * However, the complete similarity graph requires \f$O(n^2)\f$ time and space to construct.
+   *
+   * This method implements an algorithm which approximates the similarity graph
+   * with a sparse graph, while preserving any cluster structure of the graph.
+   * This algorithm has running time \f$\widetilde{O}(n^{1.25})\f$.
+   *
+   * @param data an \f$n \times d\f$ Eigen matrix representing the dataset.
+   * @param a the parameter of the similarity kernel.
+   * @return a stag::Graph object representing the similarity of the data
+   *
+   * \par Reference
+   * Peter Macgregor and He Sun, Fast Approximation of Similarity Graphs with
+   * Kernel Density Estimation. In NeurIPS'23.
+   */
+  Graph approximate_similarity_graph(DenseMat* data, StagReal a);
+
+  /**
+   * Construct a complete similarity graph for the given dataset.
+   *
+   * Given datapoints \f$\{x_1, \ldots, x_n\} \in \mathbb{R}^n\f$ and a
+   * parameter \f$a\f$, the similarity between two data points is given by
+   * \f[
+   *    k(x_i, x_j) = \mathrm{exp}\left(- a \|x_i - x_j\|^2 \right).
+   * \f]
+   * Then, the similarity graph of the data is a complete graph on \f$n\f$ vertices
+   * such that the weight between vertex \f$i\f$ and \f$j\f$ is given by \f$k(x_i, x_j)\f$.
+   *
+   * Note that the time and space complexity of this method is \f$O(n^2)\f$.
+   * For a faster, approximate method, you could consider using
+   * stag::approximate_similarity_graph.
+   *
+   * @param data an \f$n \times d\f$ Eigen matrix representing the dataset.
+   * @param a the parameter of the similarity kernel.
+   * @return a stag::Graph object representing the similarity of the data
+   *
+   */
+  Graph similarity_graph(DenseMat* data, StagReal a);
 }
 
 #endif //STAG_TEST_CLUSTER_H
