@@ -117,7 +117,6 @@ configure_file(test/data/moons_labels.txt test/data/moons_labels.txt COPYONLY)
 configure_file(test/data/moons_short.txt test/data/moons_short.txt COPYONLY)
 configure_file(test/data/mnist.txt test/data/mnist.txt COPYONLY)
 configure_file(test/data/mnist_labels.txt test/data/mnist_labels.txt COPYONLY)
-configure_file(test/data/mnist_full.txt test/data/mnist_full.txt COPYONLY)
 
 # Create the STAG tools
 add_executable(
