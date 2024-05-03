@@ -2,16 +2,16 @@ project(stag)
 
 set(STAG_PUBLIC_HEADERS
         stag.h
-        Graph/graph.h
+        graph.h
         utility.h
-        Graph/graphio.h
-        Graph/random.h
-        Cluster/cluster.h
-        Graph/spectrum.h
-        KDE/lsh.h
-        KDE/kde.h
+        graphio.h
+        random.h
+        cluster.h
+        spectrum.h
+        lsh.h
+        kde.h
         definitions.h
-        KDE/data.h
+        data.h
         )
 
 set(HEADER_FILES
@@ -20,18 +20,19 @@ set(HEADER_FILES
         KMeansRex/KMeansRexCoreInterface.h
         KMeansRex/mersenneTwister2002.h
         multithreading/ctpl_stl.h
+        indicators/indicators.hpp
         )
 
 set(SOURCE_FILES
         utility.cpp
-        Graph/graph.cpp
-        Graph/graphio.cpp
-        Graph/random.cpp
-        Graph/spectrum.cpp
-        Cluster/cluster.cpp
-        KDE/lsh.cpp
-        KDE/kde.cpp
-        KDE/data.cpp
+        graph.cpp
+        graphio.cpp
+        random.cpp
+        spectrum.cpp
+        cluster.cpp
+        lsh.cpp
+        kde.cpp
+        data.cpp
         KMeansRex/KMeansRexCore.cpp
         )
 
@@ -50,6 +51,10 @@ get_property(SPECTRA_INCLUDE_DIR TARGET Spectra::Spectra
 message(STATUS "[stag] Found Spectra: ${SPECTRA_INCLUDE_DIR}")
 include_directories(${SPECTRA_INCLUDE_DIR})
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+message(STATUS "[stag] Found Threads")
+
 #####################################
 # Define the STAG library
 #####################################
@@ -62,10 +67,11 @@ set_property(TARGET stag_object PROPERTY POSITION_INDEPENDENT_CODE 1)
 # Build the shared library which will be installed
 add_library(stag SHARED $<TARGET_OBJECTS:stag_object>)
 set_target_properties(stag PROPERTIES PREFIX "")
-set_target_properties(stag PROPERTIES PUBLIC_HEADER "${STAG_PUBLIC_HEADERS}")
+target_link_libraries(stag PRIVATE Threads::Threads)
 
 # Define a static version of the STAG library for the stagtools
 add_library(stag_static STATIC $<TARGET_OBJECTS:stag_object>)
+target_link_libraries(stag_static PRIVATE Threads::Threads)
 
 # Configure the compiler options to error on warnings
 if(MSVC)
@@ -74,10 +80,10 @@ if(MSVC)
 else()
     if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RELEASE")
         message(STATUS "[stag] Enabling compiler optimisations.")
-        set(_COMPILE_OPTS -Werror -Wall -Wextra -O3)
+        set(_COMPILE_OPTS -Wall -Wextra -O3)
     else()
         message(STATUS "[stag] Disabling compiler optimisations.")
-        set(_COMPILE_OPTS -Werror -Wall -Wextra)
+        set(_COMPILE_OPTS -Wall -Wextra)
     endif()
 endif()
 message(STATUS "[stag] Set compiler options: ${_COMPILE_OPTS}")
@@ -94,9 +100,14 @@ configure_package_config_file("${CMAKE_CURRENT_LIST_DIR}/stagConfig.cmake.in"
                               "${CMAKE_CURRENT_BINARY_DIR}/stagConfig.cmake"
                               INSTALL_DESTINATION lib/stag)
 
+# Install the STAG shared library.
 install(TARGETS stag
-        LIBRARY DESTINATION lib/stag
-        PUBLIC_HEADER DESTINATION include/stag)
+        LIBRARY DESTINATION lib/stag)
+
+# Install the STAG headers, maintaining the directory structure.
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/stag_lib/"
+        DESTINATION "include/stag"
+        FILES_MATCHING PATTERN "*.h")
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/stagConfig.cmake"
         DESTINATION lib/stag)

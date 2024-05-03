@@ -4,8 +4,8 @@
  */
 #include <iostream>
 #include <cerrno>
-#include "Graph/graphio.h"
-#include "Graph/random.h"
+#include "graphio.h"
+#include "random.h"
 
 void print_usage() {
   std::cout << "Usage: stag_sbm [filename] [n] [k] [p] [q]" << std::endl;
