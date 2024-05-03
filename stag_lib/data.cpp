@@ -4,9 +4,7 @@
 */
 // Standard C++ libraries
 #include <iostream>
-#include <fstream>
 #include <random>
-#include <utility>
 #include <deque>
 #include <future>
 
@@ -16,8 +14,6 @@
 // STAG modules
 #include "data.h"
 #include "utility.h"
-#include "Graph/random.h"
-#include "KDE/kde.h"
 
 /*
  * Used to disable compiler warning for unused variable.

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <gtest/gtest.h>
-#include "KDE/lsh.h"
+#include "lsh.h"
 
 //------------------------------------------------------------------------------
 // Tests for the DataPoint class.

@@ -15,7 +15,7 @@
 #define STAG_LIBRARY_DATA_H
 
 #include "definitions.h"
-#include "Graph/graph.h"
+#include "graph.h"
 
 namespace stag{
   /**

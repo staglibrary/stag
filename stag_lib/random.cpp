@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "random.h"
-#include "Graph/graph.h"
+#include "graph.h"
 
 std::random_device dev_g;
 std::mt19937_64 rng_g(dev_g());

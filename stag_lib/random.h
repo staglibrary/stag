@@ -12,7 +12,7 @@
 #define STAG_TEST_RANDOM_H
 
 #include <random>
-#include "Graph/graph.h"
+#include "graph.h"
 
 namespace stag {
 

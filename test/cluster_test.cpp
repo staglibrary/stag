@@ -13,12 +13,12 @@
 #include <gtest/gtest.h>
 
 // STAG modules
-#include "Cluster/cluster.h"
-#include "Graph/graph.h"
-#include "Graph/random.h"
+#include "cluster.h"
+#include "graph.h"
+#include "random.h"
 #include <utility.h>
-#include "Graph/graphio.h"
-#include "KDE/data.h"
+#include "graphio.h"
+#include "data.h"
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \

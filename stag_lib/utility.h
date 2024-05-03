@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#include "Graph/graph.h"
+#include "graph.h"
 
 /**
  * \cond

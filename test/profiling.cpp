@@ -1,10 +1,10 @@
 
 #include "definitions.h"
 #include <string>
-#include "KDE/data.h"
-#include "KDE/kde.h"
+#include "data.h"
+#include "kde.h"
 #include <iostream>
-#include "Graph/graphio.h"
+#include "graphio.h"
 
 void test_mnist() {
   // Load the mnist dataset

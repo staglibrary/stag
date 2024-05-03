@@ -10,7 +10,7 @@
 #include "graph.h"
 #include "utility.h"
 #include "graphio.h"
-#include "Cluster/cluster.h"
+#include "cluster.h"
 
 
 //------------------------------------------------------------------------------

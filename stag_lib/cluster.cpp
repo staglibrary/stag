@@ -18,13 +18,13 @@
 #include "multithreading/ctpl_stl.h"
 
 // STAG modules
-#include "Graph/random.h"
-#include "Graph/graph.h"
+#include "random.h"
+#include "graph.h"
 #include "cluster.h"
 #include "utility.h"
-#include "Graph/spectrum.h"
-#include "KDE/data.h"
-#include "KDE/kde.h"
+#include "spectrum.h"
+#include "data.h"
+#include "kde.h"
 
 #define ASG_TREE_CUTOFF 5000
 

@@ -7,7 +7,7 @@
  */
 #include <stdexcept>
 #include <gtest/gtest.h>
-#include "KDE/kde.h"
+#include "kde.h"
 
 //------------------------------------------------------------------------------
 // Tests for the Gaussian kernel.

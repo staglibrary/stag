@@ -13,7 +13,7 @@
 
 #include "definitions.h"
 #include "lsh.h"
-#include "Graph/random.h"
+#include "random.h"
 
 #define TWO_ROOT_TWOPI 5.0132565
 #define TWO_ROOT_TWO 2.828427124

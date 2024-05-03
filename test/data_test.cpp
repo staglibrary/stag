@@ -8,11 +8,11 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <filesystem>
-#include "KDE/data.h"
+#include "data.h"
 #include "utility.h"
-#include "Graph/graph.h"
-#include "Graph/random.h"
-#include "Cluster/cluster.h"
+#include "graph.h"
+#include "random.h"
+#include "cluster.h"
 
 // Note: for many of these tests, we re-use the edgelist and adjacencylist files
 // however, in general the load_matrix and save_matrix methods should be used

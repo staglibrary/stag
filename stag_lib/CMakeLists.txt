@@ -2,16 +2,16 @@ project(stag)
 
 set(STAG_PUBLIC_HEADERS
         stag.h
-        Graph/graph.h
+        graph.h
         utility.h
-        Graph/graphio.h
-        Graph/random.h
-        Cluster/cluster.h
-        Graph/spectrum.h
-        KDE/lsh.h
-        KDE/kde.h
+        graphio.h
+        random.h
+        cluster.h
+        spectrum.h
+        lsh.h
+        kde.h
         definitions.h
-        KDE/data.h
+        data.h
         )
 
 set(HEADER_FILES
@@ -25,14 +25,14 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
         utility.cpp
-        Graph/graph.cpp
-        Graph/graphio.cpp
-        Graph/random.cpp
-        Graph/spectrum.cpp
-        Cluster/cluster.cpp
-        KDE/lsh.cpp
-        KDE/kde.cpp
-        KDE/data.cpp
+        graph.cpp
+        graphio.cpp
+        random.cpp
+        spectrum.cpp
+        cluster.cpp
+        lsh.cpp
+        kde.cpp
+        data.cpp
         KMeansRex/KMeansRexCore.cpp
         )
 

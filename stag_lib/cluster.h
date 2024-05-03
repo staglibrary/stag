@@ -27,7 +27,7 @@
 
 #include <vector>
 
-#include "Graph/graph.h"
+#include "graph.h"
 
 namespace stag {
 
