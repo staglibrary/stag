@@ -13,7 +13,19 @@
 
 #include <iostream>
 
-#include "Graph/graph.h"
+#include "graph.h"
+
+/**
+ * \cond
+ */
+#ifndef NDEBUG
+#  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
+#else
+#  define LOG_DEBUG(x)
+#endif
+/**
+ * \endcond
+ */
 
 namespace stag {
 

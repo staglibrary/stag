@@ -4,15 +4,21 @@
  * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
+ // Standard C++ libraries
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
+
+// Additional libraries
 #include <gtest/gtest.h>
-#include "Cluster/cluster.h"
-#include "Graph/graph.h"
-#include "Graph/random.h"
+
+// STAG modules
+#include "cluster.h"
+#include "graph.h"
+#include "random.h"
 #include <utility.h>
-#include "Graph/graphio.h"
+#include "graphio.h"
+#include "data.h"
 
 // Define some helper test assertions.
 #define EXPECT_FLOATS_NEARLY_EQ(expected, actual, thresh) \
@@ -607,4 +613,65 @@ TEST(ClusterTest, CheegerCutComplete){
     if (c == 0) c0++;
   }
   EXPECT_EQ(c0, n / 2);
+}
+
+TEST(ClusterTest, ASGMNIST) {
+  // Load the MNIST dataset
+  std::string filename = "test/data/mnist.txt";
+  DenseMat data = stag::load_matrix(filename);
+  StagReal a = 0.000001;
+
+  // Create tha approximate similarity graph from this matrix.
+  stag::Graph asg = stag::approximate_similarity_graph(&data, a);
+  EXPECT_EQ(asg.number_of_vertices(), data.rows());
+
+  // Load the correct clusters
+  std::string labels_filename = "test/data/mnist_labels.txt";
+  DenseMat labels = stag::load_matrix(labels_filename);
+  std::vector<StagInt> labels_vec(labels.rows());
+  for (auto i = 0; i < labels.rows(); i++) {
+    labels_vec.at(i) = (StagInt) labels(i, 0);
+  }
+
+  // Check the clustering performance with the asg roughly matches the
+  // performance with the fully connected graph
+  StagInt k = 10;
+  std::vector<StagInt> clusters = stag::spectral_cluster(&asg, k);
+  StagReal asg_ari = stag::adjusted_rand_index(clusters, labels_vec);
+
+  stag::Graph sg = stag::similarity_graph(&data, a);
+  clusters = stag::spectral_cluster(&sg, k);
+  StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
+  EXPECT_GE(asg_ari, 0.8 * fc_ari);
+}
+
+TEST(ClusterTest, ASGmoons) {
+  // Load the moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+  StagReal a = 10;
+
+  // Create tha approximate similarity graph from this matrix.
+  stag::Graph asg = stag::approximate_similarity_graph(&data, a);
+  EXPECT_EQ(asg.number_of_vertices(), data.rows());
+
+  // Load the correct clusters
+  std::string labels_filename = "test/data/moons_labels.txt";
+  DenseMat labels = stag::load_matrix(labels_filename);
+  std::vector<StagInt> labels_vec(labels.rows());
+  for (auto i = 0; i < labels.rows(); i++) {
+    labels_vec.at(i) = (StagInt) labels(i, 0);
+  }
+
+  // Check the clustering performance with the asg roughly matches the
+  // performance with the fully connected graph
+  StagInt k = 2;
+  std::vector<StagInt> clusters = stag::spectral_cluster(&asg, k);
+  StagReal asg_ari = stag::adjusted_rand_index(clusters, labels_vec);
+
+  stag::Graph sg = stag::similarity_graph(&data, a);
+  clusters = stag::spectral_cluster(&sg, k);
+  StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
+  EXPECT_GE(fc_ari, 0.9);
+  EXPECT_GE(asg_ari, 0.8 * fc_ari);
 }

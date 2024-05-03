@@ -7,11 +7,11 @@
  */
 #include <stdexcept>
 #include <gtest/gtest.h>
-#include "Graph/graph.h"
-#include "Graph/graphio.h"
+#include "graph.h"
+#include "graphio.h"
 #include <utility.h>
-#include "Graph/random.h"
-#include "Cluster/cluster.h"
+#include "random.h"
+#include "cluster.h"
 #include <stdio.h>
 
 // Define some helper test assertions.

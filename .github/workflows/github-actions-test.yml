@@ -64,7 +64,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          cmake --build . --target install
+          sudo cmake --build . --target install
           cd ../..
       - name: Install Spectra
         run: |
@@ -74,7 +74,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          cmake --build . --target install
+          sudo cmake --build . --target install
           cd ../..
       - name: Check out repository code
         uses: actions/checkout@v3

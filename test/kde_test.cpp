@@ -7,14 +7,7 @@
  */
 #include <stdexcept>
 #include <gtest/gtest.h>
-#include "KDE/kde.h"
-
-#define EXPECT_FLOATS_APPROX_EQ(expected, actual, error) \
-        EXPECT_EQ(expected.size(), actual.size()) << "Array sizes differ.";\
-        for (size_t idx = 0; idx < std::min(expected.size(), actual.size()); ++idx) \
-        { \
-            EXPECT_NEAR(expected[idx], actual[idx], error * actual[idx]) << "at index: " << idx;\
-        }
+#include "kde.h"
 
 //------------------------------------------------------------------------------
 // Tests for the Gaussian kernel.
@@ -166,22 +159,17 @@ TEST(KDETest,CKNSExplicitConstants){
 }
 
 TEST(KDETest, CKNSMnist) {
-  // Load the two moons dataset
+  // Load the two MNIST dataset
   std::string filename = "test/data/mnist.txt";
   DenseMat data = stag::load_matrix(filename);
   StagReal a = 0.000001;
-  StagReal eps = 0.99;
 
   // Create an exact Gaussian KDE
   stag::ExactGaussianKDE exact_kde(&data, a);
   std::vector<StagReal> kde_exact = exact_kde.query(&data);
 
   // Create a CKNS KDE estimator
-  StagInt K1 = pow(eps, -2) * log(data.rows());
-  StagReal K2_constant = 5 * log(data.rows());
-  StagReal min_mu = 1 / data.rows();
-  StagInt offset = 1;
-  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+  stag::CKNSGaussianKDE ckns_kde(&data, a);
   std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
 
   // Check that the estimates are accurate
@@ -190,5 +178,120 @@ TEST(KDETest, CKNSMnist) {
     total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
   }
   StagReal avg_error = total_error / (StagReal) kde_estimates.size();
-  EXPECT_LE(avg_error, 0.5 * eps);
+  EXPECT_LE(avg_error, 0.5);
+}
+
+TEST(KDETest, CKNSOversample) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator
+  StagReal a = 10;
+  StagInt K1 = 40;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 0.05;
+  StagInt offset = -2;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
+}
+
+TEST(KDETest, CKNSSmallMu) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator
+  StagReal a = 10;
+  StagInt K1 = 40;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 0.00001;
+  StagInt offset = 0;
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
+}
+
+TEST(KDETest, CKNSRandomSampling) {
+  // Load the two moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator, set the parameters so that the estimator
+  // behaves like the random sampling algorithm.
+  StagReal a = 10;
+  StagInt K1 = 1;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 1;
+  StagInt offset = -10; // offset of -10 samples approximately 1024 points.
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
+}
+
+TEST(KDETest, CKNSRandomSamplingMNIST) {
+  // Load the mnist dataset
+  std::string filename = "test/data/mnist.txt";
+  DenseMat data = stag::load_matrix(filename);
+
+  // Create a CKNS KDE estimator, set the parameters so that the estimator
+  // behaves like the random sampling algorithm.
+  StagReal a = 0.000001;
+  StagInt K1 = 1;
+  StagReal K2_constant = 50;
+  StagReal min_mu = 1; // This makes the CKNS algorithm behave as random sampling.
+  StagInt offset = -10; // offset of -10 samples approximately 1024 points.
+  stag::CKNSGaussianKDE ckns_kde(&data, a, min_mu, K1, K2_constant, offset);
+
+  // Create an exact Gaussian KDE
+  stag::ExactGaussianKDE exact_kde(&data, a);
+
+  // Check that the estimates are accurate
+  std::vector<StagReal> kde_exact = exact_kde.query(&data);
+  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
+
+  StagReal total_error = 0;
+  for (auto i = 0; i < kde_estimates.size(); i++) {
+    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
+  }
+  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
+  EXPECT_LE(avg_error, 0.5);
 }

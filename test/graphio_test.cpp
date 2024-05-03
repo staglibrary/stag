@@ -8,10 +8,10 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <filesystem>
-#include "Graph/graphio.h"
+#include "graphio.h"
 #include "utility.h"
-#include "Graph/graph.h"
-#include "Graph/random.h"
+#include "graph.h"
+#include "random.h"
 
 TEST(GraphioTest, FromEdgelistSimple) {
   std::string filename = "test/data/test1.edgelist";
