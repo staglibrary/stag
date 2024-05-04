@@ -90,6 +90,81 @@ TEST(SpectrumTest, CycleEigenvaluesLargestMag) {
   EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
 }
 
+TEST(SpectrumTest, CycleEigenvaluesLapLargestMag) {
+  StagInt n = 20;
+  stag::Graph testGraph = stag::cycle_graph(n);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::Laplacian, 5, stag::EigenSortRule::Largest);
+
+  // For the cycle graph, eigenvalues other than 0 and 2 have multiplicity 2.
+  StagReal largest_eigenvalue = 2 * (1 - cos((2 * M_PI * 10) / n));
+  EXPECT_NEAR(eigenvalues[0], largest_eigenvalue, 0.000001);
+
+  StagReal second_eigenvalue = 2 * (1 - cos((2 * M_PI * 9) / n));
+  EXPECT_NEAR(eigenvalues[1], second_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[2], second_eigenvalue, 0.000001);
+
+  StagReal third_eigenvalue = 2 * (1 - cos((2 * M_PI * 8) / n));
+  EXPECT_NEAR(eigenvalues[3], third_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
+}
+
+TEST(SpectrumTest, CycleEigenvaluesLapSmallest) {
+  StagInt n = 20;
+  stag::Graph testGraph = stag::cycle_graph(n);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::Laplacian, 5, stag::EigenSortRule::Smallest);
+
+  // The first eigenvalue should be 0
+  EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
+
+  // For the cycle graph, eigenvalues other than 0 have multiplicity 2.
+  StagReal second_eigenvalue = 2 * (1 - cos(2 * M_PI / (StagReal) n));
+  EXPECT_NEAR(eigenvalues[1], second_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[2], second_eigenvalue, 0.000001);
+
+  StagReal third_eigenvalue = 2 * (1 - cos(4 * M_PI / (StagReal) n));
+  EXPECT_NEAR(eigenvalues[3], third_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
+}
+
+TEST(SpectrumTest, CycleEigenvaluesAdjLargestMag) {
+  StagInt n = 20;
+  stag::Graph testGraph = stag::cycle_graph(n);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::Adjacency, 5, stag::EigenSortRule::Largest);
+
+  // For the cycle graph, eigenvalues other than 0 and 2 have multiplicity 2.
+  StagReal largest_eigenvalue = 2 * cos((2 * M_PI * 0) / (StagReal) n);
+  EXPECT_NEAR(eigenvalues[0], largest_eigenvalue, 0.000001);
+
+  StagReal second_eigenvalue = 2 * cos((2 * M_PI * 1) / (StagReal) n);
+  EXPECT_NEAR(eigenvalues[1], second_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[2], second_eigenvalue, 0.000001);
+
+  StagReal third_eigenvalue = 2 * cos((2 * M_PI * 2) / (StagReal) n);
+  EXPECT_NEAR(eigenvalues[3], third_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
+}
+
+TEST(SpectrumTest, CycleEigenvaluesAdjSmallest) {
+  StagInt n = 20;
+  stag::Graph testGraph = stag::cycle_graph(n);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::Adjacency, 5, stag::EigenSortRule::Smallest);
+
+  // For the cycle graph, eigenvalues other than 0 and 2 have multiplicity 2.
+  StagReal largest_eigenvalue = 2 * (cos((2 * M_PI * 10) / (StagReal) n));
+  EXPECT_NEAR(eigenvalues[0], largest_eigenvalue, 0.000001);
+
+  StagReal second_eigenvalue = 2 * (cos((2 * M_PI * 9) / (StagReal) n));
+  EXPECT_NEAR(eigenvalues[1], second_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[2], second_eigenvalue, 0.000001);
+
+  StagReal third_eigenvalue = 2 * (cos((2 * M_PI * 8) / (StagReal) n));
+  EXPECT_NEAR(eigenvalues[3], third_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
+}
 
 TEST(SpectrumTest, RandomGraphSpectrum) {
     // Create a graph from the SBM
