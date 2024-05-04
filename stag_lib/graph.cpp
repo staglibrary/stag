@@ -291,7 +291,7 @@ bool stag::Graph::is_connected() {
   return false;
 }
 
-void stag::Graph::check_vertex_argument(StagInt v) {
+void stag::Graph::check_vertex_argument(StagInt v) const {
   // Check that the value is smaller than the number of vertices
   if (v >= number_of_vertices_) {
     throw std::invalid_argument("Specified vertex index too large.");

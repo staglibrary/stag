@@ -2,30 +2,39 @@
    This file is provided as part of the STAG library and released under the GPL
    license.
 */
-#include "spectrum.h"
-
-#include <Spectra/SymEigsSolver.h>
+// Standard C++ libraries
 #include <stdexcept>
 #include <algorithm>
 #include <random>
 #include <utility>
 
+// Other libraries
+#include <Spectra/SymEigsSolver.h>
 
-stag::EigenSystem stag::compute_eigensystem(
-    const SprsMat* mat, StagInt num, Spectra::SortRule sort) {
+// STAG modules
+#include "spectrum.h"
+
+
+/**
+ * Compute the eigensystem of a matrix, beginning with the largest eigenvalues.
+ *
+ * Add offset to the eigenvalues before returning them.
+ */
+stag::EigenSystem compute_eigensystem_largestmag(
+    const SprsMat* mat, StagInt num, StagReal offset, bool invert) {
   if (num < 1 || num >= mat->rows()) {
     throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
   }
 
-  stag::SprsMatOp op(*mat);
+  stag::SprsMatProdOp op(*mat);
 
   // Construct eigen solver object, requesting the smallest k eigenvalues
-  long ncv = std::min<StagInt>(20 * num, mat->rows());
-  Spectra::SymEigsSolver<SprsMatOp> eigs(op, num, ncv);
+  long ncv = std::min<StagInt>(10 * num, mat->rows());
+  Spectra::SymEigsSolver<stag::SprsMatProdOp> eigs(op, num, ncv);
 
   // Initialize and compute
   eigs.init();
-  eigs.compute(sort);
+  eigs.compute(Spectra::SortRule::LargestMagn, 1000, 1e-10, Spectra::SortRule::LargestMagn);
 
   // Ensure that the calculation has converged
   if (eigs.info() != Spectra::CompInfo::Successful) {
@@ -38,29 +47,96 @@ stag::EigenSystem stag::compute_eigensystem(
   eigenvalues = eigs.eigenvalues();
   eigenvectors = eigs.eigenvectors();
 
+  // Add the offset to the eigenvalues
+  if (offset != 0 || invert) {
+    for (auto &eigval: eigenvalues) {
+      eigval += offset;
+
+      if (invert) eigval = -eigval;
+    }
+  }
+
   return {eigenvalues, eigenvectors};
 }
 
-stag::EigenSystem stag::compute_eigensystem(const SprsMat *mat, StagInt num) {
-  return stag::compute_eigensystem(mat, num, Spectra::SortRule::SmallestMagn);
+stag::EigenSystem stag::compute_eigensystem(
+    stag::Graph* g, stag::GraphMatrix mat, StagInt num, stag::EigenSortRule which) {
+  if (num < 1 || num >= g->number_of_vertices()) {
+    throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
+  }
+
+  // Get the maximum degree of the graph
+  StagReal max_degree = 0;
+  for (auto i = 0; i < g->number_of_vertices(); i++) {
+    max_degree = MAX(g->degree(i), max_degree);
+  }
+
+  switch (mat) {
+    case stag::GraphMatrix::Adjacency:
+      if (which == stag::EigenSortRule::Largest) {
+        // We will find the maximum eigenvalues of A + d_max I.
+        SprsMat adjusted_adjacency = *g->adjacency();
+        for (auto i = 0; i < g->number_of_vertices(); i++) {
+          adjusted_adjacency.coeffRef(i, i) += max_degree;
+        }
+        return compute_eigensystem_largestmag(
+            &adjusted_adjacency, num, -max_degree, false);
+      } else {
+        // We will find the maximum eigenvalues of -A + d_max I.
+        SprsMat adjusted_adjacency = - (*g->adjacency());
+        for (auto i = 0; i < g->number_of_vertices(); i++) {
+          adjusted_adjacency.coeffRef(i, i) += max_degree;
+        }
+        return compute_eigensystem_largestmag(
+            &adjusted_adjacency, num, -max_degree, true);
+      }
+      break;
+    case stag::GraphMatrix::Laplacian:
+      if (which == stag::EigenSortRule::Largest) {
+        // We can just compute the largest eigenvalues directly.
+        return compute_eigensystem_largestmag(g->laplacian(), num, 0, false);
+      } else {
+        // We will find the maximum eigenvalues of (2 d_max I - L).
+        SprsMat adjusted_laplacian = - (*g->laplacian());
+        for (auto i = 0; i < g->number_of_vertices(); i++) {
+          adjusted_laplacian.coeffRef(i, i) += 2 * max_degree;
+        }
+        return compute_eigensystem_largestmag(
+            &adjusted_laplacian, num, -(2 * max_degree), true);
+      }
+      break;
+    case stag::GraphMatrix::NormalisedLaplacian:
+      if (which == stag::EigenSortRule::Largest) {
+        // We can just compute the largest eigenvalues directly.
+        return compute_eigensystem_largestmag(
+            g->normalised_laplacian(), num, 0, false);
+      } else {
+        // We will find the maximum eigenvalues of (2 I - L).
+        SprsMat adjusted_laplacian = - (*g->normalised_laplacian());
+        for (auto i = 0; i < g->number_of_vertices(); i++) {
+          adjusted_laplacian.coeffRef(i, i) += 2;
+        }
+        return compute_eigensystem_largestmag(
+            &adjusted_laplacian, num, -2, true);
+      }
+      break;
+    default:
+      break;
+  }
+
+  // Should never get here
+  assert(false);
+  throw std::runtime_error("Failed to compute eigenvectors.");
 }
 
-Eigen::VectorXd stag::compute_eigenvalues(const SprsMat *mat, StagInt num,
-                                          Spectra::SortRule sort) {
-  return get<0>(stag::compute_eigensystem(mat, num, sort));
+Eigen::MatrixXd stag::compute_eigenvectors(
+    stag::Graph* g, stag::GraphMatrix mat, StagInt num, stag::EigenSortRule which) {
+  return get<1>(stag::compute_eigensystem(g, mat, num, which));
 }
 
-Eigen::VectorXd stag::compute_eigenvalues(const SprsMat *mat, StagInt num) {
-  return stag::compute_eigenvalues(mat, num, Spectra::SortRule::SmallestMagn);
-}
-
-Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, StagInt num,
-                                           Spectra::SortRule sort) {
-  return get<1>(stag::compute_eigensystem(mat, num, sort));
-}
-
-Eigen::MatrixXd stag::compute_eigenvectors(const SprsMat *mat, StagInt num) {
-  return stag::compute_eigenvectors(mat, num, Spectra::SortRule::SmallestMagn);
+Eigen::VectorXd stag::compute_eigenvalues(
+    stag::Graph* g, stag::GraphMatrix mat, StagInt num, stag::EigenSortRule which) {
+  return get<0>(stag::compute_eigensystem(g, mat, num, which));
 }
 
 /**
