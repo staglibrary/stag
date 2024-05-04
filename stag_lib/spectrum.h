@@ -11,12 +11,18 @@
 #ifndef STAG_TEST_SPECTRUM_H
 #define STAG_TEST_SPECTRUM_H
 
+// Standard C++ libraries
+#include <tuple>
+
+// Other libraries
 #include <Eigen/Core>
 #include <Spectra/SymEigsSolver.h>
+#include <Spectra/SymEigsShiftSolver.h>
 #include <Spectra/MatOp/SparseSymMatProd.h>
-#include <tuple>
-#include "graph.h"
+#include <Spectra/MatOp/SparseSymShiftSolve.h>
 
+// STAG modules
+#include "graph.h"
 
 namespace stag {
   /**
@@ -25,7 +31,8 @@ namespace stag {
    *
    * Undocumented by doxygen.
    */
-  typedef Spectra::SparseSymMatProd<StagReal, Eigen::Upper, Eigen::ColMajor, StagInt> SprsMatOp;
+  typedef Spectra::SparseSymMatProd<StagReal, Eigen::Upper, Eigen::ColMajor, StagInt> SprsMatProdOp;
+  typedef Spectra::SparseSymShiftSolve<StagReal, Eigen::Upper, Eigen::ColMajor, StagInt> SprsMatShiftSolveOp;
   /**
    * \endcond
    */

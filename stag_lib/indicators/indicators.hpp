@@ -1,4 +1,10 @@
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
 
+   This file was originally obtained from github.com/p-ranav/indicators, where
+   it is released under the MIT license.
+*/
 /**
  * \cond
  */

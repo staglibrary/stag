@@ -2,30 +2,36 @@
    This file is provided as part of the STAG library and released under the GPL
    license.
 */
-#include "spectrum.h"
-
-#include <Spectra/SymEigsSolver.h>
+// Standard C++ libraries
 #include <stdexcept>
 #include <algorithm>
 #include <random>
 #include <utility>
 
+// Other libraries
+#include <Spectra/SymEigsSolver.h>
 
-stag::EigenSystem stag::compute_eigensystem(
-    const SprsMat* mat, StagInt num, Spectra::SortRule sort) {
+// STAG modules
+#include "spectrum.h"
+
+
+/**
+ * Compute the eigensystem of a matrix, beginning with the largest eigenvalues.
+ */
+stag::EigenSystem compute_eigensystem_largestmag(const SprsMat* mat, StagInt num) {
   if (num < 1 || num >= mat->rows()) {
     throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
   }
 
-  stag::SprsMatOp op(*mat);
+  stag::SprsMatProdOp op(*mat);
 
   // Construct eigen solver object, requesting the smallest k eigenvalues
-  long ncv = std::min<StagInt>(20 * num, mat->rows());
-  Spectra::SymEigsSolver<SprsMatOp> eigs(op, num, ncv);
+  long ncv = std::min<StagInt>(10 * num, mat->rows());
+  Spectra::SymEigsSolver<stag::SprsMatProdOp> eigs(op, num, ncv);
 
   // Initialize and compute
   eigs.init();
-  eigs.compute(sort);
+  eigs.compute(Spectra::SortRule::LargestMagn, 1000, 1e-10, Spectra::SortRule::LargestMagn);
 
   // Ensure that the calculation has converged
   if (eigs.info() != Spectra::CompInfo::Successful) {
@@ -39,6 +45,53 @@ stag::EigenSystem stag::compute_eigensystem(
   eigenvectors = eigs.eigenvectors();
 
   return {eigenvalues, eigenvectors};
+}
+
+/**
+ * Compute the eigensystem of a matrix, beginning with the smallest eigenvalues.
+ */
+stag::EigenSystem compute_eigensystem_smallestmag(const SprsMat* mat, StagInt num) {
+  if (num < 1 || num >= mat->rows()) {
+    throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
+  }
+
+  stag::SprsMatShiftSolveOp op(*mat);
+
+  // Construct eigen solver object, requesting the smallest k eigenvalues
+  long ncv = std::min<StagInt>(10 * num, mat->rows());
+  Spectra::SymEigsShiftSolver<stag::SprsMatShiftSolveOp> eigs(op, num, ncv, -1e-6);
+
+  // Initialize and compute
+  // When computing eigenvalues with the smallest magnitude, we use the
+  // shift-and-invert solver.
+  eigs.init();
+  eigs.compute(Spectra::SortRule::LargestMagn, 1000, 1e-10, Spectra::SortRule::SmallestMagn);
+
+  // Ensure that the calculation has converged
+  if (eigs.info() != Spectra::CompInfo::Successful) {
+    throw std::runtime_error("Eigenvalue calculation failed to converge.");
+  }
+
+  // Retrieve results
+  Eigen::VectorXd eigenvalues;
+  Eigen::MatrixXd eigenvectors;
+  eigenvalues = eigs.eigenvalues();
+  eigenvectors = eigs.eigenvectors();
+
+  return {eigenvalues, eigenvectors};
+}
+
+stag::EigenSystem stag::compute_eigensystem(
+    const SprsMat* mat, StagInt num, Spectra::SortRule sort) {
+  if (num < 1 || num >= mat->rows()) {
+    throw std::invalid_argument("Number of computed eigenvectors must be between 1 and n - 1.");
+  }
+
+  if (sort == Spectra::SortRule::LargestMagn) {
+    return compute_eigensystem_largestmag(mat, num);
+  } else {
+    return compute_eigensystem_smallestmag(mat, num);
+  }
 }
 
 stag::EigenSystem stag::compute_eigensystem(const SprsMat *mat, StagInt num) {

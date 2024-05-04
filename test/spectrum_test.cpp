@@ -5,11 +5,15 @@
  * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
+// Standard C++ libraries
 #include <stdexcept>
-#include <iostream>
+#include <cmath>
+
+// Other libraries
 #include <gtest/gtest.h>
+
+// STAG modules
 #include "graph.h"
-#include <utility.h>
 #include "random.h"
 #include "spectrum.h"
 #include "graphio.h"
@@ -37,12 +41,57 @@ TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
   }
 }
 
-TEST(SpectrumTest, LaplacianEigenvalues) {
+TEST(SpectrumTest, NormalisedLaplacianEigenvalues) {
   stag::Graph testGraph = stag::complete_graph(100);
-  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.laplacian(), 1);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.normalised_laplacian(), 5);
   std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
   EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
 }
+
+TEST(SpectrumTest, LaplacianEigenvalues) {
+  stag::Graph testGraph = stag::complete_graph(100);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.laplacian(), 5);
+  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
+  EXPECT_NEAR(eigenvalues[0], 0, 0.01);
+}
+
+TEST(SpectrumTest, CycleEigenvaluesSmallestMag) {
+  StagInt n = 20;
+  stag::Graph testGraph = stag::cycle_graph(n);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.normalised_laplacian(), 5);
+  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
+
+  // The first eigenvalue should be 0
+  EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
+
+  // For the cycle graph, eigenvalues other than 0 have multiplicity 2.
+  StagReal second_eigenvalue = 1 - cos(2 * M_PI / (StagReal) n);
+  EXPECT_NEAR(eigenvalues[1], second_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[2], second_eigenvalue, 0.000001);
+
+  StagReal third_eigenvalue = 1 - cos(4 * M_PI / (StagReal) n);
+  EXPECT_NEAR(eigenvalues[3], third_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
+}
+
+TEST(SpectrumTest, CycleEigenvaluesLargestMag) {
+  StagInt n = 20;
+  stag::Graph testGraph = stag::cycle_graph(n);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.normalised_laplacian(), 5, Spectra::SortRule::LargestMagn);
+
+  // For the cycle graph, eigenvalues other than 0 and 2 have multiplicity 2.
+  StagReal largest_eigenvalue = 1 - cos((2 * M_PI * 10) / n);
+  EXPECT_NEAR(eigenvalues[0], largest_eigenvalue, 0.000001);
+
+  StagReal second_eigenvalue = 1 - cos((2 * M_PI * 9) / n);
+  EXPECT_NEAR(eigenvalues[1], second_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[2], second_eigenvalue, 0.000001);
+
+  StagReal third_eigenvalue = 1 - cos((2 * M_PI * 8) / n);
+  EXPECT_NEAR(eigenvalues[3], third_eigenvalue, 0.000001);
+  EXPECT_NEAR(eigenvalues[4], third_eigenvalue, 0.000001);
+}
+
 
 TEST(SpectrumTest, RandomGraphSpectrum) {
     // Create a graph from the SBM
