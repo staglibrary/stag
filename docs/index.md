@@ -11,3 +11,10 @@ Alternatively, the <a href="files.html">Modules</a> and
 <a href="annotated.html">Classes</a>
 pages contain the
 complete documentation of the library methods.
+
+The STAG library provides
+
+* the stag::Graph class with many **basic graph methods**,
+* **clustering algorithms** in the cluster.h module,
+* **locality-sensitive hashing** in the lsh.h module, and
+* **kernel density estiamtion** algorithms in the kde.h module.
