@@ -6,11 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - 2024-05-04
 ### Added
+- [Issue #131](https://github.com/staglibrary/stag/issues/131): Implement the Euclidean locality-sensitive hashing algorithm
+- [Issue #132](https://github.com/staglibrary/stag/issues/132): Implement the CKNS kernel density estimation algorithm
+- [Issue #134](https://github.com/staglibrary/stag/issues/134): Add method for constructing approximate similarity graph
 - [Issue #99](https://github.com/staglibrary/stag/issues/92): Add methods for adding and removing edges
+- [Issue #65](https://github.com/staglibrary/stag/issues/65): Add versioning to the STAG documentation
 
 ### Fixed
 - [Issue #126](https://github.com/staglibrary/stag/issues/126): Check Laplacian matrix is diagonally dominant
 - [Issue #129](https://github.com/staglibrary/stag/issues/129): Improved calculation of eigenvectors
+- [Issue #123](https://github.com/staglibrary/stag/issues/123): Fix broken testcase
+- [Issue #91](https://github.com/staglibrary/stag/issues/91): Add tests for badly formed adjacency list files
+- [Issue #128](https://github.com/staglibrary/stag/issues/128): Fix bug in personalised pagerank calculation
+- [Issue #137](https://github.com/staglibrary/stag/issues/137): Optimise the implementation of the CKNS algorithm
+- [Issue #66](https://github.com/staglibrary/stag/issues/66): Improve the performance of tests on github actions
 
 ## [1.3.0] - 2023-07-12
 ### Added
