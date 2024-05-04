@@ -34,6 +34,15 @@ namespace stag{
   class DataPoint {
   public:
     /**
+     * \cond
+     * Default constructor.
+     */
+     DataPoint() = default;
+    /**
+     * \endcond
+     */
+
+    /**
      * Initialise a data point with an explicit dimension, and a pointer to the
      * data array.
      *
