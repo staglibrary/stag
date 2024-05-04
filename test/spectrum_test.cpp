@@ -6,6 +6,7 @@
  * license.
  */
 // Standard C++ libraries
+#define _USE_MATH_DEFINES
 #include <stdexcept>
 #include <cmath>
 
