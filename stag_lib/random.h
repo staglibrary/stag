@@ -1,9 +1,7 @@
-//
-// Methods for generating graphs from random models.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file random.h
@@ -13,9 +11,27 @@
 #ifndef STAG_TEST_RANDOM_H
 #define STAG_TEST_RANDOM_H
 
+#include <random>
 #include "graph.h"
 
 namespace stag {
+
+  /**
+   * \cond
+   * Get the random number generator that is common to the main thread of the
+   * program.
+   */
+  std::mt19937_64* get_global_rng();
+
+  /**
+   * Create a random number generator, for example, for use within sub-threads
+   * of the main program.
+   */
+  std::mt19937_64 create_rng();
+  /**
+   * \endcond
+   */
+
   /**
    * Generate a graph from the symmetric stochastic block model.
    *
@@ -45,12 +61,12 @@ namespace stag {
    * @param exact (optional) whether to use the exact probability distribution. Default: false.
    * @return the randomly generated graph
    */
-  Graph sbm(stag_int n, stag_int k, double p, double q, bool exact);
+  Graph sbm(StagInt n, StagInt k, StagReal p, StagReal q, bool exact);
 
   /**
    * @overload
    */
-  Graph sbm(stag_int n, stag_int k, double p, double q);
+  Graph sbm(StagInt n, StagInt k, StagReal p, StagReal q);
 
   /**
    * Generate a graph from the general stochastic block model.
@@ -93,13 +109,13 @@ namespace stag {
    * @param exact (optional) whether to use the exact probability distribution. Default: false.
    * @return the randomly generated graph
    */
-  Graph general_sbm(std::vector<stag_int>& cluster_sizes,
+  Graph general_sbm(std::vector<StagInt>& cluster_sizes,
                     DenseMat& probabilities, bool exact);
 
   /**
    * @overload
    */
-  Graph general_sbm(std::vector<stag_int>& cluster_sizes,
+  Graph general_sbm(std::vector<StagInt>& cluster_sizes,
                     DenseMat& probabilities);
 
   /**
@@ -117,14 +133,14 @@ namespace stag {
    * @param exact (optional) whether to use the exact probability distribution. Default: false.
    */
   void general_sbm_edgelist(std::string& filename,
-                            std::vector<stag_int>& cluster_sizes,
+                            std::vector<StagInt>& cluster_sizes,
                             DenseMat& probabilities, bool exact);
 
   /**
    * @overload
    */
   void general_sbm_edgelist(std::string& filename,
-                            std::vector<stag_int>& cluster_sizes,
+                            std::vector<StagInt>& cluster_sizes,
                             DenseMat& probabilities);
 
   /**
@@ -145,12 +161,12 @@ namespace stag {
    * @param exact (optional) whether to sample from the exact model. Default: false.
    * @return the randomly generated graph
    */
-  Graph erdos_renyi(stag_int n, double p, bool exact);
+  Graph erdos_renyi(StagInt n, StagReal p, bool exact);
 
   /**
    * \overload
    */
-  Graph erdos_renyi(stag_int n, double p);
+  Graph erdos_renyi(StagInt n, StagReal p);
 
   /**
    * Construct a vector with the ground truth labels for a graph drawn from the
@@ -181,7 +197,7 @@ namespace stag {
    * @return a vector containing the ground truth labels for the vertices in the
    *         graph.
    */
-  std::vector<stag_int> sbm_gt_labels(stag_int n, stag_int k);
+  std::vector<StagInt> sbm_gt_labels(StagInt n, StagInt k);
 
   /**
    * Construct a vector with the ground truth labels for a graph drawn from the
@@ -211,7 +227,7 @@ namespace stag {
    * @return a vector containing the ground truth labels for the vertices in the
    *         graph.
    */
-  std::vector<stag_int> general_sbm_gt_labels(std::vector<stag_int>& cluster_sizes);
+  std::vector<StagInt> general_sbm_gt_labels(std::vector<StagInt>& cluster_sizes);
 }
 
 #endif //STAG_TEST_RANDOM_H

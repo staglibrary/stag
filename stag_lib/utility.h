@@ -1,9 +1,7 @@
-//
-// Definitions of utility methods for dealing with sparse matrices.
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file utility.h
@@ -17,25 +15,37 @@
 
 #include "graph.h"
 
+/**
+ * \cond
+ */
+#ifndef NDEBUG
+#  define LOG_DEBUG(x) do { std::cerr << x; } while (0)
+#else
+#  define LOG_DEBUG(x)
+#endif
+/**
+ * \endcond
+ */
+
 namespace stag {
 
   /**
    * Given a sparse matrix, return the values vector, compatible with the CSC
    * format of other libraries.
    */
-  std::vector<double> sprsMatValues(const SprsMat *matrix);
+  std::vector<StagReal> sprsMatValues(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the InnerIndices vector, compatible with the
    * CSC format of other libraries.
    */
-  std::vector<stag_int> sprsMatInnerIndices(const SprsMat *matrix);
+  std::vector<StagInt> sprsMatInnerIndices(const SprsMat *matrix);
 
   /**
    * Given a sparse matrix, return the OuterStarts vector, compatible with the
    * CSC format of other libraries.
    */
-  std::vector<stag_int> sprsMatOuterStarts(const SprsMat *matrix);
+  std::vector<StagInt> sprsMatOuterStarts(const SprsMat *matrix);
 
   /**
    * Given a sparse 'matrix' with only one column, convert it to a dense vector.
@@ -44,12 +54,12 @@ namespace stag {
    * @param n (optional) - the dimension of the dense vector to construct
    * @return a vector
    */
-   std::vector<double> sprsMatToVec(const SprsMat *matrix, stag_int n);
+   std::vector<StagReal> sprsMatToVec(const SprsMat *matrix, StagInt n);
 
    /**
     * \overload
     */
-   std::vector<double> sprsMatToVec(const SprsMat *matrix);
+   std::vector<StagReal> sprsMatToVec(const SprsMat *matrix);
 
    /**
     * Construct a sparse matrix from the CSC data vectors.
@@ -61,20 +71,20 @@ namespace stag {
     * vectors. The caller is responsible for ensuring that the provided data
     * vectors are well-formed.
     */
-   SprsMat sprsMatFromVectors(std::vector<stag_int>& column_starts,
-                              std::vector<stag_int>& row_indices,
-                              std::vector<double>& values);
+   SprsMat sprsMatFromVectors(std::vector<StagInt>& column_starts,
+                              std::vector<StagInt>& row_indices,
+                              std::vector<StagReal>& values);
 
    /**
     * Add two vectors together element-wise.
     */
    template <typename T>
    std::vector<T> addVectors(std::vector<T>& v1, std::vector<T>& v2) {
-     auto length = (stag_int) std::max(v1.size(), v2.size());
+     auto length = (StagInt) std::max(v1.size(), v2.size());
      std::vector<T> ans;
      T this_entry;
 
-     for (stag_int i = 0; i < length; i++) {
+     for (StagInt i = 0; i < length; i++) {
        this_entry = 0;
        if (v1.size() > i) this_entry += v1.at(i);
        if (v2.size() > i) this_entry += v2.at(i);

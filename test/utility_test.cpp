@@ -2,7 +2,7 @@
  * Tests for the utility.h header. Includes helper methods for dealing with
  * sparse matrices.
  *
- * This file is provided as part of the STAG library and released under the MIT
+ * This file is provided as part of the STAG library and released under the GPL
  * license.
  */
 #include <gtest/gtest.h>
@@ -10,8 +10,8 @@
 
 TEST(UtilityTest, IsSymmetric) {
   // Construct a symmetric matrix.
-  std::vector<stag_int> rowStarts = {0, 2, 4, 7, 8};
-  std::vector<stag_int> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
+  std::vector<StagInt> rowStarts = {0, 2, 4, 7, 8};
+  std::vector<StagInt> colIndices = {1, 2, 0, 2, 0, 1, 3, 2};
   std::vector<double> values = {2, 3.3333, 2, 6, 3.3333, 6, 1, 1};
   SprsMat matrix = Eigen::Map<SprsMat>(4, 4, 8,
                                        rowStarts.data(),
@@ -36,8 +36,8 @@ TEST(UtilityTest, IsSymmetric) {
 
 TEST(UtilityTest, SprsMatToVec) {
   // Construct a sparse matrix.
-  std::vector<stag_int> colStarts = {0, 4};
-  std::vector<stag_int> rowIndices = {0, 1, 2, 3};
+  std::vector<StagInt> colStarts = {0, 4};
+  std::vector<StagInt> rowIndices = {0, 1, 2, 3};
   std::vector<double> values = {1, 2, 3, 4};
   SprsMat sparse_matrix = Eigen::Map<SprsMat>(4, 1, 4,
                                               colStarts.data(),
@@ -61,8 +61,8 @@ TEST(UtilityTest, SprsMatToVec) {
 
 TEST(UtilityTest, SprsMatToVecArguments) {
   // Construct a sparse matrix.
-  std::vector<stag_int> colStarts = {0, 4};
-  std::vector<stag_int> rowIndices = {0, 1, 2, 3};
+  std::vector<StagInt> colStarts = {0, 4};
+  std::vector<StagInt> rowIndices = {0, 1, 2, 3};
   std::vector<double> values = {1, 2, 3, 4};
   SprsMat sparse_matrix = Eigen::Map<SprsMat>(4, 1, 4,
                                               colStarts.data(),
@@ -70,7 +70,7 @@ TEST(UtilityTest, SprsMatToVecArguments) {
                                               values.data());
 
   // Check the parameter checking of the sprsMatToVec method
-  stag_int n = -1;
+  StagInt n = -1;
   EXPECT_THROW(stag::sprsMatToVec(&sparse_matrix, n), std::invalid_argument);
 
   n = 0;
@@ -86,9 +86,9 @@ TEST(UtilityTest, AddDoubleVectors) {
 }
 
 TEST(UtilityTest, AddIntVectors) {
-  std::vector<stag_int> v1 = {1, 4};
-  std::vector<stag_int> v2 = {9, 8, 9};
-  std::vector<stag_int> expected_ans = {10, 12, 9};
-  std::vector<stag_int> ans = stag::addVectors(v1, v2);
+  std::vector<StagInt> v1 = {1, 4};
+  std::vector<StagInt> v2 = {9, 8, 9};
+  std::vector<StagInt> expected_ans = {10, 12, 9};
+  std::vector<StagInt> ans = stag::addVectors(v1, v2);
   EXPECT_EQ(ans, expected_ans);
 }

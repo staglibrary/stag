@@ -1,7 +1,7 @@
-//
-// This file is provided as part of the STAG library and released under the MIT
-// license.
-//
+/*
+   This file is provided as part of the STAG library and released under the GPL
+   license.
+*/
 
 /**
  * @file graphio.h
@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include <graph.h>
+#include "graph.h"
 
 namespace stag {
   /**

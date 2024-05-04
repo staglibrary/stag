@@ -59,13 +59,22 @@ add_executable(
         test/graphio_test.cpp
         test/random_test.cpp
         test/cluster_test.cpp
-        test/spectrum_test.cpp)
+        test/spectrum_test.cpp
+        test/lsh_test.cpp
+        test/kde_test.cpp
+        test/data_test.cpp
+        )
 
 target_link_libraries(
         stagt
         GTest::gtest_main
         stag
 )
+
+# Add an ad-hoc script for profiling and manual testing.
+add_executable(stag_profile
+        test/profiling.cpp)
+target_link_libraries(stag_profile stag)
 
 add_executable(
         stagt_static EXCLUDE_FROM_ALL
@@ -75,7 +84,11 @@ add_executable(
         test/graphio_test.cpp
         test/random_test.cpp
         test/cluster_test.cpp
-        test/spectrum_test.cpp)
+        test/spectrum_test.cpp
+        test/lsh_test.cpp
+        test/kde_test.cpp
+        test/data_test.cpp
+)
 
 target_link_libraries(
         stagt_static
@@ -98,7 +111,13 @@ configure_file(test/data/test6.adjacencylist test/data/test6.adjacencylist COPYO
 configure_file(test/data/test7.adjacencylist test/data/test7.adjacencylist COPYONLY)
 configure_file(test/data/test8.adjacencylist test/data/test8.adjacencylist COPYONLY)
 configure_file(test/data/badgraph.adjacencylist test/data/badgraph.adjacencylist COPYONLY)
+configure_file(test/data/badfile.adjacencylist test/data/badfile.adjacencylist COPYONLY)
 configure_file(test/data/hugegraph.adjacencylist test/data/hugegraph.adjacencylist COPYONLY)
+configure_file(test/data/moons.txt test/data/moons.txt COPYONLY)
+configure_file(test/data/moons_labels.txt test/data/moons_labels.txt COPYONLY)
+configure_file(test/data/moons_short.txt test/data/moons_short.txt COPYONLY)
+configure_file(test/data/mnist.txt test/data/mnist.txt COPYONLY)
+configure_file(test/data/mnist_labels.txt test/data/mnist_labels.txt COPYONLY)
 
 # Create the STAG tools
 add_executable(
