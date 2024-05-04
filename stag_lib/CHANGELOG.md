@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Issue #126](https://github.com/staglibrary/stag/issues/126): Check Laplacian matrix is diagonally dominant
+- [Issue #129](https://github.com/staglibrary/stag/issues/129): Improved calculation of eigenvectors
 
 ## [1.3.0] - 2023-07-12
 ### Added
