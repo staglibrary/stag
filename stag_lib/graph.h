@@ -155,7 +155,7 @@ namespace stag {
        * int main() {
        *   // Construct a sparse matrix representing the
        *   // triangle graph adjacency matrix.
-       *   stag_int n = 3;
+       *   StagInt n = 3;
        *   SprsMat adj(n, n);
        *   adj.coeffRef(0, 1) = 1;
        *   adj.coeffRef(0, 2) = 1;

@@ -94,7 +94,7 @@ namespace stag {
    * #include <stag/random.h>
    *
    * int main() {
-   *   std::vector<stag_int> cluster_sizes = {100, 20, 10};
+   *   std::vector<StagInt> cluster_sizes = {100, 20, 10};
    *   DenseMat prob_mat {{0.4, 0.1, 0.1}, {0.1, 0.7, 0}, {0.1, 0, 1}};
    *   stag::Graph myGraph = stag::general_sbm(cluster_sizes, prob_mat);
    *   std::cout << *myGraph.adjacency() << std::endl;

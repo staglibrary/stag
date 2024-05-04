@@ -45,7 +45,7 @@ namespace stag {
    *
    *     int main() {
    *       stag::Graph myGraph = stag::barbell_graph(10);
-   *       std::vector<stag_int> clusters = stag::spectral_cluster(&myGraph, 2);
+   *       std::vector<StagInt> clusters = stag::spectral_cluster(&myGraph, 2);
    *
    *       for (auto c : clusters) {
    *         std::cout << c << ", ";
