@@ -228,6 +228,59 @@ StagInt stag::Graph::number_of_edges() const {
   }
 }
 
+void stag::Graph::add_edge(StagInt i, StagInt j, StagReal w) {
+  number_of_vertices_ = MAX(number_of_vertices_, MAX(i, j) + 1);
+  adjacency_matrix_.conservativeResize(number_of_vertices_, number_of_vertices_);
+  adjacency_matrix_.coeffRef(i, j) += w;
+  adjacency_matrix_.coeffRef(j, i) += w;
+  adjacency_matrix_.makeCompressed();
+
+  if (i == j) {
+    has_self_loops_ = true;
+  }
+
+  // Set the flags to indicate which matrices have been initialised.
+  lap_init_ = false;
+  signless_lap_init_ = false;
+  signless_norm_lap_init_ = false;
+  deg_init_ = false;
+  inv_deg_init_ = false;
+  norm_lap_init_ = false;
+  lazy_rand_walk_init_ = false;
+}
+
+void stag::Graph::remove_edge(StagInt i, StagInt j) {
+  if (i >= number_of_vertices_ || j >= number_of_vertices_) return;
+
+  adjacency_matrix_.coeffRef(i, j) = 0;
+  adjacency_matrix_.coeffRef(j, i) = 0;
+  adjacency_matrix_.prune(0.0);
+  adjacency_matrix_.makeCompressed();
+
+  if (i == j) {
+    assert(has_self_loops_);
+
+    // If we removed a self-loop, we need to check whether there is still
+    // a self loop.
+    has_self_loops_ = false;
+    for (auto i = 0; i < number_of_vertices_; i++) {
+      if (adjacency_matrix_.coeff(i, i) != 0) {
+        has_self_loops_ = true;
+        break;
+      }
+    }
+  }
+
+  // Set the flags to indicate which matrices have been initialised.
+  lap_init_ = false;
+  signless_lap_init_ = false;
+  signless_norm_lap_init_ = false;
+  deg_init_ = false;
+  inv_deg_init_ = false;
+  norm_lap_init_ = false;
+  lazy_rand_walk_init_ = false;
+}
+
 bool stag::Graph::has_self_loops() const {
   return has_self_loops_;
 }
