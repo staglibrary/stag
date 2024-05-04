@@ -4,7 +4,7 @@ All notable changes to the library are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2024-05-04
 ### Added
 - [Issue #99](https://github.com/staglibrary/stag/issues/92): Add methods for adding and removing edges
 
