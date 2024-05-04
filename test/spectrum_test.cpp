@@ -23,17 +23,14 @@ TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
   StagInt n = 10;
   stag::Graph testGraph = stag::complete_graph(n);
 
-  // Extract the normalised laplacian matrix
-  const SprsMat* lap = testGraph.normalised_laplacian();
-
   // Compute the first few eigenvalues and eigenvectors - there should be no exceptions
   // thrown.
   StagInt k = 4;
-  stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
+  stag::EigenSystem eigensystem = stag::compute_eigensystem(
+      &testGraph, stag::GraphMatrix::NormalisedLaplacian, k, stag::EigenSortRule::Smallest);
 
   // The eigenvalues should be equal to 0, and (n-1) copies of n/(n-1).
   Eigen::VectorXd eigenvalues = get<0>(eigensystem);
-  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
 
   EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
   for (int i = 1; i < eigenvalues.size(); i++) {
@@ -43,23 +40,23 @@ TEST(SpectrumTest, NormalisedLaplacianEigensystem) {
 
 TEST(SpectrumTest, NormalisedLaplacianEigenvalues) {
   stag::Graph testGraph = stag::complete_graph(100);
-  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.normalised_laplacian(), 5);
-  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::NormalisedLaplacian, 5, stag::EigenSortRule::Smallest);
   EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
 }
 
 TEST(SpectrumTest, LaplacianEigenvalues) {
   stag::Graph testGraph = stag::complete_graph(100);
-  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.laplacian(), 5);
-  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::Laplacian, 5, stag::EigenSortRule::Smallest);
   EXPECT_NEAR(eigenvalues[0], 0, 0.01);
 }
 
 TEST(SpectrumTest, CycleEigenvaluesSmallestMag) {
   StagInt n = 20;
   stag::Graph testGraph = stag::cycle_graph(n);
-  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.normalised_laplacian(), 5);
-  std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::NormalisedLaplacian, 5, stag::EigenSortRule::Smallest);
 
   // The first eigenvalue should be 0
   EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
@@ -77,7 +74,8 @@ TEST(SpectrumTest, CycleEigenvaluesSmallestMag) {
 TEST(SpectrumTest, CycleEigenvaluesLargestMag) {
   StagInt n = 20;
   stag::Graph testGraph = stag::cycle_graph(n);
-  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(testGraph.normalised_laplacian(), 5, Spectra::SortRule::LargestMagn);
+  Eigen::VectorXd eigenvalues = stag::compute_eigenvalues(
+      &testGraph, stag::GraphMatrix::NormalisedLaplacian, 5, stag::EigenSortRule::Largest);
 
   // For the cycle graph, eigenvalues other than 0 and 2 have multiplicity 2.
   StagReal largest_eigenvalue = 1 - cos((2 * M_PI * 10) / n);
@@ -98,17 +96,14 @@ TEST(SpectrumTest, RandomGraphSpectrum) {
     StagInt n = 100;
     stag::Graph testGraph = stag::sbm(n, 2, 0.5, 0.01);
 
-    // Extract the normalised laplacian matrix
-    const SprsMat* lap = testGraph.normalised_laplacian();
-
     // Compute the first few eigenvalues and eigenvectors - there should be no exceptions
     // thrown.
     StagInt k = 3;
-    stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
+    stag::EigenSystem eigensystem = stag::compute_eigensystem(
+        &testGraph, stag::GraphMatrix::NormalisedLaplacian, k, stag::EigenSortRule::Smallest);
 
     // The eigenvalues should be equal to 0, something 'small' and something 'large'.
     Eigen::VectorXd eigenvalues = get<0>(eigensystem);
-    std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
 
     EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
     EXPECT_LE(eigenvalues[1], 0.2);
@@ -128,16 +123,13 @@ TEST(SpectrumTest, DisconnectedGraph) {
     // Create the stag Graph object
     stag::Graph testGraph = stag::Graph(rowStarts, colIndices, values);
 
-    // Extract the unnormalised laplacian matrix
-    const SprsMat* lap = testGraph.laplacian();
-
     // Compute the first 3 eigenvalues and eigenvectors.
     StagInt k = 3;
-    stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
+    stag::EigenSystem eigensystem = stag::compute_eigensystem(
+        &testGraph, stag::GraphMatrix::Laplacian, k, stag::EigenSortRule::Smallest);
 
     // The eigenvalues should be equal to 0, 0, and something else.
     Eigen::VectorXd eigenvalues = get<0>(eigensystem);
-    std::sort(eigenvalues.data(), eigenvalues.data() + eigenvalues.size());
 
     EXPECT_NEAR(eigenvalues[0], 0, 0.000001);
     EXPECT_NEAR(eigenvalues[1], 0, 0.000001);
@@ -149,30 +141,35 @@ TEST(SpectrumTest, HugeGraph) {
   std::string filename = "test/data/test6.edgelist";
   stag::Graph graph = stag::load_edgelist(filename);
 
-  // Extract the unnormalised laplacian matrix
-  const SprsMat* lap = graph.laplacian();
-
   // Compute the first 3 eigenvalues and eigenvectors.
   StagInt k = 3;
-  stag::EigenSystem eigensystem = stag::compute_eigensystem(lap, k);
+  stag::EigenSystem eigensystem = stag::compute_eigensystem(
+      &graph, stag::GraphMatrix::Laplacian, k, stag::EigenSortRule::Smallest);
 }
 
 TEST(SpectrumTest, ArgumentChecking) {
   StagInt n = 10;
   stag::Graph testGraph = stag::complete_graph(n);
-  const SprsMat* lap = testGraph.laplacian();
 
   StagInt k = -1;
-  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+  EXPECT_THROW(stag::compute_eigensystem(
+      &testGraph, stag::GraphMatrix::Laplacian, k, stag::EigenSortRule::Smallest),
+               std::invalid_argument);
 
   k = 0;
-  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+  EXPECT_THROW(stag::compute_eigensystem(
+      &testGraph, stag::GraphMatrix::Laplacian, k, stag::EigenSortRule::Smallest),
+               std::invalid_argument);
 
   k = n + 1;
-  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+  EXPECT_THROW(stag::compute_eigensystem(
+      &testGraph, stag::GraphMatrix::Laplacian, k, stag::EigenSortRule::Smallest),
+               std::invalid_argument);
 
   k = n;
-  EXPECT_THROW(stag::compute_eigensystem(lap, k), std::invalid_argument);
+  EXPECT_THROW(stag::compute_eigensystem(
+      &testGraph, stag::GraphMatrix::Laplacian, k, stag::EigenSortRule::Smallest),
+               std::invalid_argument);
 }
 
 TEST(SpectrumTest, RayleighQuotient) {

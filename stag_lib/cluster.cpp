@@ -42,8 +42,8 @@ std::vector<StagInt> stag::spectral_cluster(stag::Graph *graph, StagInt k) {
 
   // Start by computing the 'first' k eigenvalues of the normalised graph
   // laplacian matrix.
-  const SprsMat* lap = graph->normalised_laplacian();
-  Eigen::MatrixXd eigvecs = stag::compute_eigenvectors(lap, k);
+  Eigen::MatrixXd eigvecs = stag::compute_eigenvectors(
+      graph, stag::GraphMatrix::NormalisedLaplacian, k, stag::EigenSortRule::Smallest);
 
   // Run k-means clustering on the spectral embedding of the vertices
   Eigen::MatrixXd centres = Eigen::MatrixXd::Zero(k, k);
@@ -67,8 +67,8 @@ std::vector<StagInt> stag::spectral_cluster(stag::Graph *graph, StagInt k) {
 std::vector<StagInt> stag::cheeger_cut(stag::Graph* graph) {
   // First, compute the first 2 eigenvectors of the normalised graph Laplacian
   // matrix.
-  const SprsMat* lap = graph->normalised_laplacian();
-  stag::EigenSystem eigsys = stag::compute_eigensystem(lap, 2);
+  stag::EigenSystem eigsys = stag::compute_eigensystem(
+      graph, stag::GraphMatrix::NormalisedLaplacian, 2, stag::EigenSortRule::Smallest);
 
   // The vector to pass to the sweep set method is the second eigenvector,
   // with each entry normalised by the square root of the node degree.

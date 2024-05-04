@@ -456,7 +456,7 @@ namespace stag {
        *
        * @throws std::invalid_argument if the check does not pass
        */
-       void check_vertex_argument(StagInt v);
+       void check_vertex_argument(StagInt v) const;
 
        /**
         * \endcond
