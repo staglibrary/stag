@@ -66,6 +66,10 @@ namespace stag {
    */
   enum EigenSortRule {Largest, Smallest};
 
+  /**
+   * When computing eigenvectors and eigenvalues, these values are used to
+   * specify which Graph matrix we are using to compute the spectrum.
+   */
   enum GraphMatrix {Adjacency, Laplacian, NormalisedLaplacian};
 
   /**
@@ -126,7 +130,7 @@ namespace stag {
    */
   Eigen::MatrixXd compute_eigenvectors(stag::Graph* g,
                                        stag::GraphMatrix mat,
-                                       StagInt num,
+                                       StagInt num_eigs,
                                        stag::EigenSortRule which);
 
   /**
@@ -147,7 +151,7 @@ namespace stag {
    */
   Eigen::VectorXd compute_eigenvalues(stag::Graph* g,
                                       stag::GraphMatrix mat,
-                                      StagInt num,
+                                      StagInt num_eigs,
                                       stag::EigenSortRule which);
 
   /**
