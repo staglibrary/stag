@@ -1,7 +1,7 @@
 
 #include "definitions.h"
 #include <string>
-#include "data.h"
+#include "cluster.h"
 #include "kde.h"
 #include <iostream>
 #include "graphio.h"
