@@ -38,6 +38,11 @@ namespace stag{
      * Default constructor.
      */
      DataPoint() = default;
+
+     /**
+      * Destructor. Do not free the memory pointed to by coordinates.
+      */
+     ~DataPoint() {};
     /**
      * \endcond
      */
