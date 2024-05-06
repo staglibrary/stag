@@ -33,6 +33,14 @@ stag::DataPoint::DataPoint(std::vector<StagReal>& point_vector) {
   coordinates = &point_vector[0];
 }
 
+std::vector<StagReal> stag::DataPoint::to_vector() {
+  std::vector<StagReal> new_vector;
+  for (StagInt i = 0; i < (StagInt) dimension; i++) {
+    new_vector.push_back(coordinates[i]);
+  }
+  return new_vector;
+}
+
 //------------------------------------------------------------------------------
 // Converting between data formats.
 //------------------------------------------------------------------------------

@@ -72,6 +72,13 @@ namespace stag{
     explicit DataPoint(std::vector<StagReal>& point_vector);
 
     /**
+     * Convert the data point to a vector.
+     *
+     * @return a vector of StagReal values
+     */
+    std::vector<StagReal> to_vector();
+
+    /**
      * The dimension of the data point.
      */
     StagUInt dimension;
