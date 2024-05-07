@@ -295,7 +295,7 @@ namespace stag {
    * This data structure uses a brute-force algorithm to compute the kernel
    * density of each query point.
    *
-   * The time complexity of initialisation with \f$n\f$ data points is \f$O(n)\f$.
+   * The time complexity of initialisation with \f$n\f$ data points is \f$O(1)\f$.
    * The query time complexity is \f$O(m n d)\f$, where \f$m\f$ is the number
    * of query points, and \f$d\f$ is the dimensionality of the data.
    */

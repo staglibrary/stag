@@ -159,7 +159,7 @@ TEST(KDETest,CKNSExplicitConstants){
 }
 
 TEST(KDETest, CKNSMnist) {
-  // Load the two MNIST dataset
+  // Load the MNIST dataset
   std::string filename = "test/data/mnist.txt";
   DenseMat data = stag::load_matrix(filename);
   StagReal a = 0.000001;
