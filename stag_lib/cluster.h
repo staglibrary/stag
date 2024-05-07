@@ -372,7 +372,6 @@ namespace stag {
    * @param data an \f$n \times d\f$ Eigen matrix representing the dataset.
    * @param a the parameter of the similarity kernel.
    * @return a stag::Graph object representing the similarity of the data
-   *
    */
   Graph similarity_graph(DenseMat* data, StagReal a);
 }
