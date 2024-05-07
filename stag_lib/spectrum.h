@@ -91,7 +91,7 @@ namespace stag {
    *       stag::Graph myGraph = stag::cycle_graph(10);
    *
    *       // Compute a few eigenvalues and eigenvectors
-   *       stag_int k = 3;
+   *       StagInt k = 3;
    *       stag::EigenSystem eigensystem = stag::compute_eigensystem(
    *           myGraph, stag::GraphMatrix::NormalisedLaplacian,
    *           k, stag::EigenSortRule::Largest);

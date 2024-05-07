@@ -34,6 +34,20 @@ namespace stag{
   class DataPoint {
   public:
     /**
+     * \cond
+     * Default constructor.
+     */
+     DataPoint() = default;
+
+     /**
+      * Destructor. Do not free the memory pointed to by coordinates.
+      */
+     ~DataPoint() {};
+    /**
+     * \endcond
+     */
+
+    /**
      * Initialise a data point with an explicit dimension, and a pointer to the
      * data array.
      *
@@ -56,6 +70,13 @@ namespace stag{
      * @param point_vector a vector containing one data point.
      */
     explicit DataPoint(std::vector<StagReal>& point_vector);
+
+    /**
+     * Convert the data point to a vector.
+     *
+     * @return a vector of StagReal values
+     */
+    std::vector<StagReal> to_vector();
 
     /**
      * The dimension of the data point.

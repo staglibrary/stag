@@ -49,10 +49,10 @@ stag::EigenSystem compute_eigensystem_largestmag(
 
   // Add the offset to the eigenvalues
   if (offset != 0 || invert) {
-    for (auto &eigval: eigenvalues) {
-      eigval += offset;
+    for (auto i = 0; i < eigenvalues.rows(); i++) {
+      eigenvalues.coeffRef(i) += offset;
 
-      if (invert) eigval = -eigval;
+      if (invert) eigenvalues.coeffRef(i) *= -1;
     }
   }
 

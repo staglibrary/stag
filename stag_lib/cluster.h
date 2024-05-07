@@ -45,7 +45,7 @@ namespace stag {
    *
    *     int main() {
    *       stag::Graph myGraph = stag::barbell_graph(10);
-   *       std::vector<stag_int> clusters = stag::spectral_cluster(&myGraph, 2);
+   *       std::vector<StagInt> clusters = stag::spectral_cluster(&myGraph, 2);
    *
    *       for (auto c : clusters) {
    *         std::cout << c << ", ";
@@ -372,7 +372,6 @@ namespace stag {
    * @param data an \f$n \times d\f$ Eigen matrix representing the dataset.
    * @param a the parameter of the similarity kernel.
    * @return a stag::Graph object representing the similarity of the data
-   *
    */
   Graph similarity_graph(DenseMat* data, StagReal a);
 }
