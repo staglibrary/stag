@@ -579,9 +579,9 @@ StagReal stag::CKNSGaussianKDE::query(const stag::DataPoint &q) {
   // the query.
   StagReal last_mu_estimate = 0;
 
-  for (auto log_nmu_iter = num_log_nmu_iterations - 1;
-       log_nmu_iter >= 0;
-       log_nmu_iter--) {
+  for (auto log_nmu_iter = 0;
+       log_nmu_iter < num_log_nmu_iterations;
+       log_nmu_iter++) {
     StagInt log_nmu = max_log_nmu - (log_nmu_iter * 2);
     StagInt J = ckns_J(n, log_nmu);
     StagReal this_mu_estimate;
