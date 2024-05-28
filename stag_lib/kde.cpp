@@ -19,7 +19,7 @@
 
 // The CKNS algorithm has a couple of 'magic constants' which control the
 // probability guarantee and variance bounds.
-#define K2_DEFAULT_CONSTANT 0.1     // K_2 = C log(n) p^{-k_j}
+#define K2_DEFAULT_CONSTANT 1       // K_2 = C log(n) p^{-k_j}
 #define K1_DEFAULT_CONSTANT 1       // K_1 = C log(n) / eps^2
 #define EPS_DEFAULT 1               // K_1 = C log(n) / eps^2
 #define CKNS_DEFAULT_OFFSET 0
