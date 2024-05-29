@@ -640,7 +640,7 @@ public:
       below_cutoff = false;
 
       // We only initialise an estimator at this node if we are below the depth
-      // depth cutoff. Above the depth cutoff and we just use the children to estimate.
+      // cutoff. Above the depth cutoff and we just use the children to estimate.
       if (depth > depth_cutoff) initialise_estimator(data, a);
     } else {
       below_cutoff = true;

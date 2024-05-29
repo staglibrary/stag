@@ -84,12 +84,20 @@ StagInt stag::LSHFunction::apply(const DataPoint& point) {
 }
 
 StagReal stag::LSHFunction::collision_probability(StagReal c) {
-  StagReal eight_over_c_squared = 8 / SQR(c);
-  return - ((1 / TWO_ROOT_TWOPI)
-            * c
-            * exp(-eight_over_c_squared)
-            * (exp(eight_over_c_squared) - 1))
-         + erf(TWO_ROOT_TWO / c);
+  if (c < 0) {
+    c = -c;
+  }
+
+  if (c < 1) {
+    return 1 - 0.2 * c;
+  } else {
+    StagReal eight_over_c_squared = 8 / SQR(c);
+    return - ((1 / TWO_ROOT_TWOPI)
+              * c
+              * exp(-eight_over_c_squared)
+              * (exp(eight_over_c_squared) - 1))
+           + erf(TWO_ROOT_TWO / c);
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Issue #158](https://github.com/staglibrary/stag/issues/158): Fix iteration order in KDE query
+- [Issue #166](https://github.com/staglibrary/stag/issues/166): Approximate similarity graph bug with large numbers of points
 
 ## [2.0.0] - 2024-05-04
 ### Added
