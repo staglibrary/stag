@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- [Issue #160](https://github.com/staglibrary/stag/issues/160): Make progress bar an optional parameter when constructing
+  an approximate similarity graph.
 
 ### Fixed
 - [Issue #158](https://github.com/staglibrary/stag/issues/158): Fix iteration order in KDE query
