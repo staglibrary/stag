@@ -169,6 +169,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Test" OR
     configure_file(test/data/hugegraph.adjacencylist test/data/hugegraph.adjacencylist COPYONLY)
     configure_file(test/data/moons.txt test/data/moons.txt COPYONLY)
     configure_file(test/data/moons_labels.txt test/data/moons_labels.txt COPYONLY)
+    configure_file(test/data/moons100000.txt test/data/moons100000.txt COPYONLY)
+    configure_file(test/data/moons100000_labels.txt test/data/moons100000_labels.txt COPYONLY)
     configure_file(test/data/moons_short.txt test/data/moons_short.txt COPYONLY)
     configure_file(test/data/mnist.txt test/data/mnist.txt COPYONLY)
     configure_file(test/data/mnist_labels.txt test/data/mnist_labels.txt COPYONLY)
