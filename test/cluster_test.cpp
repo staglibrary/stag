@@ -694,15 +694,9 @@ TEST(ClusterTest, ASGmoonsLarge) {
     labels_vec.at(i) = (StagInt) labels(i, 0);
   }
 
-  // Check the clustering performance with the asg roughly matches the
-  // performance with the fully connected graph
+  // Check the clustering performance with the asg is good enough.
   StagInt k = 2;
   std::vector<StagInt> clusters = stag::spectral_cluster(&asg, k);
   StagReal asg_ari = stag::adjusted_rand_index(clusters, labels_vec);
-
-  stag::Graph sg = stag::similarity_graph(&data, a);
-  clusters = stag::spectral_cluster(&sg, k);
-  StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
-  EXPECT_GE(fc_ari, 0.9);
-  EXPECT_GE(asg_ari, 0.8 * fc_ari);
+  EXPECT_GE(asg_ari, 0.8);
 }

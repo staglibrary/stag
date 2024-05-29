@@ -24,6 +24,12 @@
 #define EPS_DEFAULT 1               // K_1 = C log(n) / eps^2
 #define CKNS_DEFAULT_OFFSET 0
 
+#ifndef NDEBUG
+#  define DISABLE_MULTITHREADING true
+#else
+#  define DISABLE_MULTITHREADING false
+#endif
+
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.
 #define HASH_UNIT_CUTOFF 3000
@@ -140,6 +146,8 @@ std::vector<StagUInt> ckns_gaussian_create_lsh_params(
     StagInt J, StagInt j, StagReal a, StagReal K2_constant) {
   StagReal r_j = sqrt((StagReal) j * log(2) / a);
   StagReal p_j = stag::LSHFunction::collision_probability(r_j);
+  assert(p_j <= 1);
+  assert(p_j >= 0);
   StagReal phi_j = ceil((((StagReal) j)/((StagReal) J)) * (StagReal) (J - j + 1));
   StagUInt k_j = MAX(1, floor(- phi_j / log2(p_j)));
   StagUInt K_2 = ceil(K2_constant * pow(2, phi_j));
@@ -347,14 +355,20 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
 
       // j = 0 is the special random sampling hash unit.
       for (StagInt j = 0; j <= J; j++) {
-        futures.push_back(
-            pool.push(
-                [&, log_nmu_iter, log_nmu, iter, j](int id) {
-                  ignore_warning(id);
-                  return add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies[iter], hash_units_mutex);
-                }
-            )
-        );
+        if (DISABLE_MULTITHREADING) {
+          add_hash_unit(log_nmu_iter, log_nmu, iter, j, &data_copies[iter],
+                        hash_units_mutex);
+        } else {
+          futures.push_back(
+              pool.push(
+                  [&, log_nmu_iter, log_nmu, iter, j](int id) {
+                    ignore_warning(id);
+                    return add_hash_unit(log_nmu_iter, log_nmu, iter, j,
+                                         &data_copies[iter], hash_units_mutex);
+                  }
+              )
+          );
+        }
       }
     }
   }
@@ -426,7 +440,7 @@ StagInt stag::CKNSGaussianKDE::add_hash_unit(StagInt log_nmu_iter,
   CKNSGaussianKDEHashUnit new_hash_unit = CKNSGaussianKDEHashUnit(
       a, data, log_nmu, j, k2_constant, sampling_offset);
   hash_units_mutex.lock();
-  hash_units[log_nmu_iter][iter].push_back(new_hash_unit);
+  hash_units.at(log_nmu_iter).at(iter).push_back(new_hash_unit);
   hash_units_mutex.unlock();
   return 0;
 }
