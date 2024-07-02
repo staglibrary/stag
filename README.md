@@ -132,7 +132,9 @@ open-source code.
 
 ## Contact
 
-If you have any questions about using the STAG library, please contact a member of the STAG
+If you find a suspected bug in STAG, please raise an issue on this Github repository.
+
+If you have any other questions about using the STAG library, please feel free to contact a member of the STAG
 development team.
 
 - He Sun ([h.sun@ed.ac.uk](mailto:h.sun@ed.ac.uk))
