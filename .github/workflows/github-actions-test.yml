@@ -77,9 +77,7 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          file: coverage.txt
           token: ${{ secrets.CODECOV_TOKEN }}
-          exclude: "test/, stagtools/, stag_lib/indicators/, stag_lib/KMeansRex/, stag_lib/multithreading/"
 
   Build-Macos:
     runs-on: macos-latest
