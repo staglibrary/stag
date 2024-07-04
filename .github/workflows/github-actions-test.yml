@@ -75,7 +75,7 @@ jobs:
       - run: chmod +x ./cmake-build-test-coverage/stagt
       - run: ./cmake-build-test-coverage/stagt
       - name: Generate coverage report
-        run: gcovr -r ./ . > coverage.txt
+        run: gcovr -r ./ . --gcov-ignore-parse-errors negative_hits.warn_once_per_file --exclude cmake-build-test-coverage/ --exclude stag_lib/indicators/ --exclude stag_lib/KMeansRex/ --exclude stag_lib/multithreading/ > coverage.txt
       - uses: actions/upload-artifact@master
         with:
           name: coverage-report
