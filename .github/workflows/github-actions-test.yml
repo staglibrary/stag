@@ -74,13 +74,12 @@ jobs:
       - run: cmake --build cmake-build-test-coverage --target stagt
       - run: chmod +x ./cmake-build-test-coverage/stagt
       - run: ./cmake-build-test-coverage/stagt
-      - name: Generate coverage report
-        run: gcovr -r ./ . --gcov-ignore-parse-errors negative_hits.warn_once_per_file --exclude cmake-build-test-coverage/ --exclude stag_lib/indicators/ --exclude stag_lib/KMeansRex/ --exclude stag_lib/multithreading/ > coverage.txt
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           file: coverage.txt
           token: ${{ secrets.CODECOV_TOKEN }}
+          exclude: "test/, stagtools/, stag_lib/indicators/, stag_lib/KMeansRex/, stag_lib/multithreading/"
 
   Build-Macos:
     runs-on: macos-latest
