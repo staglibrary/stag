@@ -75,8 +75,11 @@ jobs:
       - run: chmod +x ./cmake-build-test-coverage/stagt
       - run: ./cmake-build-test-coverage/stagt
       - name: Generate coverage report
-        run: gcovr -r ../ . > coverage.txt
-
+        run: gcovr -r ./ . > coverage.txt
+      - uses: actions/upload-artifact@master
+        with:
+          name: coverage-report
+          path: coverage.txt
 
   Build-Macos:
     runs-on: macos-latest
