@@ -363,13 +363,13 @@ namespace stag {
   Graph approximate_similarity_graph(DenseMat* data, StagReal a);
 
   /**
-   * @cond
+   * \cond
    * Do not document these additional methods for testing the node cutoff
    */
   Graph approximate_similarity_graph(DenseMat* data, StagReal a,
                                      bool show_progress, StagInt asg_tree_node_cutoff);
   /**
-   * @endcond
+   * \endcond
    */
 
   /**
