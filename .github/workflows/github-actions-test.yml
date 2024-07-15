@@ -132,6 +132,11 @@ jobs:
   Build-Windows:
     runs-on: windows-latest
     steps:
+      - uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: gcc
+          version: 13
       - name: Install Eigen
         run: |
           curl --output eigen-3.4.0.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
