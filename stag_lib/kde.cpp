@@ -24,11 +24,8 @@
 #define EPS_DEFAULT 1               // K_1 = C log(n) / eps^2
 #define CKNS_DEFAULT_OFFSET 0
 
-#ifndef NDEBUG
-#  define DISABLE_MULTITHREADING true
-#else
-#  define DISABLE_MULTITHREADING false
-#endif
+// Disable multithreading for easier debugging
+#define DISABLE_MULTITHREADING false
 
 // At a certain number of sampled points, we might as well brute-force the hash
 // unit.

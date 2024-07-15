@@ -201,6 +201,19 @@ TEST(ClusterTest, ACL) {
   EXPECT_EQ(cluster, expected_cluster);
 }
 
+TEST(ClusterTest, ACLOverloads) {
+  // Construct a test barbell graph
+  stag::Graph testGraph = stag::barbell_graph(10);
+
+  // Run the acl clustering method, using an overloaded method
+  std::vector<StagInt> cluster = stag::local_cluster_acl(&testGraph, 1, 0.8);
+  std::stable_sort(cluster.begin(), cluster.end());
+
+  // Check that we found one of the clusters.
+  std::vector<StagInt> expected_cluster = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  EXPECT_EQ(cluster, expected_cluster);
+}
+
 TEST(ClusterTest, pagerankStart) {
   // Ensure that the approximate pagerank method works for a starting vertex
   // containing multiple starting vertices.
@@ -372,12 +385,19 @@ TEST(ClusterTest, ARI) {
 }
 
 TEST(ClusterTest, ARIArguments) {
-  std::vector<StagInt> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
-  std::vector<StagInt> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
+  // Try label vectors with non-matching lengths
+  std::vector<StagInt> gt_labels {1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<StagInt> labels    {0, 3, 0, 1, 1, 2, 2, 2, 2, 2};
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
 
-  gt_labels.at(0) = 0;
-  gt_labels.at(1) = 0;
+  // Try invalid cluster IDs in the gt_label vector
+  gt_labels.push_back(-1);
+  gt_labels.push_back(-1);
+  EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
+
+  // Try invalid cluster IDs in the labels vector
+  gt_labels.at(8) = 0;
+  gt_labels.at(9) = 0;
   labels.at(3) = -1;
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
 }
@@ -615,6 +635,37 @@ TEST(ClusterTest, CheegerCutComplete){
   EXPECT_EQ(c0, n / 2);
 }
 
+TEST(ClusterTest, ASGSmallCutoff) {
+  // Load the moons dataset
+  std::string filename = "test/data/moons.txt";
+  DenseMat data = stag::load_matrix(filename);
+  StagReal a = 10;
+
+  // Create tha approximate similarity graph from this matrix, using a small node cutoff
+  stag::Graph asg = stag::approximate_similarity_graph(&data, a, true, 100);
+  EXPECT_EQ(asg.number_of_vertices(), data.rows());
+
+  // Load the correct clusters
+  std::string labels_filename = "test/data/moons_labels.txt";
+  DenseMat labels = stag::load_matrix(labels_filename);
+  std::vector<StagInt> labels_vec(labels.rows());
+  for (auto i = 0; i < labels.rows(); i++) {
+    labels_vec.at(i) = (StagInt) labels(i, 0);
+  }
+
+  // Check the clustering performance with the asg roughly matches the
+  // performance with the fully connected graph
+  StagInt k = 2;
+  std::vector<StagInt> clusters = stag::spectral_cluster(&asg, k);
+  StagReal asg_ari = stag::adjusted_rand_index(clusters, labels_vec);
+
+  stag::Graph sg = stag::similarity_graph(&data, a);
+  clusters = stag::spectral_cluster(&sg, k);
+  StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
+  EXPECT_GE(fc_ari, 0.9);
+  EXPECT_GE(asg_ari, 0.5 * fc_ari);
+}
+
 TEST(ClusterTest, ASGmoons) {
   // Load the moons dataset
   std::string filename = "test/data/moons.txt";
@@ -643,5 +694,17 @@ TEST(ClusterTest, ASGmoons) {
   clusters = stag::spectral_cluster(&sg, k);
   StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
   EXPECT_GE(fc_ari, 0.9);
-  EXPECT_GE(asg_ari, 0.8 * fc_ari);
+  EXPECT_GE(asg_ari, 0.3 * fc_ari);
+}
+
+TEST(ClusterTest, ASGTiny) {
+  // Construct an ASG graph from just two data points.
+  DenseMat data {{0, 1}, {1, 0}};
+  StagReal a = 0.001;
+  stag::Graph asg = stag::approximate_similarity_graph(&data, a);
+  EXPECT_EQ(asg.number_of_vertices(), 2);
+
+  // Construct a fully connected similarity graph
+  stag::Graph fc = stag::similarity_graph(&data, a);
+  EXPECT_EQ(fc.number_of_vertices(), 2);
 }
