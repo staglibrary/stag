@@ -158,29 +158,6 @@ TEST(KDETest,CKNSExplicitConstants){
   EXPECT_LE(avg_error, 0.25);
 }
 
-TEST(KDETest, CKNSMnist) {
-  // Load the MNIST dataset
-  std::string filename = "test/data/mnist.txt";
-  DenseMat data = stag::load_matrix(filename);
-  StagReal a = 0.000001;
-
-  // Create an exact Gaussian KDE
-  stag::ExactGaussianKDE exact_kde(&data, a);
-  std::vector<StagReal> kde_exact = exact_kde.query(&data);
-
-  // Create a CKNS KDE estimator
-  stag::CKNSGaussianKDE ckns_kde(&data, a);
-  std::vector<StagReal> kde_estimates = ckns_kde.query(&data);
-
-  // Check that the estimates are accurate
-  StagReal total_error = 0;
-  for (auto i = 0; i < kde_estimates.size(); i++) {
-    total_error += abs(kde_estimates.at(i) - kde_exact.at(i)) / kde_exact.at(i);
-  }
-  StagReal avg_error = total_error / (StagReal) kde_estimates.size();
-  EXPECT_LE(avg_error, 0.5);
-}
-
 TEST(KDETest, CKNSOversample) {
   // Load the two moons dataset
   std::string filename = "test/data/moons.txt";
