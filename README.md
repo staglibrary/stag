@@ -2,6 +2,7 @@
 
 [![Build](https://github.com/pmacg/stag/actions/workflows/github-actions-test.yml/badge.svg?branch=main)](https://github.com/pmacg/stag/actions/workflows/github-actions-test.yml)
 [![Docs](https://github.com/staglibrary/stag/actions/workflows/github-actions-docs.yml/badge.svg)](https://staglibrary.io/docs/cpp)
+[![Coverage](https://codecov.io/gh/staglibrary/stag/graph/badge.svg?token=1ILM3GPGO9)](https://codecov.io/gh/staglibrary/stag)
 
 STAG is a C++ library providing efficient spectral algorithms for the analysis of massive graphs.
 There is also an accompanying [STAG Python library](https://github.com/staglibrary/stagpy).
@@ -132,7 +133,9 @@ open-source code.
 
 ## Contact
 
-If you have any questions about using the STAG library, please contact a member of the STAG
+If you find a suspected bug in STAG, please raise an issue on this Github repository.
+
+If you have any other questions about using the STAG library, please feel free to contact a member of the STAG
 development team.
 
 - He Sun ([h.sun@ed.ac.uk](mailto:h.sun@ed.ac.uk))

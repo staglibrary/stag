@@ -1,0 +1,7 @@
+# Configuration for reporting code coverage with codecov.
+ignore:
+  - "stagtools"
+  - "test"
+  - "stag_lib/indicators"
+  - "stag_lib/KMeansRex"
+  - "stag_lib/multithreading"
