@@ -92,6 +92,30 @@ TEST(LSHTest, LSHFunction) {
   EXPECT_GE(num_collisions, 0.8 * prob * num_functions);
 }
 
+TEST(LSHTest, CloseCollisionProb) {
+  StagReal distance = 0.05;
+
+  // Get the collision probability under the LSH function.
+  StagReal prob = stag::LSHFunction::collision_probability(distance);
+
+  // For this small value, the collision probability should be close to
+  // 1 - 0.2 x.
+  StagReal expected_prob = 1 - 0.2 * distance;
+  EXPECT_NEAR(prob, expected_prob, 0.0001);
+}
+
+TEST(LSHTest, NegDistCollisionProb) {
+  StagReal distance = 5.6;
+  StagReal prob1 = stag::LSHFunction::collision_probability(distance);
+  StagReal prob2 = stag::LSHFunction::collision_probability(-distance);
+  EXPECT_EQ(prob1, prob2);
+
+  distance = 0.2;
+  prob1 = stag::LSHFunction::collision_probability(distance);
+  prob2 = stag::LSHFunction::collision_probability(-distance);
+  EXPECT_EQ(prob1, prob2);
+}
+
 TEST(LSHTest, E2LSH11) {
   // Check that an E2LSH table with K=1 and L=1 behaves like a single
   // LSHFunction.
