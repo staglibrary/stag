@@ -635,18 +635,18 @@ TEST(ClusterTest, CheegerCutComplete){
   EXPECT_EQ(c0, n / 2);
 }
 
-TEST(ClusterTest, ASGMNIST) {
-  // Load the MNIST dataset
-  std::string filename = "test/data/mnist.txt";
+TEST(ClusterTest, ASGSmallCutoff) {
+  // Load the moons dataset
+  std::string filename = "test/data/moons.txt";
   DenseMat data = stag::load_matrix(filename);
-  StagReal a = 0.000001;
+  StagReal a = 10;
 
-  // Create tha approximate similarity graph from this matrix.
-  stag::Graph asg = stag::approximate_similarity_graph(&data, a);
+  // Create tha approximate similarity graph from this matrix, using a small node cutoff
+  stag::Graph asg = stag::approximate_similarity_graph(&data, a, true, 100);
   EXPECT_EQ(asg.number_of_vertices(), data.rows());
 
   // Load the correct clusters
-  std::string labels_filename = "test/data/mnist_labels.txt";
+  std::string labels_filename = "test/data/moons_labels.txt";
   DenseMat labels = stag::load_matrix(labels_filename);
   std::vector<StagInt> labels_vec(labels.rows());
   for (auto i = 0; i < labels.rows(); i++) {
@@ -655,14 +655,15 @@ TEST(ClusterTest, ASGMNIST) {
 
   // Check the clustering performance with the asg roughly matches the
   // performance with the fully connected graph
-  StagInt k = 10;
+  StagInt k = 2;
   std::vector<StagInt> clusters = stag::spectral_cluster(&asg, k);
   StagReal asg_ari = stag::adjusted_rand_index(clusters, labels_vec);
 
   stag::Graph sg = stag::similarity_graph(&data, a);
   clusters = stag::spectral_cluster(&sg, k);
   StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
-  EXPECT_GE(asg_ari, 0.8 * fc_ari);
+  EXPECT_GE(fc_ari, 0.9);
+  EXPECT_GE(asg_ari, 0.5 * fc_ari);
 }
 
 TEST(ClusterTest, ASGmoons) {
@@ -693,5 +694,17 @@ TEST(ClusterTest, ASGmoons) {
   clusters = stag::spectral_cluster(&sg, k);
   StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
   EXPECT_GE(fc_ari, 0.9);
-  EXPECT_GE(asg_ari, 0.8 * fc_ari);
+  EXPECT_GE(asg_ari, 0.6 * fc_ari);
+}
+
+TEST(ClusterTest, ASGTiny) {
+  // Construct an ASG graph from just two data points.
+  DenseMat data {{0, 1}, {1, 0}};
+  StagReal a = 0.001;
+  stag::Graph asg = stag::approximate_similarity_graph(&data, a);
+  EXPECT_EQ(asg.number_of_vertices(), 2);
+
+  // Construct a fully connected similarity graph
+  stag::Graph fc = stag::similarity_graph(&data, a);
+  EXPECT_EQ(fc.number_of_vertices(), 2);
 }

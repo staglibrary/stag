@@ -26,7 +26,7 @@
 #include "data.h"
 #include "kde.h"
 
-#define ASG_TREE_CUTOFF 5000
+#define ASG_TREE_DEFAULT_CUTOFF 5000
 
 /*
  * Used to disable compiler warning for unused variable.
@@ -627,7 +627,8 @@ std::vector<std::vector<StagInt>> stag::connected_components(
 //------------------------------------------------------------------------------
 class KDETreeEntry {
 public:
-  KDETreeEntry(DenseMat* data, StagReal a, StagInt min_id, StagInt max_id, StagInt dep, StagInt dep_cutoff)
+  KDETreeEntry(DenseMat* data, StagReal a, StagInt min_id, StagInt max_id, StagInt dep, StagInt dep_cutoff,
+               StagInt node_cutoff)
       : sampling_dist(0.0, 1.0)
   {
     min_idx = min_id;
@@ -636,7 +637,7 @@ public:
     depth = dep;
     depth_cutoff = dep_cutoff;
 
-    if (max_idx - min_idx >= ASG_TREE_CUTOFF) {
+    if (max_idx - min_idx >= node_cutoff) {
       below_cutoff = false;
 
       // We only initialise an estimator at this node if we are below the depth
@@ -651,8 +652,8 @@ public:
       StagInt midpoint = (min_idx + max_idx) / 2;
       assert(midpoint >= min_idx);
       assert(midpoint < max_idx);
-      left_child = new KDETreeEntry(data, a, min_idx, midpoint, depth + 1, depth_cutoff);
-      right_child = new KDETreeEntry(data, a, midpoint + 1, max_idx, depth + 1, depth_cutoff);
+      left_child = new KDETreeEntry(data, a, min_idx, midpoint, depth + 1, depth_cutoff, node_cutoff);
+      right_child = new KDETreeEntry(data, a, midpoint + 1, max_idx, depth + 1, depth_cutoff, node_cutoff);
     }
   }
 
@@ -832,9 +833,9 @@ void sample_asg_edges(DenseMat* data,
 }
 
 stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a,
-                                               bool show_progress) {
+                                               bool show_progress, StagInt asg_tree_node_cutoff) {
   // Work out how many total edges we will sample
-  auto edges_per_node = (StagInt) (3 * log((StagReal) data->rows()));
+  auto edges_per_node = MIN((StagInt) (3 * log((StagReal) data->rows())), 2);
   StagInt num_edges = data->rows() * edges_per_node;
 
   // Track the construction with a progress bar
@@ -854,7 +855,8 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a,
   // Begin by creating the tree of kernel density estimators.
   // Creating each node is parallelized by the KDE code.
   KDETreeEntry tree_root(data, a, 0, data->rows() - 1, 0,
-                         (StagInt) log((StagReal) edges_per_node));
+                         (StagInt) log((StagReal) edges_per_node),
+                         asg_tree_node_cutoff);
 
   if (show_progress) {
     prog_bar.set_option(indicators::option::PostfixText("Estimating node degrees"));
@@ -924,6 +926,11 @@ stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a,
 stag::Graph stag::approximate_similarity_graph(DenseMat* data, StagReal a) {
   return stag::approximate_similarity_graph(data, a, false);
 }
+
+stag::Graph stag::approximate_similarity_graph(DenseMat *data, StagReal a, bool show_progress) {
+  return stag::approximate_similarity_graph(data, a, show_progress, ASG_TREE_DEFAULT_CUTOFF);
+}
+
 
 stag::Graph stag::similarity_graph(DenseMat* data, StagReal a) {
   StagInt n = data->rows();
