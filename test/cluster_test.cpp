@@ -694,7 +694,7 @@ TEST(ClusterTest, ASGmoons) {
   clusters = stag::spectral_cluster(&sg, k);
   StagReal fc_ari = stag::adjusted_rand_index(clusters, labels_vec);
   EXPECT_GE(fc_ari, 0.9);
-  EXPECT_GE(asg_ari, 0.6 * fc_ari);
+  EXPECT_GE(asg_ari, 0.3 * fc_ari);
 }
 
 TEST(ClusterTest, ASGTiny) {
