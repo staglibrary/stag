@@ -201,6 +201,19 @@ TEST(ClusterTest, ACL) {
   EXPECT_EQ(cluster, expected_cluster);
 }
 
+TEST(ClusterTest, ACLOverloads) {
+  // Construct a test barbell graph
+  stag::Graph testGraph = stag::barbell_graph(10);
+
+  // Run the acl clustering method, using an overloaded method
+  std::vector<StagInt> cluster = stag::local_cluster_acl(&testGraph, 1, 0.8);
+  std::stable_sort(cluster.begin(), cluster.end());
+
+  // Check that we found one of the clusters.
+  std::vector<StagInt> expected_cluster = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  EXPECT_EQ(cluster, expected_cluster);
+}
+
 TEST(ClusterTest, pagerankStart) {
   // Ensure that the approximate pagerank method works for a starting vertex
   // containing multiple starting vertices.
@@ -372,12 +385,19 @@ TEST(ClusterTest, ARI) {
 }
 
 TEST(ClusterTest, ARIArguments) {
-  std::vector<StagInt> gt_labels {-1, -1, 1, 1, 1, 1, 2, 2, 2, 2};
-  std::vector<StagInt> labels    {0, 1, 0, 1, 1, 2, 2, 2, 2, 2};
+  // Try label vectors with non-matching lengths
+  std::vector<StagInt> gt_labels {1, 1, 1, 1, 2, 2, 2, 2};
+  std::vector<StagInt> labels    {0, 3, 0, 1, 1, 2, 2, 2, 2, 2};
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
 
-  gt_labels.at(0) = 0;
-  gt_labels.at(1) = 0;
+  // Try invalid cluster IDs in the gt_label vector
+  gt_labels.push_back(-1);
+  gt_labels.push_back(-1);
+  EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
+
+  // Try invalid cluster IDs in the labels vector
+  gt_labels.at(8) = 0;
+  gt_labels.at(9) = 0;
   labels.at(3) = -1;
   EXPECT_THROW(stag::adjusted_rand_index(gt_labels, labels), std::invalid_argument);
 }
