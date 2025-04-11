@@ -139,4 +139,4 @@ If you have any other questions about using the STAG library, please feel free t
 development team.
 
 - He Sun ([h.sun@ed.ac.uk](mailto:h.sun@ed.ac.uk))
-- Peter Macgregor ([peter.macgregor@ed.ac.uk](mailto:peter.macgregor@ed.ac.uk))
+- Peter Macgregor ([prm4@st-andrews.ac.uk](mailto:prm4@st-andrews.ac.uk))
