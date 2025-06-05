@@ -353,6 +353,19 @@ TEST(GraphTest, AsymmetricAdjacency) {
                std::domain_error);
 }
 
+TEST(GraphTest, AlmostSymmetricAdjacency) {
+  // Creating a graph with an adjacency matrix which is symmetric,
+  // save for some floating point errors should work.
+  // Create the data for the graph adjacency matrix.
+  std::vector<StagInt> rowStarts = {0, 3, 5, 9, 11};
+  std::vector<StagInt> colIndices = {0, 1, 2, 0, 2, 0, 1, 2, 3, 2, 3};
+  std::vector<double> values = {1, 2, 3 + 0.2 + 0.2, 2, 6, 4 - 0.2 - 0.2 - 0.2, 6, 2, 1, 1, 1};
+
+  // Attempt to create the graph object. Should throw an exception.
+  stag::Graph g(rowStarts, colIndices, values);
+  EXPECT_EQ(g.number_of_vertices(), 4);
+}
+
 TEST(GraphTest, MalformedAdjacency1) {
   // Creating a graph with invalid sparse matrix data
   // should throw an error.
