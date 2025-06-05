@@ -290,9 +290,6 @@ void stag::CKNSGaussianKDE::initialize(DenseMat* data,
                                        StagInt prob_offset,
                                        StagInt min_idx,
                                        StagInt max_idx) {
-#ifndef NDEBUG
-  std::cerr << "Warning: STAG compiled in debug mode. For optimal performance, compile with -DCMAKE_BUILD_TYPE=Release." << std::endl;
-#endif
   assert(max_idx <= data->rows());
   assert(min_idx >= 0);
   assert(min_idx < max_idx);

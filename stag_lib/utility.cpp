@@ -88,9 +88,14 @@ bool stag::isSymmetric(const SprsMat *matrix) {
   // Iterate through the non-zero elements in the matrix
   for (int k = 0; k < matrix->outerSize(); ++k) {
     for (SprsMat::InnerIterator it(*matrix, k); it; ++it) {
-      // If the value in the symmetrically opposite position is not the same,
+      // If the value in the symmetrically opposite position is not almost the same,
       // then return false.
-      if (it.value() != matrix->coeff(it.col(), it.row())) {
+      StagReal value = it.value();
+      StagReal other = matrix->coeff(it.col(), it.row());
+      const StagReal relative_difference_factor = 0.0001;
+      const StagReal greater_magnitude = std::max(std::abs(value),std::abs(other));
+
+      if (std::abs(value-other) > relative_difference_factor * greater_magnitude){
         return false;
       }
     }

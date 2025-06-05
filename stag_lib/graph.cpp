@@ -475,7 +475,7 @@ stag::Graph stag::Graph::disjoint_union(Graph& other) {
 void stag::Graph::self_test_() {
   // Check that the adjacency matrix is symmetric.
   if (!stag::isSymmetric(&adjacency_matrix_)) {
-    throw std::domain_error("Graph adjacency matrix must be symmetric.");
+    throw std::domain_error("STAG Error: graph adjacency matrix must be symmetric.");
   }
 }
 
