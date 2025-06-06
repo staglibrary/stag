@@ -19,11 +19,11 @@ jobs:
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Test
       - run: cmake --build cmake-build-release --target stagt
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@4.4.3
         with:
           name: test-binary-linux
           path: cmake-build-release/stagt
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@4.4.3
         with:
           name: shared-library-linux
           path: cmake-build-release/stag_lib/stag.so
@@ -47,7 +47,7 @@ jobs:
       - run: chmod +x stagt
       - name: Run Tests
         run: ./stagt
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v5
         with:
           name: |
             test-binary-linux
@@ -124,7 +124,7 @@ jobs:
       - run: chmod +x stagt_static
       - name: Run Tests
         run: ./stagt_static
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v5
         with:
           name: |
             test-binary-macos
@@ -156,7 +156,7 @@ jobs:
         uses: actions/checkout@v3
       - run: cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Test
       - run: cmake --build cmake-build-release --target stagt_static
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4.4.3
         with:
           name: test-binary-windows
           path: cmake-build-release/Debug/stagt_static.exe
@@ -174,7 +174,7 @@ jobs:
       - name: Run Tests
         run: |
           .\stagt_static.exe
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v5
         with:
           name: |
             test-binary-windows
