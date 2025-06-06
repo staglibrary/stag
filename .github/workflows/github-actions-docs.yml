@@ -34,7 +34,7 @@ jobs:
       - name: Publish docs
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          SSH_DEPLOY_KEY: ${{ secrets.WEBSITE_SSH_DEPLOY_KEY }}
+          API_TOKEN_GITHUB: ${{ secrets.STAG_PAT }}
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           source-directory: 'cmake-build-release/docs/docs/doxygen/html'
